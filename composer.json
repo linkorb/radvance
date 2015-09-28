@@ -1,0 +1,47 @@
+{
+    "name": "linkorb/framework",
+    "description": "LinkORB Framework",
+    "homepage": "https://github.com/linkorb/proxytect",
+    "keywords": ["linkorb", "framework", "tests", "behat"],
+    "type": "application",
+    "license": "MIT",
+    "authors": [{
+        "name": "LinkORB",
+        "email": "engineering@linkorb.com",
+        "role": "Development"
+    }],
+    "require": {
+        "silex/silex": "2.0.x-dev#a3881a5a2fc7e0233307c8240d4adc909a559b49",
+        "symfony/yaml": "~2.6",
+        "symfony/config": "~2.6",
+        "symfony/security": "~2.6",
+        "symfony/console": "~2.6",
+        "symfony/form": "~2.7",
+        "symfony/translation": "~2.7",
+        "twig/twig": ">=1.8,<2.0-dev",
+        "symfony/twig-bridge": "~2.7",
+        "userbase/client": "~0.0",
+        "oyejorge/less.php": "~1.5",
+        "monolog/monolog": "^1.17"
+    },
+    "require-dev": {
+        "behat/behat": "^3.0",
+        "behat/mink": "^1.6",
+        "behat/mink-extension": "^2.0",
+        "behat/mink-goutte-driver": "^1.1",
+        "dbtk/schema-loader": "~2.1",
+        "linkorb/haigha": "~2.1",
+        "linkorb/conventions-checker": "~1.1"
+    },
+    "extra": {
+        "grumphp": {
+            "config-default-path": "vendor/linkorb/conventions-checker/config/lib/grumphp.yml"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "LinkORB\\Framework\\": "src/",
+            "LinkORB\\Framework\\Behat\\": "tests/behat/"
+        }
+    }
+}

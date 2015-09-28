@@ -1,0 +1,24 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% block header %}
+    <h1>
+        {% block header %}{{ name|capitalize }}{% endblock %}
+        {% block count %} ({{ entities|length }}){% endblock %}
+    </h1>
+{% endblock %}
+
+{% block content %}
+
+    <div class="buttonbox">
+        <a href="{{ path(name ~ '_add') }}" class="btn btn-success" role="button">
+            <i class="fa fa-plus"></i>
+            Add
+        </a>
+
+        {% block buttons %}
+        {% endblock %}
+    </div>
+
+    {% block index %}
+    {% endblock %}
+{% endblock %}

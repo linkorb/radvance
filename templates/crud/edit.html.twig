@@ -1,0 +1,42 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+{% block content %}
+    <h1>{% block header %}Edit {{ entity|trim }} {{ name|replace('_', ' ') }}{% endblock %}</h1>
+
+    {% block form %}
+        {{ form_start(form) }}
+            <div class="buttonbox">
+                <a href="{{ path(name ~ '_index') }}" class="btn btn-default" role="button">
+                    <i class="fa fa-arrow-left"></i>
+                    Back
+                </a>
+
+                {% block buttons %}
+                {% endblock %}
+
+                {% if entity.id %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-save"></i>
+                        Save
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-save"></i>
+                        Add
+                    </button>
+                {% endif %}
+
+                {% if entity.id %}
+                    <a href="{{ path(name ~ '_delete', { 'id': entity.id }) }}" class="btn btn-danger" role="button" onclick="return confirm('Are you sure?')">
+                        <i class="fa fa-trash"></i>
+                        Delete
+                    </a>
+                {% endif %}
+            </div>
+
+            {{ form_widget(form) }}
+        {{ form_end(form) }}
+    {% endblock %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% block content %}
+    <h1>
+        {% block header %}{{ name|capitalize|replace('_', ' ') }} '{{ entity }}'{% endblock %}
+    </h1>
+
+    <div class="buttonbox">
+        <a href="{{ path(name ~ '_index') }}" class="btn btn-default" role="button">
+            <i class="fa fa-arrow-left"></i>
+            Back
+        </a>
+
+        {% block buttons %}
+        {% endblock %}
+
+        <a href="{{ path(name ~ '_edit', { 'id': entity.id }) }}" class="btn btn-success">
+            <i class="fa fa-edit"></i>
+            Edit
+        </a>
+
+        <a href="{{ path(name ~ '_delete', { 'id': entity.id }) }}" class="btn btn-danger" role="button" onclick="return confirm('Are you sure?')">
+            <i class="fa fa-trash"></i>
+            Delete
+        </a>
+    </div>
+
+    {% block view %}
+        <table class="table">
+            {#% for key, value in entity|cast_to_array %}
+                <li>{{ key }}: {{ value }}
+            {% endfor %#}
+        </table>
+    {% endblock %}
+{% endblock %}

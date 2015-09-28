@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0"/>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- link rel="icon" href="../../favicon.ico" -->
+
+    <title>{% block title %}LinkORB Skeleton{% endblock %}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="{{ path('assets', { 'postfix': '/bower/bootstrap/dist/css/bootstrap.min.css' }) }}">
+    <link rel="stylesheet" href="{{ path('assets', { 'postfix': '/bower/font-awesome/css/font-awesome.min.css' }) }}">
+    <link rel="stylesheet" href="{{ path('assets', { 'postfix': '/bower/bootswatch-dist/css/bootstrap.min.css' }) }}">
+
+    <link rel="stylesheet" href="{{ path('assets_style_css') }}">
+</head>
+
+<body>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ path('frontpage' ) }}">LinkORB Skeleton</a>
+            </div>
+
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="{{ path('frontpage') }}">Frontpage</a></li>
+
+                    {% for page in main_menu|default([]) %}
+                        <li><a href="{{ page['href'] }}">{{ page['name'] }}</a></li>
+                    {% endfor %}
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">About
+                            LinkORB Engineering <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="http://engineering.linkorb.com/blog" target="_blank">Blog</a></li>
+                            <li><a href="http://engineering.linkorb.com/careers" target="_blank">Career</a></li>
+                            <li class="divider"></li>
+                            <li class="dropdown-header">Cool stuff</li>
+                            <li><a href="https://github.com/linkorb" target="_blank">Our Github page</a></li>
+                            <li><a href="https://www.facebook.com/linkorb-engineering" target="_blank">Our Facebook page</a>
+                            </li>
+                            <li><a href="https://packagist.org/packages/linkorb/" target="_blank">Our Packagist
+                                    Contributions</a></li>
+                            <li><a href="http://engineering.linkorb.com/code-with-us" target="_blank">Code with us</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {% if current_user is defined %}
+                        <li><a href="{{ path('frontpage' ) }}">{{ current_user.getDisplayName }}</a></li>
+                        <li><a href="{{ path('logout' ) }}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ path('login' ) }}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </nav>
+
+    <div class="container" id="content">
+        <div class="row">
+            <div class="col-md-12">
+
+                {% for flashMessageType, flashMessage in app.session.flashbag.get('error') %}
+                    <div class="alert alert-dismissible alert-{{ flashMessageType == 'error' ? 'danger' : flashMessageType }}" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+                        {{ flashMessage }}
+
+                    </div>
+                {% endfor %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    <!-- /container -->
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <img class="linkorbengineering-logo"
+                         src="{{ path('assets', { 'postfix': '/img/linkorbengineering-logo.png' }) }}"/>
+                </div>
+                <div class="col-md-6">
+                    &copy; 2015 LinkORB Engineering
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ path('assets', { 'postfix': '/bower/jquery/dist/jquery.min.js' }) }}"></script>
+    <script src="{{ path('assets', { 'postfix': '/bower/bootstrap/dist/js/bootstrap.min.js' }) }}"></script>
+    <script src="{{ path('assets', { 'postfix': '/js/app.js' }) }}"></script>
+
+</body>
+</html>
