@@ -1,7 +1,7 @@
 {
-    "name": "linkorb/framework",
-    "description": "LinkORB Framework",
-    "homepage": "https://github.com/linkorb/proxytect",
+    "name": "radvance/radvance",
+    "description": "Radvance PHP Framework",
+    "homepage": "https://github.com/radvance/radvance",
     "keywords": ["linkorb", "framework", "tests", "behat"],
     "type": "application",
     "license": "MIT",
@@ -40,8 +40,8 @@
     },
     "autoload": {
         "psr-4": {
-            "LinkORB\\Framework\\": "src/",
-            "LinkORB\\Framework\\Behat\\": "tests/behat/"
+            "Radvance\\": "src/",
+            "Radvance\\Behat\\": "tests/behat/"
         }
     }
 }

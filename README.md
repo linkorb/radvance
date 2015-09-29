@@ -1,11 +1,11 @@
-# LinkORB Framework
+# Radvance Framework
 
 Warning! This framework in WIP state. Don't use it before release, please.
 
 ## TODO
 
-- [x] Extract `BaseCliApplication` from `BaseApplication`
-- [x] Extract `BaseCrudApplication` from `BaseApplication`
+- [x] Extract `BaseConsoleApplication` from `BaseApplication`
+- [x] Extract `BaseWebApplication` from `BaseApplication`
 - [ ] Release old skeleton as `1.0.0`
 - [ ] Make new skeleton based on framework and tag it as `2.0.0`
 - [ ] Several security providers for test-ready `parameters.yml.dist` on localhost without any real passwords
@@ -25,17 +25,17 @@ Warning! This framework in WIP state. Don't use it before release, please.
 
 ### Application
 
-You should extend your application from `BaseCrudApplication` if you use controllers or `BaseCliApplication` otherwise.
+You should extend your application from `BaseWebApplication` if you use controllers or `BaseConsoleApplication` otherwise.
 
 ```php
 # src/Application.php
 
-namespace LinkORB\Skeleton;
+namespace ExampleApp;
 
-use LinkORB\Framework\BaseCrudApplication;
-use LinkORB\Framework\FrameworkApplicationInterface;
+use Radvance\BaseWebApplication;
+use Radvance\FrameworkApplicationInterface;
 
-class Application extends BaseCrudApplication implements FrameworkApplicationInterface
+class Application extends BaseWebApplication implements FrameworkApplicationInterface
 {
     public function getRootPath()
     {
@@ -105,9 +105,9 @@ For example:
 # src/Repository/PdoThingRepository.php
 namespace LinkORB\Skeleton\Repository;
 
-use LinkORB\Framework\Repository\BaseRepository;
-use LinkORB\Framework\Repository\RepositoryInterface;
-use LinkORB\Skeleton\Model\Thing;
+use Radvance\Repository\BaseRepository;
+use Radvance\Repository\RepositoryInterface;
+use Radvance\Model\Thing;
 use PDO;
 
 class PdoThingRepository extends BaseRepository implements RepositoryInterface
@@ -139,17 +139,15 @@ For example:
 #### Example:
 
 ```
-# src/Skeleton/Controller/ThingController.php
+# src/Radvance/ThingController.php
 
-namespace LinkORB\Skeleton\Controller;
+namespace ExampleApp\Controller;
 
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-use LinkORB\Framework\Controller\BaseController;
-
-use LinkORB\Proxytect\Model\Proxy;
+use Radvance\Controller\BaseController;
 
 class ThingController extends BaseController
 {

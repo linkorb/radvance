@@ -1,6 +1,6 @@
 <?php
 
-namespace LinkORB\Framework\Controller;
+namespace Radvance\Controller;
 
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;

@@ -1,8 +1,8 @@
 <?php
 
-namespace LinkORB\Framework\Model;
+namespace Radvance\Model;
 
-use LinkORB\Framework\Exception\BadMethodCallException;
+use Radvance\Exception\BadMethodCallException;
 
 abstract class BaseModel
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace LinkORB\Framework\Exception;
+namespace Radvance\Model\Exception;
 
 class BadMethodCallException extends \BadMethodCallException
 {

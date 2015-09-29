@@ -1,6 +1,6 @@
 <?php
 
-namespace LinkORB\Framework;
+namespace Radvance\Framework;
 
 use Silex\Application as SilexApplication;
 
@@ -15,14 +15,14 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Parser as YamlParser;
 
-use LinkORB\Framework\Repository\RepositoryInterface;
-use LinkORB\Framework\Exception\BadMethodCallException;
+use Radvance\Repository\RepositoryInterface;
+use Radvance\Exception\BadMethodCallException;
 
 use Exception;
 use RuntimeException;
 use PDO;
 
-abstract class BaseCliApplication extends SilexApplication implements FrameworkApplicationInterface
+abstract class BaseConsoleApplication extends SilexApplication implements FrameworkApplicationInterface
 {
     protected $pdo;
 
@@ -97,6 +97,7 @@ abstract class BaseCliApplication extends SilexApplication implements FrameworkA
             substr($dbname, 1),
             $host
         );
+        //echo $dsn;exit();
 
         $this->pdo = new PDO($dsn, $user, $pass);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -159,6 +160,9 @@ abstract class BaseCliApplication extends SilexApplication implements FrameworkA
      */
     public function getRepositories()
     {
+        if (!isset($this['repository'])) {
+            return array();
+        }
         return $this['repository'];
     }
 

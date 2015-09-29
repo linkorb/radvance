@@ -1,6 +1,6 @@
 <?php
 
-namespace LinkORB\Framework\Behat;
+namespace Radvance\Behat;
 
 use Behat\Gherkin\Node\TableNode;
 use Behat\Mink\Element\NodeElement;

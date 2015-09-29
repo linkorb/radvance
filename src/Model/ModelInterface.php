@@ -1,6 +1,6 @@
 <?php
 
-namespace LinkORB\Framework\Model;
+namespace Radvance\Model;
 
 interface ModelInterface
 {

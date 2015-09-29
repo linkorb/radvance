@@ -1,6 +1,6 @@
 <?php
 
-namespace LinkORB\Framework;
+namespace Radvance\Framework;
 
 interface FrameworkApplicationInterface
 {

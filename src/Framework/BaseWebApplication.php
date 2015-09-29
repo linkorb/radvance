@@ -1,6 +1,6 @@
 <?php
 
-namespace LinkORB\Framework;
+namespace Radvance\Framework;
 
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\SecurityServiceProvider as SilexSecurityServiceProvider;
@@ -24,7 +24,7 @@ use PDO;
  * Crud application using
  * routes/controllers/security/sessions/assets/themes
  */
-abstract class BaseCrudApplication extends BaseCliApplication implements FrameworkApplicationInterface
+abstract class BaseWebApplication extends BaseConsoleApplication implements FrameworkApplicationInterface
 {
     protected $pdo;
 
@@ -45,7 +45,7 @@ abstract class BaseCrudApplication extends BaseCliApplication implements Framewo
     {
         return sprintf(
             '%s/themes/%s',
-            $global ? sprintf('%s/..', rtrim(__DIR__)) : $this->getRootPath(),
+            $global ? sprintf('%s/../..', rtrim(__DIR__)) : $this->getRootPath(),
             isset($this['theme']) ? $this['theme'] : 'default'
         );
     }
@@ -92,14 +92,22 @@ abstract class BaseCrudApplication extends BaseCliApplication implements Framewo
             'BaseTheme'
         );
 
+        $path = $this->getThemePath(false);
+        if (file_exists($path)) {
+            $this['twig.loader.filesystem']->addPath(
+                $path,
+                'Theme'
+            );
+        }
+
         $this['twig.loader.filesystem']->addPath(
-            $this->getThemePath(false),
-            'Theme'
+            sprintf('%s/../../templates', __DIR__),
+            'BaseTemplates'
         );
 
         $this['twig.loader.filesystem']->addPath(
-            sprintf('%s/../templates', __DIR__),
-            'BaseTemplates'
+            sprintf('%s/templates', $this->getRootPath()),
+            'Templates'
         );
 
         $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
@@ -107,7 +115,9 @@ abstract class BaseCrudApplication extends BaseCliApplication implements Framewo
 
     protected function buildMenu($app)
     {
-        return array_map(function($repository) use($app){
+        return array();
+        
+        return array_map(function($repository) use ($app) {
             $name = $repository->getTable();
 
             return array(
@@ -156,11 +166,11 @@ abstract class BaseCrudApplication extends BaseCliApplication implements Framewo
         foreach ($this['parameters']['security']['providers'] as $provider => $providerConfig) {
             switch ($provider) {
                 // case 'JsonFile':
-                // return new \LinkORB\Skeleton\Security\JsonFileUserProvider(__DIR__.'/../'.$providerConfig['path']);
+                // return new \Radvance\Security\JsonFileUserProvider(__DIR__.'/../'.$providerConfig['path']);
                 // case 'Pdo':
                 //     $dbmanager = new DatabaseManager();
                 //
-                // return new \LinkORB\Skeleton\Security\PdoUserProvider(
+                // return new \Radvance\Security\PdoUserProvider(
                 //     $dbmanager->getPdo($providerConfig['database'])
                 // );
                 case 'UserBase':

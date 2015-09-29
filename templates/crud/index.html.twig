@@ -2,7 +2,6 @@
 
 {% block content %}
     <h1>
-        {% block header %}{{ name|capitalize|replace('_', ' ') }}{% endblock %}
         {% block count %} ({{ entities|length }}){% endblock %}
     </h1>
 

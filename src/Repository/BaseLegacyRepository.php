@@ -1,8 +1,8 @@
 <?php
 
-namespace LinkORB\Framework\Repository;
+namespace Radvance\Repository;
 
-use LinkORB\Framework\Model\ModelInterface;
+use Radvance\Model\ModelInterface;
 use Exception;
 
 /**

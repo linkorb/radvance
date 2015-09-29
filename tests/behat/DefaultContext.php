@@ -1,6 +1,6 @@
 <?php
 
-namespace LinkORB\Framework\Behat;
+namespace Radvance\Behat;
 
 use Behat\Behat\Context\Context;
 use Behat\MinkExtension\Context\RawMinkContext;
