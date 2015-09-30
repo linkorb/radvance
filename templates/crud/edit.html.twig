@@ -3,7 +3,17 @@
 {% form_theme form 'bootstrap_3_layout.html.twig' %}
 
 {% block content %}
-    <h1>{% block header %}Edit {{ entity|trim }} {{ name|replace('_', ' ') }}{% endblock %}</h1>
+    <h1>
+        {% block header %}
+            {% if entity.id %}
+                Edit
+                {{ entity|trim }}
+            {% else %}
+                Add
+            {% endif %}
+            {{ name|replace('_', ' ') }}
+        {% endblock %}
+    </h1>
 
     {% block form %}
         {{ form_start(form) }}

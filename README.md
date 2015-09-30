@@ -12,6 +12,9 @@ Warning! This framework in WIP state. Don't use it before release, please.
 - [ ] Exceptions and errors reporting / env-based verbosity
 - [ ] Error messages on constraints fails
 - [x] Publish framework as separate lib
+- [ ] Extract traits from controllers and models
+- [ ] Login & permissions tests
+- [ ] BaseApiApplication or ApplicationApiTrait
 
 ## Why?
 
@@ -108,17 +111,9 @@ namespace LinkORB\Skeleton\Repository;
 use Radvance\Repository\BaseRepository;
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Model\Thing;
-use PDO;
 
 class PdoThingRepository extends BaseRepository implements RepositoryInterface
 {
-    protected $pdo;
-
-    public function __construct(PDO $pdo)
-    {
-        $this->pdo = $pdo;
-    }
-
     public function createEntity()
     {
         return Thing::createNew();
