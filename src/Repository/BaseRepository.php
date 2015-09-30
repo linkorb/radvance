@@ -9,8 +9,9 @@ use PDO;
 abstract class BaseRepository
 {
     private $table;
+    protected $pdo;
 
-    public function __construct($table = null)
+    public function __construct(PDO $pdo, $table = null)
     {
         if (is_null($table)) {
             $table = get_class($this);
@@ -23,6 +24,7 @@ abstract class BaseRepository
         }
 
         $this->table = $table;
+        $this->pdo = $pdo;
     }
 
     /**
