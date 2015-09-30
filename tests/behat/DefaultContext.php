@@ -37,7 +37,7 @@ abstract class DefaultContext extends RawMinkContext implements Context
     public static function bootstrapSilex()
     {
         if (!self::$app) {
-            self::$app = require __DIR__.'/../../app/bootstrap.php';
+            self::$app = require __DIR__.'/../../../../../app/bootstrap.php';
         }
         return self::$app;
     }
