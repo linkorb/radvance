@@ -2,8 +2,12 @@
 
 namespace Radvance\Behat;
 
+use Behat\Behat\Tester\Exception\PendingException;
+use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Behat\Mink\Element\NodeElement;
+use Behat\Mink\Exception\ExpectationException;
+use Behat\Mink\Exception\ElementNotFoundException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
@@ -12,7 +16,6 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  */
 class WebContext extends DefaultContext
 {
-
     /**
      * @Then /^I should see (\d+) rows in the table$/
      */
@@ -59,19 +62,20 @@ class WebContext extends DefaultContext
      * @example I am on the proxy "First" edit page
      * @example I am on the proxy "First" editing page
      *
-     * @Given /^I am on the ([^""]+) "([^""]+)" (edit|editing|view|viewing) page?$/
-     * @When /^I go to the ([^""]+) "([^""]+)" (edit|editing|view|viewing) page?$/
+     * @Given /^I am on the ([\w^"]+) "([^""]+)" (edit|editing|view|viewing) page?$/
+     * @When /^I go to the ([\w^"]+) "([^""]+)" (edit|editing|view|viewing) page?$/
      */
     public function iAmOnTheResourceWithGivenNamePage($resource, $name, $action)
     {
         $this->iAmOnTheResourceWithGivenParameterPage($resource, 'name', $name, $action);
     }
 
+
     /**
      * @example I am on the proxy with name "First" editing page
      *
-     * @Given /^I am on the ([^""]*) with ([^""]*) "([^""]*) (edit|editing|view|viewing) page"$/
-     * @Given /^I go to the ([^""]*) with ([^""]*) "([^""]*)" (edit|editing|view|viewing) page$/
+     * @Given /^I am on the ([\w]+) with ([^""]*) "([^""]*) (edit|editing|view|viewing) page"$/
+     * @Given /^I go to the ([\w]+) with ([^""]*) "([^""]*)" (edit|editing|view|viewing) page$/
      */
     public function iAmOnTheResourceWithGivenParameterPage($resource, $property, $value, $action)
     {
@@ -105,7 +109,6 @@ class WebContext extends DefaultContext
         try {
             $this->assertStatusCodeEquals(200);
         } catch (UnsupportedDriverActionException $e) {
-
         }
     }
 
@@ -201,6 +204,32 @@ class WebContext extends DefaultContext
     public function textShouldNotAppearOnThePage($text)
     {
         $this->assertSession()->pageTextNotContains($text);
+    }
+
+    /**
+     * @Then /^Header "([^"]*)" should appear on the page$/
+     */
+    public function headerWithExactTextShouldAppearOnThePage($expectedH1)
+    {
+        $h1 = $this->assertSession()->elementExists('css', 'h1')->getText();
+        if ($h1 != $expectedH1) {
+            throw new \Exception(sprintf('
+                Header not equals expected value,
+                Expected: %s
+                Actual: %s',
+                $expectedH1,
+                $h1
+            ));
+        }
+    }
+
+    /**
+     * @Then /^Header containing "([^"]*)" should appear on the page$/
+     */
+    public function headerContainingSomeTextShouldAppearOnThePage($expectedH1)
+    {
+        $selector = sprintf('h1:contains("%s")', $expectedH1);
+        $this->assertSession()->elementExists('css', $selector);
     }
 
     /**
@@ -358,7 +387,7 @@ class WebContext extends DefaultContext
      */
     public function iWait($time)
     {
-        $this->getSession()->wait($time*1000);
+        $this->getSession()->wait($time * 1000);
     }
 
     /**
@@ -367,6 +396,30 @@ class WebContext extends DefaultContext
     public function iShouldHaveMyAccessDenied()
     {
         $this->assertStatusCodeEquals(403);
+    }
+
+    /**
+     * @Then /^I should see (?:|next )columns (.+)$/
+     */
+    public function iShouldSeeTheFollowingColumns($columns)
+    {
+        if (!is_array($columns)) {
+            $columns = preg_split('/\,/', $columns);
+        }
+
+        foreach ($columns as $column) {
+            $this->iShouldSeeFollowingColumn($column);
+        }
+    }
+
+    /**
+     * @Then /^I should see column (.+)$/
+     */
+    public function iShouldSeeFollowingColumn($column)
+    {
+        $column = trim($column);
+        $selector = sprintf('table tr th:contains("%s")', $column);
+        $this->assertSession()->elementExists('css', $selector);
     }
 
     /**
@@ -430,6 +483,41 @@ class WebContext extends DefaultContext
     }
 
     /**
+     * Checks, that option from select with specified id|name|label|value is selected.
+     *
+     * @Then /^the "(?P<option>(?:[^"]|\\")*)" option from "(?P<select>(?:[^"]|\\")*)" (?:is|should be) selected/
+     * @Then /^the option "(?P<option>(?:[^"]|\\")*)" from "(?P<select>(?:[^"]|\\")*)" (?:is|should be) selected$/
+     * @Then /^"(?P<option>(?:[^"]|\\")*)" from "(?P<select>(?:[^"]|\\")*)" (?:is|should be) selected$/
+     */
+    public function iShouldSeeSelectWithGivenOptionSelected($option, $select)
+    {
+        $selectField = $this->assertSession()->fieldExists(ucfirst($select));
+
+        $selector = sprintf('option:contains("%s")', $option);
+        $optionField = $selectField->find('css', $selector);
+
+        if (null === $optionField) {
+            throw new ElementNotFoundException(
+                $this->getSession(),
+                'select option field',
+                'id|name|label|value',
+                $option
+            );
+        }
+
+        if (!$optionField->isSelected()) {
+            throw new ExpectationException(
+                sprintf(
+                    'Select option field with value|text "%s" is not selected in the select "%s"',
+                    $option,
+                    $select
+                ),
+                $this->getSession()
+            );
+        }
+    }
+
+    /**
      * Assert that given code equals the current one.
      *
      * @param integer $code
@@ -438,5 +526,4 @@ class WebContext extends DefaultContext
     {
         $this->assertSession()->statusCodeEquals($code);
     }
-
 }
