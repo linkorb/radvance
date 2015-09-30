@@ -74,8 +74,8 @@ class WebContext extends DefaultContext
     /**
      * @example I am on the proxy with name "First" editing page
      *
-     * @Given /^I am on the ([\w]+) with ([^""]*) "([^""]*) (edit|editing|view|viewing) page"$/
-     * @Given /^I go to the ([\w]+) with ([^""]*) "([^""]*)" (edit|editing|view|viewing) page$/
+     * @Given /^I am on the ([\w]+) with ([^""]+) "([^""]*)" (edit|editing|view|viewing) page$/
+     * @Given /^I go to the ([\w]+) with ([^""]+) "([^""]*)" (edit|editing|view|viewing) page$/
      */
     public function iAmOnTheResourceWithGivenParameterPage($resource, $property, $value, $action)
     {

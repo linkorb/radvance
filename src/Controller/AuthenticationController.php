@@ -10,7 +10,7 @@ class AuthenticationController
 {
     public function loginAction(Application $app, Request $request)
     {
-        return $app['twig']->render('@BaseTemplates/login.html.twig', array(
+        return $app['twig']->render('@BaseTemplates/auth/login.html.twig', array(
             'error' => $app['security.last_error']($request)
         ));
     }

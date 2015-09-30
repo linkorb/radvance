@@ -108,17 +108,9 @@ namespace LinkORB\Skeleton\Repository;
 use Radvance\Repository\BaseRepository;
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Model\Thing;
-use PDO;
 
 class PdoThingRepository extends BaseRepository implements RepositoryInterface
 {
-    protected $pdo;
-
-    public function __construct(PDO $pdo)
-    {
-        $this->pdo = $pdo;
-    }
-
     public function createEntity()
     {
         return Thing::createNew();

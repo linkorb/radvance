@@ -2,7 +2,8 @@
 
 {% block content %}
     <h1>
-        {% block count %} ({{ entities|length }}){% endblock %}
+        {% block header %}{{ name|capitalize|replace('_', ' ') }} list{% endblock %}
+        {% block count %} &middot; {{ entities|length }} items{% endblock %}
     </h1>
 
     <div class="buttonbox">

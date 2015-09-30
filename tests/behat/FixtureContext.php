@@ -34,7 +34,7 @@ class FixtureContext extends DefaultContext
         $entity = $repository->createEntity();
 
         if (count($additionalData) > 0) {
-            $this->setDataToObject($entity, $additionalData);
+            $entity->loadFromArray($additionalData);
         }
 
         return $repository->persist($entity);
@@ -120,34 +120,4 @@ class FixtureContext extends DefaultContext
         $repository->remove($entity);
     }
 
-    /**
-     * Set data to an object.
-     *
-     * @param $object
-     * @param $data
-     */
-    protected function setDataToObject($object, array $data)
-    {
-        foreach ($data as $property => $value) {
-            if (1 === preg_match('/date/', strtolower($property))) {
-                $value = new \DateTime($value);
-            }
-
-            $propertyName = ucfirst($property);
-            if (false !== strpos(' ', $property)) {
-                $propertyName = '';
-                $propertyParts = explode(' ', $property);
-
-                foreach ($propertyParts as $part) {
-                    $part = ucfirst($part);
-                    $propertyName .= $part;
-                }
-            }
-
-            $method = 'set'.$propertyName;
-            if (method_exists($object, $method)) {
-                $object->{'set'.$propertyName}($value);
-            }
-        }
-    }
 }

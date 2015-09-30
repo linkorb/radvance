@@ -111,12 +111,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         );
 
         $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
+        $this['twig']->addGlobal('app_name', $this['parameters']['name']);
     }
 
     protected function buildMenu($app)
     {
-        return array();
-        
+        if (!$app->getRepositories()) {
+            return array();
+        }
+
         return array_map(function($repository) use ($app) {
             $name = $repository->getTable();
 

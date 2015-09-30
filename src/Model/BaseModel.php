@@ -52,6 +52,72 @@ abstract class BaseModel
         return $this;
     }
 
+    protected function camelCaseToUnderscored($name)
+    {
+        return strtolower(preg_replace('/([A-Z])/', '_$1', lcfirst($name)));
+    }
+
+    protected function underscoredTocamelCase($string, $capitalizeFirstCharacter = false)
+    {
+        $str = str_replace(' ', '', ucwords(preg_replace('/\_/', ' ', $string)));
+
+        if (!$capitalizeFirstCharacter) {
+            $str[0] = strtolower($str[0]);
+        }
+
+        return $str;
+    }
+
+    /**
+     * Magic getter
+     *
+     * @param  mixed $name
+     * @return mixed
+     */
+    public function __get($propertyName)
+    {
+        $propertyName = $this->underscoredTocamelCase($propertyName);
+
+        if (!property_exists($this, $propertyName)) {
+            throw new BadMethodCallException(
+                sprintf(
+                    'Entity %s does not have a property named %s',
+                    get_class($this),
+                    $propertyName
+                )
+            );
+        }
+
+        $getter = sprintf('get%s', ucfirst($propertyName));
+
+        return $this->$getter();
+    }
+
+    /**
+     * Magic getter
+     *
+     * @param  mixed $name
+     * @return mixed
+     */
+    public function __set($propertyName, $propertyValue)
+    {
+        $propertyName = $this->underscoredTocamelCase($propertyName);
+
+        if (!property_exists($this, $propertyName)) {
+            throw new BadMethodCallException(
+                sprintf(
+                    'Entity %s does not have a property named %s',
+                    get_class($this),
+                    $propertyName
+                )
+            );
+        }
+
+        $setter = sprintf('set%s', ucfirst($propertyName));
+
+        return $this->$setter($propertyValue);
+    }
+
     /**
      * Magic getters/setters
      *
@@ -61,6 +127,15 @@ abstract class BaseModel
      */
     public function __call($name, $arguments)
     {
+        if (property_exists($this, $name)) {
+            // if (empty($arguments)) {
+                return $this->$name;
+            // } else {
+            //     $this->$name = $arguments[0];
+            //     return $this;
+            // }
+        }
+
         if (!preg_match('/^(get|set)(.+)$/', $name, $matchesArray)) {
             throw new BadMethodCallException(
                 sprintf(
@@ -72,7 +147,7 @@ abstract class BaseModel
         }
 
         // CamelCase to underscored
-        $propertyName = strtolower(preg_replace('/([A-Z])/', '_$1', lcfirst($matchesArray[2])));
+        $propertyName = $this->camelCaseToUnderscored($matchesArray[2]);
 
         if (!property_exists($this, $propertyName)) {
             throw new BadMethodCallException(
