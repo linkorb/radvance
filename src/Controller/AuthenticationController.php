@@ -14,4 +14,12 @@ class AuthenticationController
             'error' => $app['security.last_error']($request)
         ));
     }
+
+    public function logoutAction(Application $app, Request $request)
+    {
+        $app['session']->start();
+        $app['session']->invalidate();
+
+        return $app->redirect('/');
+    }
 }
