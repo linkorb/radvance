@@ -17,7 +17,16 @@ abstract class BaseModel
      */
     public function toArray()
     {
-        return get_object_vars($this);
+        $fields = get_object_vars($this);
+
+        $result = array();
+        foreach ($fields as $key => $value) {
+            $propertyName = $this->underscoredTocamelCase($key);
+            $getter = sprintf('get%s', ucfirst($propertyName));
+            $result[$key] = $this->$getter($value);
+        }
+
+        return $result;
     }
 
     public function __toString()
