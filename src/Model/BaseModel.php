@@ -43,7 +43,8 @@ abstract class BaseModel
                 continue;
             }
 
-            $setter = sprintf('set%s', $key);
+            $propertyName = $this->underscoredTocamelCase($key);
+            $setter = sprintf('set%s', ucfirst($propertyName));
             $this->$setter($value);
         }
 
@@ -74,7 +75,7 @@ abstract class BaseModel
      */
     public function __get($propertyName)
     {
-        $propertyName = $this->underscoredTocamelCase($propertyName);
+        $propertyName = $this->camelCaseToUnderscored($propertyName);
 
         if (!property_exists($this, $propertyName)) {
             throw new BadMethodCallException(
@@ -86,6 +87,7 @@ abstract class BaseModel
             );
         }
 
+        $propertyName = $this->underscoredTocamelCase($propertyName);
         $getter = sprintf('get%s', ucfirst($propertyName));
 
         return $this->$getter();
@@ -99,7 +101,7 @@ abstract class BaseModel
      */
     public function __set($propertyName, $propertyValue)
     {
-        $propertyName = $this->underscoredTocamelCase($propertyName);
+        $propertyName = $this->camelCaseToUnderscored($propertyName);
 
         if (!property_exists($this, $propertyName)) {
             throw new BadMethodCallException(
@@ -111,6 +113,7 @@ abstract class BaseModel
             );
         }
 
+        $propertyName = $this->underscoredTocamelCase($propertyName);
         $setter = sprintf('set%s', ucfirst($propertyName));
 
         return $this->$setter($propertyValue);
