@@ -128,14 +128,28 @@ abstract class BaseRepository
             );
             $sql = $this->buildUpdateSql($fields, $where);
             $statement = $this->pdo->prepare($sql);
-            $res = $statement->execute($fields + $where);
+            $res = $statement->execute($this->prepareFieldsValues($fields + $where));
         } else {
             $sql = $this->buildInsertSql($fields);
-            $this->pdo->prepare($sql)->execute($fields);
+            $this->pdo->prepare($sql)->execute($this->prepareFieldsValues($fields));
             $entity->setId($this->pdo->lastInsertId());
         }
 
         return true;
+    }
+
+    /**
+     * @param  array $fields
+     * @return array
+     */
+    protected function prepareFieldsValues($fields)
+    {
+        return array_map(function($value){
+            if ($value instanceof \DateTime) {
+                return $value->format('Y-m-d H:i:s');
+            }
+            return $value;
+        }, $fields);
     }
 
     /**
