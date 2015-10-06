@@ -36,7 +36,7 @@ class BaseController
         return $this->model_name;
     }
 
-    protected function addDefaultParameters($app, $parameters)
+    protected function addDefaultParameters($app, $parameters = array())
     {
         $parameters['name'] = $this->getModelName();
 
@@ -47,7 +47,7 @@ class BaseController
      * @param  array $parameters
      * @return Response
      */
-    public function renderIndex(Application $app, $parameters)
+    public function renderIndex(Application $app, $parameters = array())
     {
         $parameters = $this->addDefaultParameters($app, $parameters);
 
@@ -61,7 +61,7 @@ class BaseController
      * @param  array $parameters
      * @return Response
      */
-    public function renderEdit(Application $app, $parameters)
+    public function renderEdit(Application $app, $parameters = array())
     {
         $parameters = $this->addDefaultParameters($app, $parameters);
 
@@ -75,7 +75,7 @@ class BaseController
      * @param  array $parameters
      * @return Response
      */
-    public function renderView(Application $app, $parameters)
+    public function renderView(Application $app, $parameters = array())
     {
         $parameters = $this->addDefaultParameters($app, $parameters);
 
