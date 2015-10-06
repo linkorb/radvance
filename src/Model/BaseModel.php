@@ -34,16 +34,14 @@ abstract class BaseModel
      */
     public function loadFromArray($data, $allowed_keys = null)
     {
-        // $data = (array)$data;
-
-        // if (is_null($allowed_keys)) {
-        //     $allowed_keys = array_keys($data);
-        // }
+        if (is_null($allowed_keys)) {
+            $allowed_keys = array_keys($data);
+        }
 
         foreach ($data as $key => $value) {
-            // if (!in_array($key, $allowed_keys)) {
-            //     continue;
-            // }
+            if (!in_array($key, $allowed_keys)) {
+                continue;
+            }
 
             $setter = sprintf('set%s', $key);
             $this->$setter($value);
