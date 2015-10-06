@@ -18,6 +18,7 @@
     {% block form %}
         {{ form_start(form) }}
             <div class="buttonbox">
+            {% block buttons_default %}
                 <a href="{{ path(name ~ '_index') }}" class="btn btn-default" role="button">
                     <i class="fa fa-arrow-left"></i>
                     Back
@@ -44,6 +45,7 @@
                         Delete
                     </a>
                 {% endif %}
+            {% endblock %}
             </div>
 
             {{ form_widget(form) }}

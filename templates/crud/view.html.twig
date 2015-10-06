@@ -6,6 +6,7 @@
     </h1>
 
     <div class="buttonbox">
+    {% block buttons_default %}
         <a href="{{ path(name ~ '_index') }}" class="btn btn-default" role="button">
             <i class="fa fa-arrow-left"></i>
             Back
@@ -23,6 +24,7 @@
             <i class="fa fa-trash"></i>
             Delete
         </a>
+    {% endblock %}
     </div>
 
     {% block view %}
