@@ -17,6 +17,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Parser as YamlParser;
 
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use RuntimeException;
 use PDO;
 
@@ -189,6 +190,18 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             }
         }
         throw new RuntimeException('Cannot find any security provider');
+    }
+
+    public function isGranted($attributes, $object = null)
+    {
+        return $this['security.authorization_checker']->isGranted($attributes, $object);
+    }
+
+    public function denyAccessUnlessGranted($attributes, $object = null, $message = 'Access Denied.')
+    {
+        if (!$this->isGranted($attributes, $object)) {
+            throw new AccessDeniedException($message);
+        }
     }
 
     public function addFlash($type, $message)
