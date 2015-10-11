@@ -83,6 +83,7 @@ abstract class BaseRepository
             $this->getTable(),
             $this->buildKeyValuePairs($where, ' and ')
         ));
+        $where = $this->flattenValues($where);
         $statement->execute($where);
         return $this->rowToObject($statement->fetch(PDO::FETCH_ASSOC));
     }
@@ -110,6 +111,7 @@ abstract class BaseRepository
             $this->getTable(),
             $this->buildKeyValuePairs($where, ' and ')
         ));
+        $where = $this->flattenValues($where);
         $statement->execute($where);
         return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
     }
@@ -227,9 +229,32 @@ abstract class BaseRepository
      */
     protected function buildKeyValuePairs($where, $delimiter)
     {
-        return implode(array_map(function ($field) {
+        return implode(array_map(function ($field, $value) {
+            if (is_array($value)) {
+                # Transform [field=>[0=>a,1=>b,2=>c]] to 'field in (:field_0, :field_1, :field_2)'
+                return sprintf('`%s` in (%s)', $field, implode(array_map(function($index) use($field){
+                    return sprintf(":%s_%s", $field, $index);
+                }, array_keys($value)), ', '));
+            }
             return sprintf('`%s`=:%s', $field, $field);
-        }, array_keys($where)), $delimiter);
+        }, array_keys($where), $where), $delimiter);
+    }
+
+    protected function flattenValues($fields)
+    {
+        $result = array();
+        array_walk($fields, function($value, $field) use(&$result){
+            if (is_array($value)) {
+                # Transform [field=>[0=>a,1=>b,2=>c]] to [field_0=>a, field_1=>b, field_2=>c)
+                foreach ($value as $index=>$index_value) {
+                    $index_key = sprintf("%s_%s", $field, $index);
+                    $result[$index_key] = $index_value;
+                }
+            } else {
+                $result[$field] = $value;
+            }
+        });
+        return $result;
     }
 
     /**
