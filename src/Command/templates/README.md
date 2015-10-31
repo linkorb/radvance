@@ -1,0 +1,4 @@
+$$PROJECTNAME$$
+======
+
+NS: $$NAMESPACE$$
