@@ -30,4 +30,7 @@ $application = new Application('Radvance', '0.0.1');
 $application->setCatchExceptions(true);
 $application->add(new \Radvance\Command\GenerateProjectCommand());
 $application->add(new \Radvance\Command\GenerateControllerCommand());
+$application->add(new \Radvance\Command\GenerateModelCommand());
+$application->add(new \Radvance\Command\GenerateRepositoryCommand());
+$application->add(new \Radvance\Command\GenerateCrudCommand());
 $application->run();

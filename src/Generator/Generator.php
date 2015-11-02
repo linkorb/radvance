@@ -48,7 +48,6 @@ class Generator
         $data = array();
         $data['CLASS_PREFIX'] = $prefix;
         
-        $this->ensureDirectory($this->appConfig->getCodePath() . '');
         $this->ensureDirectory($this->appConfig->getCodePath() . '/Controller');
         $this->ensureFile(
             $this->appConfig->getCodePath() . '/Controller/' . $prefix . 'Controller.php',
@@ -56,6 +55,34 @@ class Generator
             $data
         );
         
+    }
+
+
+    public function generateModel($prefix)
+    {
+        $data = array();
+        $data['CLASS_PREFIX'] = $prefix;
+        
+        $this->ensureDirectory($this->appConfig->getCodePath() . '/Model');
+        $this->ensureFile(
+            $this->appConfig->getCodePath() . '/Model/' . $prefix . '.php',
+            $this->appConfig->getCodePath() . '/Model/Example.php',
+            $data
+        );
+    }
+    
+
+    public function generateRepository($prefix)
+    {
+        $data = array();
+        $data['CLASS_PREFIX'] = $prefix;
+        
+        $this->ensureDirectory($this->appConfig->getCodePath() . '/Repository');
+        $this->ensureFile(
+            $this->appConfig->getCodePath() . '/Repository/Pdo' . $prefix . 'Repository.php',
+            $this->appConfig->getCodePath() . '/Repository/PdoExampleRepository.php',
+            $data
+        );
     }
     
     private function ensureDirectory($path)

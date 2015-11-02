@@ -1,12 +1,12 @@
 <?php
 
-namespace LinkORB\Proxytect\Repository;
+namespace $$NAMESPACE$$\Repository;
 
 use Radvance\Repository\BaseRepository;
 use Radvance\Repository\RepositoryInterface;
-use LinkORB\Proxytect\Model\Proxy;
+use $$NAMESPACE$$\Model\$$CLASS_PREFIX$$;
 
-class PdoProxyRepository extends BaseRepository implements RepositoryInterface
+class Pdo$$CLASS_PREFIX$$Repository extends BaseRepository implements RepositoryInterface
 {
     public function createEntity()
     {

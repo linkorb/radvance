@@ -6,7 +6,7 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Radvance\Controller\BaseController;
-use $$NAMESPACE$$\Model\ExampleModel;
+use $$NAMESPACE$$\Model\$$CLASS_PREFIX$$;
 
 class $$CLASS_PREFIX$$Controller extends BaseController
 {
