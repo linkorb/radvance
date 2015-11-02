@@ -2,8 +2,18 @@
 
 namespace Radvance;
 
+use RuntimeException;
+
 class AppConfig
 {
+    public function __construct($rootPath)
+    {
+        $this->rootPath = realpath($rootPath);
+        if (!file_exists($this->rootPath)) {
+            throw new RuntimeException("Rootpath does not exist: " . $rootPath);
+        }
+    }
+    
     private $ns;
     
     public function getNameSpace()
@@ -30,16 +40,39 @@ class AppConfig
         return $this;
     }
     
-    private $codePath;
+    private $rootPath;
     
+    public function getRootPath()
+    {
+        return $this->rootPath;
+    }
+    
+    public function setRootPath($rootPath)
+    {
+        $this->rootPath = $rootPath;
+        return $this;
+    }
+    
+    private $webPath = 'web';
+    
+    public function getWebPath()
+    {
+        return $this->webPath;
+    }
+    
+    private $codePath = 'src';
+
     public function getCodePath()
     {
         return $this->codePath;
     }
-    
-    public function setCodePath($codePath)
+
+    private $appPath = 'app';
+
+    public function getAppPath()
     {
-        $this->codePath = $codePath;
-        return $this;
+        return $this->appPath;
     }
+    
+    
 }
