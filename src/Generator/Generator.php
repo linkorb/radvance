@@ -19,13 +19,17 @@ class Generator
         
     }
     
-    public function projectInit()
+    public function generateProject()
     {
-        $this->ensureDirectory($this->appConfig->getAppPath() . '/');
+        $this->ensureDirectory($this->appConfig->getAppPath() . '');
         $this->ensureDirectory($this->appConfig->getAppPath() . '/config');
         $this->ensureDirectory($this->appConfig->getAppPath() . '/config/routes');
-        $this->ensureDirectory($this->appConfig->getCodePath() . '/');
-        $this->ensureDirectory($this->appConfig->getWebPath() . '/');
+        $this->ensureDirectory($this->appConfig->getCodePath() . '');
+        $this->ensureDirectory($this->appConfig->getCodePath() . '/Model');
+        $this->ensureDirectory($this->appConfig->getCodePath() . '/Repository');
+        $this->ensureDirectory($this->appConfig->getCodePath() . '/Controller');
+        $this->ensureDirectory($this->appConfig->getWebPath() . '');
+        
         $this->ensureFile('README.md');
         $this->ensureFile('.gitignore');
         $this->ensureFile($this->appConfig->getWebPath() . '/index.php');
@@ -34,6 +38,24 @@ class Generator
         $this->ensureFile($this->appConfig->getAppPath() . '/schema.xml');
         $this->ensureFile($this->appConfig->getAppPath() . '/config/parameters.yml.dist');
         $this->ensureFile($this->appConfig->getAppPath() . '/config/routes.yml');
+    }
+    
+    public function generateController($prefix)
+    {
+        if (substr($prefix, -10) == 'Controller') {
+            throw new RuntimeException("Please only pass a classname prefix, excluding the `Controller` postfix");
+        }
+        $data = array();
+        $data['CLASS_PREFIX'] = $prefix;
+        
+        $this->ensureDirectory($this->appConfig->getCodePath() . '');
+        $this->ensureDirectory($this->appConfig->getCodePath() . '/Controller');
+        $this->ensureFile(
+            $this->appConfig->getCodePath() . '/Controller/' . $prefix . 'Controller.php',
+            $this->appConfig->getCodePath() . '/Controller/ExampleController.php',
+            $data
+        );
+        
     }
     
     private function ensureDirectory($path)
@@ -45,21 +67,29 @@ class Generator
         }
     }
     
-    private function ensureFile($path)
+    private function ensureFile($outputPath, $templatePath = null, $data = array())
     {
-        $fullPath = $this->appConfig->getRootPath() . '/' . $path;
+        if (!$templatePath) {
+            $templatePath = $outputPath;
+        }
+        $fullOutputPath = $this->appConfig->getRootPath() . '/' . $outputPath;
         
-        if (!file_exists($this->templatePath . '/' . $path)) {
-            throw new RuntimeException("Missing template for: " . $path . ' (' . $this->templatePath .'::' . $path . ')');
+        if (!file_exists($this->templatePath . '/' . $templatePath)) {
+            throw new RuntimeException("Missing template for: " . $templatePath . ' (' . $this->templatePath .'::' . $templatePath . ')');
         }
 
-        if (!file_exists($fullPath)) {
-            $this->output->writeln('- <fg=white>Ensure file: ' . $path . ' (create)</fg=white>');
-            $data = file_get_contents($this->templatePath . '/' . $path);
-            $data = str_replace('$$NAMESPACE$$', $this->appConfig->getNamespace(), $data);
-            file_put_contents($fullPath, $data);
+        if (!file_exists($fullOutputPath)) {
+            $this->output->writeln('- <fg=white>Ensure file: ' . $outputPath . ' (create)</fg=white>');
+            $content = file_get_contents($this->templatePath . '/' . $templatePath);
+            
+            $data['NAMESPACE'] = $this->appConfig->getNamespace();
+            foreach ($data as $key => $value) {
+                echo "CHANGING $key to $value\n";
+                $content = str_replace('$$' . $key . '$$', $value, $content);
+            }
+            file_put_contents($fullOutputPath, $content);
         } else {
-            $this->output->writeln('- <fg=green>Ensure file: ' . $path . ' (skip)</fg=green>');
+            $this->output->writeln('- <fg=green>Ensure file: ' . $outputPath . ' (skip)</fg=green>');
         }
     }
 }

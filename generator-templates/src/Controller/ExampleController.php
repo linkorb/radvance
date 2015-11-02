@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Radvance\Controller\BaseController;
 use $$NAMESPACE$$\Model\ExampleModel;
 
-class $$CLASSPREFIX$$Controller extends BaseController
+class $$CLASS_PREFIX$$Controller extends BaseController
 {
     protected function getEditForm(Application $app, Request $request, $id = null)
     {

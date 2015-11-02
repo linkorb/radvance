@@ -24,16 +24,11 @@ class GenerateProjectCommand extends AbstractGeneratorCommand
         $this
             ->setName('project:init')
             ->setDescription('(re-)initialize a project directory')
-            ->addArgument(
-                'projectPath',
-                InputArgument::REQUIRED,
-                'Project path'
-            )
             ->addOption(
-                'format',
+                'projectPath',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'The output format: array, JSON, or print'
+                'Path to the project root'
             )
         ;
     }

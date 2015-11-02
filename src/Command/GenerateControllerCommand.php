@@ -42,6 +42,8 @@ class GenerateControllerCommand extends AbstractGeneratorCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
-        $this->generator->projectInit();
+        $prefix = $input->getArgument('controllerPrefix');
+
+        $this->generator->generateController($prefix);
     }
 }
