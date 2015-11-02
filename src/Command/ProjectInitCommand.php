@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
+use Radvance\AppConfigLoader\YamlAppConfigLoader;
 use RuntimeException;
 
 class ProjectInitCommand extends Command
@@ -15,7 +16,8 @@ class ProjectInitCommand extends Command
     protected $output;
     protected $projectPath;
     protected $templatePath;
-    protected $projectNameSpace = 'Test\\Stuff\\';
+    protected $appConfig;
+    
     /**
      * {@inheritdoc}
      */
@@ -52,6 +54,13 @@ class ProjectInitCommand extends Command
         if (!$this->projectPath || !file_exists($this->projectPath)) {
             throw new RuntimeException("Path does not exist: " . $path);
         }
+        
+        $appConfigLoader = new YamlAppConfigLoader();
+        $filename = $path . '/radvance.yml';
+        if (!file_exists($filename)) {
+            throw new RuntimeException("File not found: $filename");
+        }
+        $this->appConfig = $appConfigLoader->loadFile($filename);
         
         $this->templatePath = __DIR__ . '/templates';
         
@@ -94,7 +103,7 @@ class ProjectInitCommand extends Command
         if (!file_exists($fullPath)) {
             $this->output->writeln('- <fg=white>Ensure file: ' . $path . ' (create)</fg=white>');
             $data = file_get_contents($this->templatePath . '/' . $path);
-            $data = str_replace('$$NAMESPACE$$', $this->projectNameSpace, $data);
+            $data = str_replace('$$NAMESPACE$$', $this->appConfig->getNamespace(), $data);
             file_put_contents($fullPath, $data);
         } else {
             $this->output->writeln('- <fg=green>Ensure file: ' . $path . ' (skip)</fg=green>');
