@@ -12,7 +12,7 @@ use Radvance\AppConfigLoader\YamlAppConfigLoader;
 use Radvance\Generator\Generator;
 use RuntimeException;
 
-class ProjectInitCommand extends Command
+class GenerateProjectCommand extends AbstractGeneratorCommand
 {
     /**
      * {@inheritdoc}
@@ -41,31 +41,10 @@ class ProjectInitCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    final protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $path = $input->getArgument('projectPath');
-        $this->projectPath = realpath($path);
-        $output->writeLn("(Re)Initializing Project Path: " . $this->projectPath);
-        
-        if (!$this->projectPath || !file_exists($this->projectPath)) {
-            throw new RuntimeException("Path does not exist: " . $path);
-        }
-
-        $filename = $path . '/radvance.yml';
-        if (!file_exists($filename)) {
-            throw new RuntimeException("File not found: $filename");
-        }
-        
-        $appConfigLoader = new YamlAppConfigLoader();
-        $appConfig = $appConfigLoader->loadFile($filename);
-
-        $templatePath = __DIR__ . '/../../generator-templates';
-        $this->generator = new Generator($appConfig, $output, $templatePath);
+        parent::execute($input, $output);
         $this->generator->projectInit();
-        
-        //$this->ensureFile('composer.json', $output);
-        
-        //$this->format = $input->getOption('format');
     }
     
 

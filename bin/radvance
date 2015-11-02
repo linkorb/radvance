@@ -28,5 +28,6 @@ use Symfony\Component\Console\Application;
 
 $application = new Application('Radvance', '0.0.1');
 $application->setCatchExceptions(true);
-$application->add(new \Radvance\Command\ProjectInitCommand());
+$application->add(new \Radvance\Command\GenerateProjectCommand());
+$application->add(new \Radvance\Command\GenerateControllerCommand());
 $application->run();
