@@ -84,6 +84,34 @@ class Generator
             $data
         );
     }
+
+
+    public function generateTemplates($prefix)
+    {
+        $data = array();
+        $data['CLASS_PREFIX'] = $prefix;
+        
+        $this->ensureDirectory($this->appConfig->getTemplatePath() . '');
+        $this->ensureDirectory($this->appConfig->getTemplatePath() . '/' . $prefix);
+
+        $this->ensureFile(
+            $this->appConfig->getTemplatePath() . '/' . $prefix . '/index.html.twig',
+            $this->appConfig->getTemplatePath() . '/Example/index.html.twig',
+            $data
+        );
+
+        $this->ensureFile(
+            $this->appConfig->getTemplatePath() . '/' . $prefix . '/view.html.twig',
+            $this->appConfig->getTemplatePath() . '/Example/view.html.twig',
+            $data
+        );
+
+        $this->ensureFile(
+            $this->appConfig->getTemplatePath() . '/' . $prefix . '/edit.html.twig',
+            $this->appConfig->getTemplatePath() . '/Example/edit.html.twig',
+            $data
+        );
+    }
     
     private function ensureDirectory($path)
     {
@@ -111,7 +139,7 @@ class Generator
             
             $data['NAMESPACE'] = $this->appConfig->getNamespace();
             foreach ($data as $key => $value) {
-                echo "CHANGING $key to $value\n";
+                echo "    * $key=\"$value\"\n";
                 $content = str_replace('$$' . $key . '$$', $value, $content);
             }
             file_put_contents($fullOutputPath, $content);

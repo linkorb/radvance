@@ -74,5 +74,11 @@ class AppConfig
         return $this->appPath;
     }
     
+    private $templatePath = 'templates';
+
+    public function getTemplatePath()
+    {
+        return $this->templatePath;
+    }
     
 }
