@@ -1,0 +1,11 @@
+debug: false
+baseurl: /
+pdo: mysql://username:password@localhost/exampledb
+name: example-app
+
+security:
+    providers:
+        UserBase:
+            url: http://www.example.web/id/api/v1
+            username: my_username
+            password: my_password

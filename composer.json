@@ -33,6 +33,7 @@
         "linkorb/haigha": "~2.1",
         "linkorb/conventions-checker": "~1.1"
     },
+    "bin": ["bin/radvance"],
     "extra": {
         "grumphp": {
             "config-default-path": "vendor/linkorb/conventions-checker/config/lib/grumphp.yml"
