@@ -330,6 +330,7 @@ abstract class DefaultContext extends RawMinkContext implements Context
             $action = $this->actions[$action];
         }
 
+        $resource = strtolower($resource);
         $resource = str_replace(' ', '_', $resource);
         return sprintf('%s_%s', $resource, $action);
     }

@@ -44,7 +44,7 @@ abstract class BaseModel
     public function loadFromArray($data, $allowed_keys = null)
     {
         if (is_null($allowed_keys)) {
-            $allowed_keys = array_keys($data);
+            $allowed_keys = array_keys((array)$data);
         }
 
         foreach ($data as $key => $value) {
