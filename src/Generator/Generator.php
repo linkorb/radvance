@@ -29,15 +29,28 @@ class Generator
         $this->ensureDirectory($this->appConfig->getCodePath() . '/Repository');
         $this->ensureDirectory($this->appConfig->getCodePath() . '/Controller');
         $this->ensureDirectory($this->appConfig->getWebPath() . '');
+        $this->ensureDirectory($this->appConfig->getTemplatesPath() . '');
+        $this->ensureDirectory($this->appConfig->getThemesPath() . '');
+        $this->ensureDirectory($this->appConfig->getThemesPath() . '/default');
         
+        // Project root
         $this->ensureFile('README.md');
         $this->ensureFile('.gitignore');
+        
+        // Web root
         $this->ensureFile($this->appConfig->getWebPath() . '/index.php');
         $this->ensureFile($this->appConfig->getWebPath() . '/.htaccess');
+        
+        // App directory
         $this->ensureFile($this->appConfig->getAppPath() . '/bootstrap.php');
         $this->ensureFile($this->appConfig->getAppPath() . '/schema.xml');
         $this->ensureFile($this->appConfig->getAppPath() . '/config/parameters.yml.dist');
         $this->ensureFile($this->appConfig->getAppPath() . '/config/routes.yml');
+
+        $this->ensureFile($this->appConfig->getThemesPath() . '/default/layout.html.twig');
+        $this->ensureFile($this->appConfig->getThemesPath() . '/default/style.less');
+
+        $this->ensureFile($this->appConfig->getTemplatesPath() . '/frontpage.html.twig');
     }
     
     public function generateController($prefix)

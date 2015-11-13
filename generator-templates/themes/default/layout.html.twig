@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+
+    {% block meta %}
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0" />
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <meta name="description" content="" />
+    {% endblock %}
+
+    <title>{% block title %}{{ app_name|default('Radvance')|capitalize }}{% endblock %}</title>
+
+    {% block stylesheets %}
+        {% block stylesheets_default %}
+            <link rel="stylesheet" href="{{ path('assets', { 'postfix': 'bower/bootstrap/dist/css/bootstrap.min.css' }) }}" />
+            <link rel="stylesheet" href="{{ path('assets', { 'postfix': 'bower/font-awesome/css/font-awesome.min.css' }) }}" />
+            <link rel="stylesheet" href="{{ path('assets', { 'postfix': 'bower/bootswatch-dist/css/bootstrap.min.css' }) }}" />
+        {% endblock %}
+
+        {% block stylesheets_custom %}
+            <link rel="stylesheet" href="{{ path('assets', { 'postfix': 'style.css' }) }}" />
+        {% endblock %}
+    {% endblock %}
+</head>
+
+<body>
+    {% block menu %}
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ path('frontpage' ) }}">{{ app_name|default('Radvance')|capitalize }}</a>
+            </div>
+
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    {% block menu_default %}
+                        {% for page in main_menu|default([]) %}
+                            <li><a href="{{ page['href'] }}">{{ page['name'] }}</a></li>
+                        {% endfor %}
+                    {% endblock %}
+
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {% block menu_right %}
+                        {% if current_user is defined %}
+                            <li><a href="{{ path('frontpage') }}">{{ current_user.getDisplayName }}</a></li>
+                            <li><a href="{{ path('logout') }}">Logout</a></li>
+                        {% else %}
+                            <li><a href="{{ path('login') }}">Login</a></li>
+                        {% endif %}
+                    {% endblock menu_right %}
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </nav>
+    {% endblock menu %}
+
+    {% block container %}
+        <div class="container" id="content">
+            {% for flashMessageType, flashMessage in app.session.flashbag.get('error') %}
+                <div class="alert alert-dismissible alert-{{ flashMessageType == 'error' ? 'danger' : flashMessageType }}" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    {{ flashMessage }}
+                </div>
+            {% endfor %}
+            
+            {% block content_wrapper %}
+                {% block content %}{% endblock content %}
+            {% endblock content_wrapper %}
+        </div>
+        <!-- /container -->
+    {% endblock container %}
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <img class="linkorbengineering-logo"
+                         src="{{ path('assets', { 'postfix': '/img/linkorbengineering-logo.png' }) }}"/>
+                </div>
+                <div class="col-md-6">
+                    &copy; 2015 LinkORB Engineering
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    {% block scripts %}
+        {% block scripts_default %}
+            <script src="{{ path('assets', { 'postfix': 'bower/jquery/dist/jquery.min.js' }) }}"></script>
+            <script src="{{ path('assets', { 'postfix': 'bower/bootstrap/dist/js/bootstrap.min.js' }) }}"></script>
+        {% endblock %}
+
+        {% block scripts_custom %}
+            <script src="{{ path('assets', { 'postfix': 'js/app.js' }) }}"></script>
+        {% endblock %}
+    {% endblock %}
+</body>
+</html>

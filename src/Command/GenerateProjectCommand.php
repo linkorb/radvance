@@ -22,7 +22,7 @@ class GenerateProjectCommand extends AbstractGeneratorCommand
         $this->ignoreValidationErrors();
 
         $this
-            ->setName('project:init')
+            ->setName('generate:project')
             ->setDescription('(re-)initialize a project directory')
             ->addOption(
                 'projectPath',
@@ -39,7 +39,7 @@ class GenerateProjectCommand extends AbstractGeneratorCommand
     final protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
-        $this->generator->projectInit();
+        $this->generator->generateProject();
     }
     
 
