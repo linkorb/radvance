@@ -178,6 +178,16 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 //     $dbmanager->getPdo($providerConfig['database'])
                 // );
                 case 'UserBase':
+                    // Sanity checks
+                    if (!$providerConfig['url']) {
+                        throw new RuntimeException("Userbase URL not configured");
+                    }
+                    if (!$providerConfig['username']) {
+                        throw new RuntimeException("Userbase username not configured");
+                    }
+                    if (!$providerConfig['password']) {
+                        throw new RuntimeException("Userbase password not configured");
+                    }
                     return new UserBaseUserProvider(
                         new UserBaseClient(
                             $providerConfig['url'],
