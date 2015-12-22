@@ -34,7 +34,7 @@
 	},
 	"autoload" : {
 		"psr-4" : {
-			"MyProject\\" : "src/"
+			"Some\\Example\\Ns\\" : "src/"
 		}
 	},
 	"autoload-dev" : {
