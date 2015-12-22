@@ -135,7 +135,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     protected function configurePdo()
     {
         if (!isset($this['parameters']['pdo'])) {
-            throw new RuntimeException("Missing required PDO configuration");
+            return;
         }
 
         $url = $this['parameters']['pdo'];
