@@ -1,0 +1,47 @@
+{
+
+	"name" : "example/myproject",
+	"description" : "My Project",
+	"homepage" : "https://github.com/example/myproject",
+	"keywords" : [
+		"myproject"
+	],
+	"type" : "application",
+	"authors" : [{
+			"name" : "LinkORB",
+			"email" : "engineering@linkorb.com",
+			"role" : "Development"
+		}
+	],
+	"require" : {
+		"radvance/radvance" : "dev-master",
+		"silex/silex" : "2.0.x-dev#a3881a5a2fc7e0233307c8240d4adc909a559b49"
+	},
+	"require-dev" : {
+		"behat/behat" : "^3.0",
+		"behat/mink" : "^1.6",
+		"behat/mink-extension" : "^2.0",
+		"behat/mink-goutte-driver" : "^1.1",
+		"dbtk/schema-loader" : "~2.1",
+		"linkorb/haigha" : "~2.2",
+		"linkorb/conventions-checker" : "~1.1",
+		"symfony/validator" : "~2.7"
+	},
+	"extra" : {
+		"grumphp" : {
+			"config-default-path" : "vendor/linkorb/conventions-checker/config/app/grumphp.yml"
+		}
+	},
+	"autoload" : {
+		"psr-4" : {
+			"MyProject\\" : "src/"
+		}
+	},
+	"autoload-dev" : {
+		"psr-4" : {
+			"MyProject\\Tests\\" : "tests/phpunit/",
+			"MyProject\\Behat\\" : "tests/behat/",
+			"MyProject\\Specs\\" : "tests/specs/"
+		}
+    }
+}
