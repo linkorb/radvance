@@ -41,7 +41,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureLogging();
     }
 
-    abstract function getRootPath();
+    abstract public function getRootPath();
 
     public function getTemplatesPath()
     {
@@ -198,7 +198,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     /**
      * Configure repositories
      */
-    protected abstract function configureRepositories();
+    abstract protected function configureRepositories();
 
     /**
      * @param RepositoryInterface $repository
