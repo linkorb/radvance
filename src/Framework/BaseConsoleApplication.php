@@ -14,6 +14,7 @@ use Silex\Provider\MonologServiceProvider;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Parser as YamlParser;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
@@ -58,15 +59,69 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     protected function getParameters()
     {
         $parser = new YamlParser();
+        if (!file_exists($this->getParametersPath())) {
+            throw new RuntimeException(
+                "The parameters config file was not found.
+                Please copy parameters.yml.dist to parameters.yml, and tune it for your purposes."
+            );
+        }
         return $parser->parse(file_get_contents($this->getParametersPath()));
     }
+    
+    protected function postProcessString($string)
+    {
+        $language = new ExpressionLanguage();
+        $language->register(
+            'env',
+            function ($str) {
+                // This implementation is only needed if you want to compile
+                // not needed when simply using the evaluator
+                throw new RuntimeException("The 'env' method is not yet compilable.");
+            },
+            function ($arguments, $str, $required = false) {
+                $res = getenv($str);
 
+                if (!$res && $required) {
+                    throw new RuntimeException("Required environment variable '$str' is not defined");
+                }
+                return $res;
+            }
+        );
+        
+        preg_match_all('~\{\{(.*?)\}\}~', $string, $matches);
+
+        $variables = array();
+        //$variables['hello']='world';
+        
+        foreach ($matches[1] as $match) {
+            $out = $language->evaluate($match, $variables);
+            $string = str_replace('{{' . $match . '}}', $out, $string);
+        }
+        
+        return $string;
+    }
+
+    protected function postProcessParameters(&$parameters)
+    {
+        foreach ($parameters as $key => $value) {
+            if (is_string($value)) {
+                $parameters[$key] = $this->postProcessString($value);
+            }
+            if (is_array($value)) {
+                $parameters[$key] = $this->postProcessParameters($value);
+            }
+        }
+        return $parameters;
+    }
+    
     /**
      * Configure parameters
      */
     protected function configureParameters()
     {
-        $this['parameters'] = $this->getParameters();
+        $parameters = $this->getParameters();
+        $parameters = $this->postProcessParameters($parameters);
+        $this['parameters'] = $parameters;
 
         $this['debug'] = false;
         if (isset($this['parameters']['debug'])) {
