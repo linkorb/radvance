@@ -30,6 +30,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     public function __construct(array $values = array())
     {
         parent::__construct($values);
+        
+        $this['repository'] = new \ArrayObject();
 
         $this->configureParameters();
         $this->configurePdo();
@@ -203,9 +205,6 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
      */
     protected function addRepository(RepositoryInterface $repository)
     {
-        if (!isset($this['repository'])) {
-            $this['repository'] = new \ArrayObject();
-        }
         $name = $repository->getTable();
         $this['repository'][$name] = $repository;
     }
