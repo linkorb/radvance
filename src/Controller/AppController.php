@@ -8,10 +8,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AppController
 {
+
     public function frontpageAction(Application $app, Request $request)
     {
         return new Response($app['twig']->render(
             '@BaseTemplates/frontpage.html.twig'
+        ));
+    }
+
+    public function templateAction(Application $app, Request $request, $template)
+    {
+        return new Response($app['twig']->render(
+            $template
         ));
     }
 }
