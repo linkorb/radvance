@@ -51,6 +51,9 @@ class Generator
         $this->ensureFile($this->appConfig->getThemesPath() . '/default/style.less');
 
         $this->ensureFile($this->appConfig->getTemplatesPath() . '/frontpage.html.twig');
+        
+        // src directory
+        $this->ensureFile($this->appConfig->getCodePath() . '/Application.php');
     }
     
     public function generateController($prefix)

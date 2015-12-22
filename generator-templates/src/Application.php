@@ -17,6 +17,6 @@ class Application extends BaseWebApplication implements FrameworkApplicationInte
     protected function configureRepositories()
     {
         // Add repositories here
-        $this->addRepository(new PdoExampleRepository($this->pdo));
+        // $this->addRepository(new PdoExampleRepository($this->pdo));
     }
 }
