@@ -13,9 +13,13 @@ use Silex\Provider\MonologServiceProvider;
 use UserBase\Client\UserProvider as UserBaseUserProvider;
 use UserBase\Client\Client as UserBaseClient;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Parser as YamlParser;
+use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\Route;
+use Silex\Application as SilexApplication;
 
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use RuntimeException;
@@ -32,9 +36,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     public function __construct(array $values = array())
     {
         parent::__construct($values);
-        $this->configureRoutes();
+        
+        /*
+         * A note about ordering:
+         * security should be configured before the routes
+         * as the routes are evaluated in order (login could be pre-empted by /{something})
+         */
         $this->configureTemplateEngine();
         $this->configureSecurity();
+        $this->configureRoutes();
     }
 
     public function getAssetsPath()
@@ -83,7 +93,18 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this->getRoutesPath()
         ));
         $loader = new YamlFileLoader($locator);
-        $this['routes'] = $loader->load('routes.yml');
+        $newCollection = $loader->load('routes.yml');
+        $orgCollection = $this['routes'];
+        foreach ($newCollection->all() as $name => $route) {
+            //echo $name .'/' . $route->getPath();
+            foreach ($orgCollection->all() as $orgName => $orgRoute) {
+                if ($name == $orgName) {
+                    throw new RuntimeException("Duplicate definition of route: `" . $name . '`. Please remove it from the routes.yml files');
+                }
+            }
+        }
+        
+        $orgCollection->addCollection($newCollection);
     }
 
     private function configureTemplateEngine()
@@ -121,7 +142,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             return array();
         }
 
-        return array_map(function($repository) use ($app) {
+        return array_map(function ($repository) use ($app) {
             $name = $repository->getTable();
 
             return array(
@@ -141,6 +162,30 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $digest = sprintf('\\Symfony\\Component\\Security\\Core\\Encoder\\%s', $security['encoder']);
             $this['security.encoder.digest'] = new $digest(true);
         }
+        
+        $loginPath = isset($security['paths']['login']) ? $security['paths']['login'] : '/login';
+        $checkPath = isset($security['paths']['check']) ? $security['paths']['check'] : '/authentication/login_check';
+        $logoutPath = isset($security['paths']['logout']) ? $security['paths']['logout'] : '/logout';
+        
+        /* Automatically register routes for login, check and logout paths */
+        
+        $collection = new RouteCollection();
+        
+        $route = new Route(
+            $loginPath,
+            array(
+                '_controller' => 'Radvance\Controller\AuthenticationController::loginAction'
+            )
+        );
+        $collection->add('login', $route);
+        
+        $route = new Route(
+            $checkPath,
+            array()
+        );
+        $collection->add('login_check', $route);
+
+        $this['routes']->addCollection($collection);
 
         $this['security.firewalls'] = array(
             'api' => array(
@@ -154,15 +199,31 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'anonymous' => true,
                 'pattern' => '^/',
                 'form' => array(
-                    'login_path' => isset($security['paths']['login']) ? $security['paths']['login'] : '/login',
-                    'check_path' => isset($security['paths']['check']) ? $security['paths']['check'] : '/authentication/login_check'
+                    'login_path' => $loginPath,
+                    'check_path' => $checkPath
                 ),
                 'logout' => array(
-                    'logout_path' => isset($security['paths']['logout']) ? $security['paths']['logout'] : '/logout'
+                    'logout_path' => $logoutPath
                 ),
                 'users' => $this->getUserSecurityProvider(),
             ),
         );
+        
+        $app = $this;
+        $app->before(function (Request $request, SilexApplication $app) {
+            $token = $app['security.token_storage']->getToken();
+            if ($token) {
+                if ($request->getRequestUri()!='/login') {
+                    if ($token->getUser() == 'anon.') {
+                        // visitor is not authenticated
+                    } else {
+                        // visitor is authenticated
+                        $app['current_user'] = $token->getUser();
+                        $app['twig']->addGlobal('current_user', $token->getUser());
+                    }
+                }
+            }
+        });
     }
 
     protected function getUserSecurityProvider()
