@@ -117,7 +117,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             //echo $name .'/' . $route->getPath();
             foreach ($orgCollection->all() as $orgName => $orgRoute) {
                 if ($name == $orgName) {
-                    throw new RuntimeException("Duplicate definition of route: `" . $name . '`. Please remove it from the routes.yml files');
+                    throw new RuntimeException(
+                        "Duplicate definition of route: `" . $name . '`. Please remove it from the routes.yml files'
+                    );
                 }
             }
         }
