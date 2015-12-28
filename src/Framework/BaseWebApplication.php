@@ -151,6 +151,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
         $this['twig']->addGlobal('app_name', $this['parameters']['name']);
+        
+        // Define userbaseUrl in twig templates for login + signup links
+        if (isset($this['userbaseUrl'])) {
+            $this['twig']->addGlobal('userbaseUrl', $this['userbaseUrl']);
+        }
     }
 
     protected function buildMenu($app)
