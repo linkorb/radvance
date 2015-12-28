@@ -36,7 +36,11 @@ class Generator
         // Project root
         $this->ensureFile('README.md');
         $this->ensureFile('.gitignore');
+        $this->ensureFile('.editorconfig');
         
+        $this->ensureFile('.bowerrc');
+        $this->ensureFile('bower.json');
+
         // Web root
         $this->ensureFile($this->appConfig->getWebPath() . '/index.php');
         $this->ensureFile($this->appConfig->getWebPath() . '/.htaccess');
