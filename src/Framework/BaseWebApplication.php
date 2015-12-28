@@ -185,6 +185,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         );
         $collection->add('login_check', $route);
 
+        $route = new Route(
+            $logoutPath,
+            array(
+                '_controller' => 'Radvance\Controller\AuthenticationController::logoutAction'
+            )
+        );
+        $collection->add('logout', $route);
+
+
         $this['routes']->addCollection($collection);
 
         $this['security.firewalls'] = array(
