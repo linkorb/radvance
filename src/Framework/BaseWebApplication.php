@@ -49,6 +49,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureTemplateEngine();
         $this->configureSecurity();
         $this->configureRoutes();
+        $this->configureUrlPreprocessor();
         $this->configureExceptionHandling();
     }
 
@@ -172,6 +173,23 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'name' => ucfirst(preg_replace('/\_/', ' ', $name))
             );
         }, $app->getRepositories()->getArrayCopy());
+    }
+    
+    protected function configureUrlPreprocessor()
+    {
+        $app = $this;
+        $app->before(function (Request $request, SilexApplication $app) {
+            $urlGenerator = $app['url_generator'];
+            $urlGeneratorContext = $urlGenerator->getContext();
+            
+            if ($request->attributes->has('accountName')) {
+                $accountName = $request->attributes->get('accountName');
+                
+                $app['twig']->addGlobal('accountName', $accountName);
+                $app['accountName'] = $accountName;
+                $urlGeneratorContext->setParameter('accountName', $accountName);
+            }
+        });
     }
 
     protected function configureSecurity()
