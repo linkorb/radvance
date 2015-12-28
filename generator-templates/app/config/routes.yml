@@ -2,14 +2,6 @@ frontpage:
     path: /
     defaults:  { _controller: BlogApp\Controller\AppController::frontpageAction }
 
-# Authentication
-login:
-    path: /login
-    defaults:  { _controller: Radvance\Framework\Controller\AuthenticationController::loginAction }
-    
-login_check:
-    path: /authentication/login_check
-    
 assets:
     path: "/.{postfix}"
     requirements:
