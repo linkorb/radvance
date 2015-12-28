@@ -10,6 +10,10 @@ use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\SessionServiceProvider;
 use Silex\Provider\MonologServiceProvider;
 
+use WhoopsSilex\WhoopsServiceProvider;
+use Whoops\Handler\PrettyPageHandler;
+use Radvance\WhoopsHandler\UserWhoopsHandler;
+
 use UserBase\Client\UserProvider as UserBaseUserProvider;
 use UserBase\Client\Client as UserBaseClient;
 
@@ -45,6 +49,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureTemplateEngine();
         $this->configureSecurity();
         $this->configureRoutes();
+        $this->configureExceptionHandling();
     }
 
     public function getAssetsPath()
@@ -85,6 +90,18 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         // Forms
         $this->register(new FormServiceProvider());
+    }
+    
+    protected function configureExceptionHandling()
+    {
+        $this->register(new WhoopsServiceProvider());
+        $whoops = $this['whoops'];
+        $whoops->clearHandlers();
+        if ($this['debug']) {
+            $whoops->pushHandler(new PrettyPageHandler());
+        } else {
+            $whoops->pushHandler(new UserWhoopsHandler($this));
+        }
     }
 
     protected function configureRoutes()
