@@ -26,11 +26,12 @@ use PDO;
 abstract class BaseConsoleApplication extends SilexApplication implements FrameworkApplicationInterface
 {
     protected $pdo;
+    protected $rootPath = null;
 
     public function __construct(array $values = array())
     {
         parent::__construct($values);
-        
+
         $this['repository'] = new \ArrayObject();
 
         $this->configureParameters();
@@ -41,7 +42,19 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureLogging();
     }
 
-    abstract public function getRootPath();
+    // abstract public function getRootPath();
+    public function getRootPath()
+    {
+        if (null === $this->rootPath) {
+            if (method_exists($this, 'setRootPath')) {
+                $this->rootPath = $this->setRootPath();
+            } else {
+                $this->rootPath = realpath(__DIR__.'/../../../../..');
+            }
+        }
+
+        return $this->rootPath;
+    }
 
     public function getTemplatesPath()
     {
@@ -58,6 +71,11 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         return sprintf('%s/app/logs/development.log', $this->getRootPath());
     }
 
+    protected function getRepositoryPath()
+    {
+        return sprintf('%s/src/Repository', $this->getRootPath());
+    }
+
     protected function getParameters()
     {
         $parser = new YamlParser();
@@ -69,7 +87,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         }
         return $parser->parse(file_get_contents($this->getParametersPath()));
     }
-    
+
     protected function postProcessString($string)
     {
         $language = new ExpressionLanguage();
@@ -89,17 +107,17 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 return $res;
             }
         );
-        
+
         preg_match_all('~\{\{(.*?)\}\}~', $string, $matches);
 
         $variables = array();
         //$variables['hello']='world';
-        
+
         foreach ($matches[1] as $match) {
             $out = $language->evaluate($match, $variables);
             $string = str_replace('{{' . $match . '}}', $out, $string);
         }
-        
+
         return $string;
     }
 
@@ -115,7 +133,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         }
         return $parameters;
     }
-    
+
     /**
      * Configure parameters
      */
@@ -198,7 +216,22 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     /**
      * Configure repositories
      */
-    abstract protected function configureRepositories();
+    // abstract protected function configureRepositories();
+    public function configureRepositories()
+    {
+        if (!$this->pdo) {
+            throw new RuntimeException("PDO not configured yet");
+        }
+
+        $dir = $this->getRepositoryPath();
+        foreach (glob($dir.'/*Repository.php') as $filename) {
+            $className = '\\'.$this['parameters']['namespace'].'\\Repository\\'.basename($filename, '.php');
+            // only load the ones implements Radvance RepositoryInterface
+            if (in_array('Radvance\\Repository\\RepositoryInterface', class_implements($className))) {
+                $this->addRepository(new $className($this->pdo));
+            }
+        }
+    }
 
     /**
      * @param RepositoryInterface $repository
