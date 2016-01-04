@@ -47,7 +47,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     {
         if (null === $this->rootPath) {
             if (method_exists($this, 'setRootPath')) {
-                $this->rootPath = $this->setRootPath();
+                $this->rootPath = realpath($this->setRootPath());
             } else {
                 $this->rootPath = realpath(__DIR__.'/../../../../..');
             }
@@ -219,13 +219,20 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     // abstract protected function configureRepositories();
     public function configureRepositories()
     {
+        $this->configurePdoRepositories();
+        // TODO: support other types of repositories
+    }
+
+    private function configurePdoRepositories()
+    {
         if (!$this->pdo) {
             throw new RuntimeException("PDO not configured yet");
         }
+        $ns = (new \ReflectionObject($this))->getNamespaceName();
 
         $dir = $this->getRepositoryPath();
-        foreach (glob($dir.'/*Repository.php') as $filename) {
-            $className = '\\'.$this['parameters']['namespace'].'\\Repository\\'.basename($filename, '.php');
+        foreach (glob($dir.'/Pdo*Repository.php') as $filename) {
+            $className = $ns.'\\Repository\\'.basename($filename, '.php');
             // only load the ones implements Radvance RepositoryInterface
             if (in_array('Radvance\\Repository\\RepositoryInterface', class_implements($className))) {
                 $this->addRepository(new $className($this->pdo));
