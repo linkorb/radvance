@@ -1,0 +1,19 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% block content_wrapper %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Libraries</h1>
+                <ul>
+                {% for lib in libraries %}
+                    <li>{{ lib.getAccountName() }} / <a href="{{ path('library_edit', {'accountName': accountName, 'libraryName': lib.name }) }}">{{ lib.name }}</a></li>
+                {% endfor %}
+                </ul>
+                <div class="btn-group">
+                    <a class="btn btn-primary" href="{{ path('library_add', {'accountName': accountName}) }}">Add</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

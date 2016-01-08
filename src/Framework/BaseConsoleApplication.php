@@ -3,22 +3,14 @@
 namespace Radvance\Framework;
 
 use Silex\Application as SilexApplication;
-
 use Silex\Provider\TwigServiceProvider;
-use Silex\Provider\RoutingServiceProvider;
-use Silex\Provider\FormServiceProvider;
 use Silex\Provider\TranslationServiceProvider;
-use Silex\Provider\SessionServiceProvider;
 use Silex\Provider\MonologServiceProvider;
-
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Parser as YamlParser;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
-
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
-
+use Radvance\Repository\PdoLibraryRepository;
 use Exception;
 use RuntimeException;
 use PDO;
@@ -81,10 +73,11 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $parser = new YamlParser();
         if (!file_exists($this->getParametersPath())) {
             throw new RuntimeException(
-                "The parameters config file was not found.
-                Please copy parameters.yml.dist to parameters.yml, and tune it for your purposes."
+                'The parameters config file was not found.
+                Please copy parameters.yml.dist to parameters.yml, and tune it for your purposes.'
             );
         }
+
         return $parser->parse(file_get_contents($this->getParametersPath()));
     }
 
@@ -104,6 +97,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 if (!$res && $required) {
                     throw new RuntimeException("Required environment variable '$str' is not defined");
                 }
+
                 return $res;
             }
         );
@@ -115,7 +109,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         foreach ($matches[1] as $match) {
             $out = $language->evaluate($match, $variables);
-            $string = str_replace('{{' . $match . '}}', $out, $string);
+            $string = str_replace('{{'.$match.'}}', $out, $string);
         }
 
         return $string;
@@ -131,11 +125,12 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 $parameters[$key] = $this->postProcessParameters($value);
             }
         }
+
         return $parameters;
     }
 
     /**
-     * Configure parameters
+     * Configure parameters.
      */
     protected function configureParameters()
     {
@@ -145,12 +140,12 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this['debug'] = false;
         if (isset($this['parameters']['debug'])) {
-            $this['debug'] = !!$this['parameters']['debug'];
+            $this['debug'] = (bool) $this['parameters']['debug'];
         }
     }
 
     /**
-     * Configure PDO
+     * Configure PDO.
      */
     protected function configurePdo()
     {
@@ -179,7 +174,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     }
 
     /**
-     * Configure services
+     * Configure services.
      */
     protected function configureService()
     {
@@ -192,30 +187,30 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     }
 
     /**
-     * Configure templates
+     * Configure templates.
      */
     private function configureTemplateEngine()
     {
         $this->register(new TwigServiceProvider(), array(
             'twig.path' => array(
-                $this->getTemplatesPath()
+                $this->getTemplatesPath(),
             ),
         ));
     }
 
     /**
-     * Configure logging
+     * Configure logging.
      */
     protected function configureLogging()
     {
         $this->register(new MonologServiceProvider(), array(
-            'monolog.logfile' => $this->getLogsPath()
+            'monolog.logfile' => $this->getLogsPath(),
         ));
     }
 
-    /**
-     * Configure repositories
-     */
+/**
+ * Configure repositories.
+ */
     // abstract protected function configureRepositories();
     public function configureRepositories()
     {
@@ -226,7 +221,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     private function configurePdoRepositories()
     {
         if (!$this->pdo) {
-            throw new RuntimeException("PDO not configured yet");
+            throw new RuntimeException('PDO not configured yet');
         }
         $ns = (new \ReflectionObject($this))->getNamespaceName();
 
@@ -238,6 +233,10 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 $this->addRepository(new $className($this->pdo));
             }
         }
+
+        // library repository
+        // TODO: make flag to load it optionally
+        $this->addRepository(new PdoLibraryRepository($this->pdo));
     }
 
     /**
@@ -257,11 +256,13 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         if (!isset($this['repository'])) {
             return array();
         }
+
         return $this['repository'];
     }
 
     /**
-     * @param  string $name
+     * @param string $name
+     *
      * @return RepositoryInterface
      */
     public function getRepository($name)
@@ -272,14 +273,16 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 $name
             ));
         }
+
         return $this['repository'][$name];
     }
 
     /**
      * Magic getXxxRepository.
      *
-     * @param  mixed $name
-     * @param  mixed $arguments
+     * @param mixed $name
+     * @param mixed $arguments
+     *
      * @return mixed
      */
     public function __call($name, $arguments)

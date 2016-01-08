@@ -144,7 +144,7 @@ class BaseController
         $repo = $app->getRepository($this->getModelName());
         try {
             $repo->remove($repo->find($id));
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $app->addFlash('error', $e->getMessage());
         }
 
@@ -154,5 +154,4 @@ class BaseController
             $app['url_generator']->generate(sprintf('%s_index', $this->getModelName()))
         );
     }
-
 }
