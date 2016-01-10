@@ -1,0 +1,40 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% block content_wrapper %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Edit library</h1>
+                {% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+                {{ form_start(form) }}
+                    {{ form_errors(form) }}
+                    {{ form_widget(form) }}
+
+                    <div class="panel panel-button">
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-save"></i>
+                                {{ 'save'|trans }}
+                            </button>
+                            {% if library.getId() %}
+                            <a href="{{ path('library_delete', {'accountName': accountName, 'libraryName': library.getName() }) }}" class="btn btn-danger">
+                                <i class="fa fa-trash-o"></i>
+                                Delete
+                            </a>
+                            <a href="{{ path('permission_index', {'accountName': accountName, 'libraryName': library.getName() }) }}" class="btn btn-warning">
+                                <i class="fa fa-users"></i>
+                                Permissions
+                            </a>
+                            {% endif %}
+                            <a href="{{ path('library_index', {'accountName': accountName}) }}" class="btn btn-default" role="button">
+                                <i class="fa fa-chevron-left"></i>
+                                Back
+                            </a>
+                        </div>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

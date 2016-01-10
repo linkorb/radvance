@@ -35,8 +35,8 @@ You should extend your application from `BaseWebApplication` if you use controll
 
 namespace ExampleApp;
 
-use Radvance\BaseWebApplication;
-use Radvance\FrameworkApplicationInterface;
+use Radvance\Framework\BaseWebApplication;
+use Radvance\Framework\FrameworkApplicationInterface;
 
 class Application extends BaseWebApplication implements FrameworkApplicationInterface
 {

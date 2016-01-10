@@ -33,7 +33,8 @@
         "behat/mink-goutte-driver": "^1.1",
         "dbtk/schema-loader": "~2.1",
         "linkorb/haigha": "~2.1",
-        "linkorb/conventions-checker": "~1.1"
+        "linkorb/conventions-checker": "~1.1",
+        "fabpot/php-cs-fixer": "~1"
     },
     "bin": ["bin/radvance"],
     "extra": {

@@ -40,7 +40,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     public function __construct(array $values = array())
     {
         parent::__construct($values);
-        
+
         /*
          * A note about ordering:
          * security should be configured before the routes
@@ -123,7 +123,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 }
             }
         }
-        
+
         $orgCollection->addCollection($newCollection);
     }
 
@@ -152,7 +152,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             'Templates'
         );
 
-        $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
+        // JF & HL: decide not to use this coz
+        // 1. hardly ever useful
+        // 2. breaks the loading order of routes and template engine
+        // $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
         $this['twig']->addGlobal('app_name', $this['parameters']['name']);
         
         // Define userbaseUrl in twig templates for login + signup links
@@ -161,22 +164,6 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         }
     }
 
-    protected function buildMenu($app)
-    {
-        if (!$app->getRepositories()) {
-            return array();
-        }
-
-        return array_map(function ($repository) use ($app) {
-            $name = $repository->getTable();
-
-            return array(
-                'href' => $app['url_generator']->generate(sprintf('%s_index', $name)),
-                'name' => ucfirst(preg_replace('/\_/', ' ', $name))
-            );
-        }, $app->getRepositories()->getArrayCopy());
-    }
-    
     protected function configureUrlPreprocessor()
     {
         $app = $this;
@@ -194,6 +181,22 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         });
     }
 
+    // protected function buildMenu($app)
+    // {
+    //     if (!$app->getRepositories()) {
+    //         return array();
+    //     }
+    //
+    //     return array_map(function ($repository) use ($app) {
+    //         $name = $repository->getTable();
+    //
+    //         return array(
+    //             'href' => $app['url_generator']->generate(sprintf('%s_index', $name)),
+    //             'name' => ucfirst(preg_replace('/\_/', ' ', $name))
+    //         );
+    //     }, $app->getRepositories()->getArrayCopy());
+    // }
+
     protected function configureSecurity()
     {
         $this->register(new SilexSecurityServiceProvider(), array());
@@ -204,15 +207,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $digest = sprintf('\\Symfony\\Component\\Security\\Core\\Encoder\\%s', $security['encoder']);
             $this['security.encoder.digest'] = new $digest(true);
         }
-        
+
         $loginPath = isset($security['paths']['login']) ? $security['paths']['login'] : '/login';
         $checkPath = isset($security['paths']['check']) ? $security['paths']['check'] : '/authentication/login_check';
         $logoutPath = isset($security['paths']['logout']) ? $security['paths']['logout'] : '/logout';
-        
+
         /* Automatically register routes for login, check and logout paths */
-        
+
         $collection = new RouteCollection();
-        
+
         $route = new Route(
             $loginPath,
             array(
@@ -220,7 +223,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             )
         );
         $collection->add('login', $route);
-        
+
         $route = new Route(
             $checkPath,
             array()
@@ -259,7 +262,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'users' => $this->getUserSecurityProvider(),
             ),
         );
-        
+
         $app = $this;
         $app->before(function (Request $request, SilexApplication $app) {
             $token = $app['security.token_storage']->getToken();
