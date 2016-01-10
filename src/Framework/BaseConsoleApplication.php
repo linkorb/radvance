@@ -11,6 +11,7 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
 use Radvance\Repository\PdoLibraryRepository;
+use Radvance\Repository\PdoPermissionRepository;
 use Exception;
 use RuntimeException;
 use PDO;
@@ -237,6 +238,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         // library repository
         // TODO: make flag to load it optionally
         $this->addRepository(new PdoLibraryRepository($this->pdo));
+        $this->addRepository(new PdoPermissionRepository($this->pdo));
     }
 
     /**

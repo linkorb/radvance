@@ -3,7 +3,7 @@
 namespace Radvance\Controller;
 
 use Radvance\Framework\BaseWebApplication as Application;
-use Radvance\Model\Library;
+use Radvance\Model\Permission;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -11,109 +11,58 @@ class PermissionController
 {
     public function indexAction(Application $app, Request $request, $accountName, $libraryName)
     {
-        $libraries = $app->getRepository('library')->findByAccountName($accountName);
+        $library = $app->getRepository('library')->findByNameAndAccountName($libraryName, $accountName);
 
         return new Response($app['twig']->render(
-            '@BaseTemplates/library/index.html.twig',
+            '@BaseTemplates/permission/index.html.twig',
             array(
-                'libraries' => $libraries,
+                // 'libraries' => $libraries,
                 'accountName' => $accountName,
+                'libraryName' => $libraryName,
+                'permissions' => $app->getRepository('permission')->findByLibraryId($library->getId()),
+                'error' => $request->query->get('error'),
             )
         ));
     }
 
-    public function addAction(Application $app, Request $request, $accountName)
+    public function addAction(Application $app, Request $request, $accountName, $libraryName)
     {
-        return $this->getPermissionEditForm($app, $request, $accountName);
-    }
+        $username = trim($request->request->get('P_username'));
 
-    public function editAction(Application $app, Request $request, $accountName, $libraryName)
-    {
-        return $this->getPermissionEditForm($app, $request, $accountName, $libraryName);
-    }
-
-    private function getPermissionEditForm(Application $app, Request $request, $accountName, $libraryName = null)
-    {
-        $error = $request->query->get('error');
-        $repo = $app->getRepository('library');
-        $add = false;
-        $libraryName = trim($libraryName);
-
-        // $library = $repo->findOneOrNullBy(array('id' => $libraryName));
-        $library = $repo->findByNameAndAccountName($libraryName, $accountName);
-
-        if (null === $library) {
-            $add = true;
-            $defaults = array(
-                'account_name' => $accountName,
-            );
-            $library = new Library();
-            $library->setAccountName($accountName);
-        } else {
-            $defaults = array(
-                'account_name' => $accountName,
-                'name' => $library->getName(),
-                'description' => $library->getDescription(),
-            );
-        }
-
-
-        $form = $app['form.factory']->createBuilder('form', $defaults)
-            ->add('account_name', 'text', array('read_only' => true))
-            ->add('name', 'text')
-            ->add('description', 'textarea', array('required' => false))
-            ->getForm();
-
-        // handle form submission
-        $form->handleRequest($request);
-        if ($form->isValid()) {
-            $data = $form->getData();
-            $library->setName($data['name'])
-                ->setDescription($data['description']);
-
-            if (!$repo->persist($library)) {
-                return $app->redirect(
-                    $app['url_generator']->generate(
-                        'library_add',
-                        array(
-                            'error' => 'Library exists',
-                            'accountName' => $accountName,
-                        )
-                    )
-                );
-            }
-
-            return $app->redirect(
-                $app['url_generator']->generate(
-                    'library_index',
-                    array('accountName' => $accountName)
-                )
-            );
-        }
-
-        return new Response($app['twig']->render(
-            '@BaseTemplates/library/edit.html.twig',
-            array(
-                'form' => $form->createView(),
-                'library' => $library,
-                'error' => $error,
-                'accountName' => $accountName,
-            )
-        ));
-    }
-
-    public function deleteAction(Application $app, Request $request, $accountName, $libraryName)
-    {
-        $library = $app->getRepository('library')
-            ->findByNameAndAccountName($libraryName, $accountName);
+        $library = $app->getRepository('library')->findByNameAndAccountName($libraryName, $accountName);
+        $error = null;
         if ($library) {
-            $app->getRepository('library')->remove($library);
+            $repo = $app->getRepository('permission');
+            $permission = new Permission();
+            $permission->setUsername($username)->setLibraryId($library->getId());
+            if (!$repo->persist($permission)) {
+                $error = 'user exists';
+            }
+        } else {
+            $error = 'Invalid library';
         }
 
         return $app->redirect(
             $app['url_generator']->generate(
-                'library_index',
-                array('accountName' => $accountName)
+                'permission_index',
+                array('accountName' => $accountName, 'libraryName' => $libraryName, 'error' => $error)
+            )
+        );
+    }
+
+    public function deleteAction(Application $app, Request $request, $accountName, $libraryName, $permissionId)
+    {
+        $library = $app->getRepository('library')->findByNameAndAccountName($libraryName, $accountName);
+        if ($library) {
+            $app->getRepository('permission')->remove(
+                $app->getRepository('permission')->find($permissionId)
+            );
+        }
+
+        return $app->redirect(
+            $app['url_generator']->generate(
+                'permission_index',
+                array('accountName' => $accountName, 'libraryName' => $libraryName)
             )
         );
     }
