@@ -1,0 +1,14 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% block content %}
+    <h1>Dashboard</h1>
+    <ul>
+        {% for l in libraries %}
+        <li>
+            <a href="{{ path('library_index', {'accountName':l.account_name}) }}">{{ l.account_name }}</a>
+             /
+             <a href="{{ path('library_edit', {'accountName': l.account_name, 'libraryName': l.name}) }}">{{ l.name }}</a>
+         </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
