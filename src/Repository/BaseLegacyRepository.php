@@ -3,7 +3,6 @@
 namespace Radvance\Repository;
 
 use Radvance\Model\ModelInterface;
-use Exception;
 
 /**
  * This class provide support for legacy methods.
@@ -17,7 +16,7 @@ abstract class BaseLegacyRepository extends BaseRepository
      */
     public function find($id)
     {
-        return $this->findOneOrNullBy(array('id'=>$id));
+        return $this->findOneOrNullBy(array('id' => $id));
     }
 
     /**
@@ -61,5 +60,4 @@ abstract class BaseLegacyRepository extends BaseRepository
         // trigger_error("Method 'delete' is deprecated. Use 'remove' instead.", E_USER_DEPRECATED);
         return $this->remove($entity);
     }
-
 }

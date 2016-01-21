@@ -10,6 +10,7 @@ interface RepositoryInterface
 
     /**
      * Return table name.
+     *
      * @return string
      */
     public function getTable();
@@ -17,13 +18,15 @@ interface RepositoryInterface
     /**
      * Find one record by ID.
      *
-     * @param  integer $id
+     * @param int $id
+     *
      * @return ModelInterface
      */
     public function find($id);
 
     /**
-     * @param  integer $id
+     * @param int $id
+     *
      * @return ModelInterface
      */
     public function findOrCreate($id);
@@ -31,8 +34,10 @@ interface RepositoryInterface
     /**
      * Find one record by some conditions.
      *
-     * @param  array $where
+     * @param array $where
+     *
      * @return ModelInterface
+     *
      * @throws Exception If record not found
      */
     public function findOneBy($where);
@@ -41,7 +46,8 @@ interface RepositoryInterface
      * Find one record by some conditions.
      * Returns null if record not found.
      *
-     * @param  array $where
+     * @param array $where
+     *
      * @return ModelInterface|null
      */
     public function findOneOrNullBy($where);
@@ -56,7 +62,8 @@ interface RepositoryInterface
     /**
      * Find records by some conditions.
      *
-     * @param  array $where
+     * @param array $where
+     *
      * @return ModelInterface[]
      */
     public function findBy($where);
@@ -64,7 +71,8 @@ interface RepositoryInterface
     /**
      * Insert or update record.
      *
-     * @param  ModelInterface $entity
+     * @param ModelInterface $entity
+     *
      * @return ModelInterface
      */
     public function persist(ModelInterface $entity);
@@ -72,7 +80,7 @@ interface RepositoryInterface
     /**
      * Remove record from database.
      *
-     * @param  ModelInterface $entity
+     * @param ModelInterface $entity
      */
     public function remove(ModelInterface $entity);
 }
