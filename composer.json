@@ -2,7 +2,7 @@
     "name": "radvance/radvance",
     "description": "Radvance PHP Framework",
     "homepage": "https://github.com/radvance/radvance",
-    "keywords": ["linkorb", "framework", "tests", "behat"],
+    "keywords": ["linkorb", "framework", "radvance"],
     "type": "application",
     "license": "MIT",
     "authors": [{
@@ -12,6 +12,7 @@
     }],
     "require": {
         "silex/silex": "2.0.x-dev#a3881a5a2fc7e0233307c8240d4adc909a559b49",
+        "linkorb/autotune": "~1.0",
         "symfony/yaml": "2.7.*",
         "symfony/config": "2.7.*",
         "symfony/security": "2.7.*",

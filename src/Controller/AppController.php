@@ -22,4 +22,15 @@ class AppController
             $template
         ));
     }
+    
+    public function accountsAction(Application $app, Request $request)
+    {
+        $data = array();
+        $data['accounts'] = $app['current_user']->getAccounts();
+
+        return new Response($app['twig']->render(
+            '@BaseTemplates/app/accounts.html.twig',
+            $data
+        ));
+    }
 }

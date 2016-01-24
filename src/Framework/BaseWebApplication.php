@@ -66,10 +66,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             isset($this['theme']) ? $this['theme'] : 'default'
         );
     }
-
+    
     protected function getSessionsPath()
     {
-        return sprintf('/tmp/%s/sessions', $this['parameters']['name']);
+        return sprintf('/tmp/%s/sessions', $this['app']['name']);
     }
 
     protected function getRoutesPath()
@@ -156,7 +156,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         // 1. hardly ever useful
         // 2. breaks the loading order of routes and template engine
         // $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
-        $this['twig']->addGlobal('app_name', $this['parameters']['name']);
+        $this['twig']->addGlobal('app_name', $this['app']['name']);
         
         // Define userbaseUrl in twig templates for login + signup links
         if (isset($this['userbaseUrl'])) {
@@ -201,7 +201,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     {
         $this->register(new SilexSecurityServiceProvider(), array());
 
-        $security = $this['parameters']['security'];
+        $security = $this['security'];
 
         if (isset($security['encoder'])) {
             $digest = sprintf('\\Symfony\\Component\\Security\\Core\\Encoder\\%s', $security['encoder']);
@@ -282,7 +282,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function getUserSecurityProvider()
     {
-        foreach ($this['parameters']['security']['providers'] as $provider => $providerConfig) {
+        foreach ($this['security']['providers'] as $provider => $providerConfig) {
             switch ($provider) {
                 // case 'JsonFile':
                 // return new \Radvance\Security\JsonFileUserProvider(__DIR__.'/../'.$providerConfig['path']);

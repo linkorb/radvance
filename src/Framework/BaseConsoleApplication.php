@@ -7,11 +7,12 @@ use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\MonologServiceProvider;
 use Symfony\Component\Yaml\Parser as YamlParser;
-use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
 use Radvance\Repository\PdoLibraryRepository;
 use Radvance\Repository\PdoPermissionRepository;
+use Radvance\Component\Config\ConfigLoader;
 use Exception;
 use RuntimeException;
 use PDO;
@@ -27,6 +28,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this['repository'] = new \ArrayObject();
 
+        $this->loadConfig();
         $this->configureParameters();
         $this->configurePdo();
         $this->configureService();
@@ -54,11 +56,6 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         return sprintf('%s/templates', $this->getRootPath());
     }
 
-    protected function getParametersPath()
-    {
-        return sprintf('%s/app/config/parameters.yml', $this->getRootPath());
-    }
-
     protected function getLogsPath()
     {
         return sprintf('%s/app/logs/development.log', $this->getRootPath());
@@ -69,76 +66,26 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         return sprintf('%s/src/Repository', $this->getRootPath());
     }
 
-    protected function getParameters()
+    protected function loadConfig()
     {
-        $parser = new YamlParser();
-        if (!file_exists($this->getParametersPath())) {
-            throw new RuntimeException(
-                'The parameters config file was not found.
-                Please copy parameters.yml.dist to parameters.yml, and tune it for your purposes.'
-            );
+        $loader = new ConfigLoader();
+        $path = $this->getRootPath() . '/app/config';
+        if (!file_exists($path . '/config.yml')) {
+            throw new RuntimeException("config.yml not found. Please read doc/configuration.md");
         }
-
-        return $parser->parse(file_get_contents($this->getParametersPath()));
-    }
-
-    protected function postProcessString($string)
-    {
-        $language = new ExpressionLanguage();
-        $language->register(
-            'env',
-            function ($str) {
-                // This implementation is only needed if you want to compile
-                // not needed when simply using the evaluator
-                throw new RuntimeException("The 'env' method is not yet compilable.");
-            },
-            function ($arguments, $str, $required = false) {
-                $res = getenv($str);
-
-                if (!$res && $required) {
-                    throw new RuntimeException("Required environment variable '$str' is not defined");
-                }
-
-                return $res;
-            }
-        );
-
-        preg_match_all('~\{\{(.*?)\}\}~', $string, $matches);
-
-        $variables = array();
-        //$variables['hello']='world';
-
-        foreach ($matches[1] as $match) {
-            $out = $language->evaluate($match, $variables);
-            $string = str_replace('{{'.$match.'}}', $out, $string);
+        $config = $loader->load($path, 'config.yml');
+    
+        // Add the config data to the DI container
+        foreach ($config as $key => $value) {
+            $this[$key] = $value;
         }
-
-        return $string;
     }
-
-    protected function postProcessParameters(&$parameters)
-    {
-        foreach ($parameters as $key => $value) {
-            if (is_string($value)) {
-                $parameters[$key] = $this->postProcessString($value);
-            }
-            if (is_array($value)) {
-                $parameters[$key] = $this->postProcessParameters($value);
-            }
-        }
-
-        return $parameters;
-    }
-
+    
     /**
      * Configure parameters.
      */
     protected function configureParameters()
     {
-        $parameters = $this->getParameters();
-        $parameters = $this->postProcessParameters($parameters);
-        $this['parameters'] = $parameters;
-
         $this['debug'] = false;
         if (isset($this['parameters']['debug'])) {
             $this['debug'] = (bool) $this['parameters']['debug'];
@@ -213,7 +160,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
  * Configure repositories.
  */
     // abstract protected function configureRepositories();
-    public function configureRepositories()
+    protected function configureRepositories()
     {
         $this->configurePdoRepositories();
         // TODO: support other types of repositories
