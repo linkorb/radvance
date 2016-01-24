@@ -8,4 +8,6 @@ class Library extends BaseModel implements ModelInterface
     protected $name;
     protected $account_name;
     protected $description;
+    protected $created_at;
+    protected $deleted_at;
 }

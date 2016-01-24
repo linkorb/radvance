@@ -21,6 +21,20 @@ class LibraryController
             )
         ));
     }
+    
+    public function viewAction(Application $app, Request $request, $accountName, $libraryName)
+    {
+        $repo = $app->getRepository('library');
+
+        $library = $repo->findByNameAndAccountName($libraryName, $accountName);
+
+        return new Response($app['twig']->render(
+            '@BaseTemplates/library/view.html.twig',
+            array(
+                'library' => $library
+            )
+        ));
+    }
 
     public function addAction(Application $app, Request $request, $accountName)
     {
