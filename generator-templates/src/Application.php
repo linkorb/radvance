@@ -13,10 +13,4 @@ class Application extends BaseWebApplication implements FrameworkApplicationInte
     {
         return realpath(__DIR__ . '/../');
     }
-
-    protected function configureRepositories()
-    {
-        // Add repositories here
-        // $this->addRepository(new PdoExampleRepository($this->pdo));
-    }
 }
