@@ -40,7 +40,7 @@ abstract class BaseRepository
      */
     public function find($id)
     {
-        return $this->findOneBy(array('id'=>$id));
+        return $this->findOneBy(array('id' => $id));
     }
 
     /**
@@ -48,10 +48,11 @@ abstract class BaseRepository
      */
     public function findOrCreate($id)
     {
-        $entity = $this->findOneOrNullBy(array('id'=>$id));
+        $entity = $this->findOneOrNullBy(array('id' => $id));
         if (!$entity) {
             $entity = $this->createEntity();
         }
+
         return $entity;
     }
 
@@ -79,12 +80,13 @@ abstract class BaseRepository
     public function findOneOrNullBy($where)
     {
         $statement = $this->pdo->prepare(sprintf(
-            "SELECT * FROM `%s` WHERE %s LIMIT 1",
+            'SELECT * FROM `%s` WHERE %s LIMIT 1',
             $this->getTable(),
             $this->buildKeyValuePairs($where, ' and ')
         ));
         $where = $this->flattenValues($where);
         $statement->execute($where);
+
         return $this->rowToObject($statement->fetch(PDO::FETCH_ASSOC));
     }
 
@@ -94,10 +96,11 @@ abstract class BaseRepository
     public function findAll()
     {
         $statement = $this->pdo->prepare(sprintf(
-            "SELECT * FROM %s",
+            'SELECT * FROM %s',
             $this->getTable()
         ));
         $statement->execute();
+
         return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
     }
 
@@ -107,12 +110,13 @@ abstract class BaseRepository
     public function findBy($where)
     {
         $statement = $this->pdo->prepare(sprintf(
-            "SELECT * FROM `%s` WHERE %s",
+            'SELECT * FROM `%s` WHERE %s',
             $this->getTable(),
             $this->buildKeyValuePairs($where, ' and ')
         ));
         $where = $this->flattenValues($where);
         $statement->execute($where);
+
         return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
     }
 
@@ -126,7 +130,7 @@ abstract class BaseRepository
 
         if ($entity->getId()) {
             $where = array(
-                'id'=>$entity->getId()
+                'id' => $entity->getId(),
             );
             $sql = $this->buildUpdateSql($fields, $where);
             $statement = $this->pdo->prepare($sql);
@@ -141,15 +145,17 @@ abstract class BaseRepository
     }
 
     /**
-     * @param  array $fields
+     * @param array $fields
+     *
      * @return array
      */
     protected function prepareFieldsValues($fields)
     {
-        return array_map(function($value){
+        return array_map(function ($value) {
             if ($value instanceof \DateTime) {
                 return $value->format('Y-m-d H:i:s');
             }
+
             return $value;
         }, $fields);
     }
@@ -160,7 +166,7 @@ abstract class BaseRepository
     public function remove(ModelInterface $entity)
     {
         $statement = $this->pdo->prepare(sprintf(
-            "DELETE FROM `%s` WHERE id=:id",
+            'DELETE FROM `%s` WHERE id=:id',
             $this->getTable()
         ));
         $statement->execute(array('id' => $entity->getId()));
@@ -171,18 +177,19 @@ abstract class BaseRepository
      */
     public function truncate()
     {
-        $this->pdo->exec("SET FOREIGN_KEY_CHECKS=0;");
+        $this->pdo->exec('SET FOREIGN_KEY_CHECKS=0;');
         $this->pdo->exec(sprintf(
-            "TRUNCATE `%s`",
+            'TRUNCATE `%s`',
             $this->getTable()
         ));
-        $this->pdo->exec("SET FOREIGN_KEY_CHECKS=1;");
+        $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1;');
     }
 
     /**
      * Convert array to entity.
      *
-     * @param  array $row
+     * @param array $row
+     *
      * @return ModelInterface
      */
     protected function rowToObject($row)
@@ -194,13 +201,14 @@ abstract class BaseRepository
             ;
         }
 
-        return null;
+        return;
     }
 
     /**
      * Convert array to array of entities.
      *
-     * @param  array $rows
+     * @param array $rows
+     *
      * @return ModelInterface[]
      */
     protected function rowsToObjects($rows)
@@ -216,7 +224,7 @@ abstract class BaseRepository
     protected function buildUpdateSql($fields, $where)
     {
         return sprintf(
-            "UPDATE `%s` SET %s WHERE %s",
+            'UPDATE `%s` SET %s WHERE %s',
             $this->getTable(),
             $this->buildKeyValuePairs($fields, ','),
             $this->buildKeyValuePairs($where, ' and ')
@@ -224,7 +232,8 @@ abstract class BaseRepository
     }
 
     /**
-     * @param  array $where
+     * @param array $where
+     *
      * @return string
      */
     protected function buildKeyValuePairs($where, $delimiter)
@@ -232,10 +241,11 @@ abstract class BaseRepository
         return implode(array_map(function ($field, $value) {
             if (is_array($value)) {
                 # Transform [field=>[0=>a,1=>b,2=>c]] to 'field in (:field_0, :field_1, :field_2)'
-                return sprintf('`%s` in (%s)', $field, implode(array_map(function($index) use($field){
-                    return sprintf(":%s_%s", $field, $index);
+                return sprintf('`%s` in (%s)', $field, implode(array_map(function ($index) use ($field) {
+                    return sprintf(':%s_%s', $field, $index);
                 }, array_keys($value)), ', '));
             }
+
             return sprintf('`%s`=:%s', $field, $field);
         }, array_keys($where), $where), $delimiter);
     }
@@ -243,17 +253,18 @@ abstract class BaseRepository
     protected function flattenValues($fields)
     {
         $result = array();
-        array_walk($fields, function($value, $field) use(&$result){
+        array_walk($fields, function ($value, $field) use (&$result) {
             if (is_array($value)) {
                 # Transform [field=>[0=>a,1=>b,2=>c]] to [field_0=>a, field_1=>b, field_2=>c)
-                foreach ($value as $index=>$index_value) {
-                    $index_key = sprintf("%s_%s", $field, $index);
+                foreach ($value as $index => $index_value) {
+                    $index_key = sprintf('%s_%s', $field, $index);
                     $result[$index_key] = $index_value;
                 }
             } else {
                 $result[$field] = $value;
             }
         });
+
         return $result;
     }
 
@@ -263,11 +274,12 @@ abstract class BaseRepository
     protected function buildInsertSql($fields)
     {
         $fields_names = array_keys($fields);
+
         return sprintf(
-            "INSERT INTO `%s` (%s) VALUES (%s)",
+            'INSERT INTO `%s` (%s) VALUES (%s)',
             $this->getTable(),
-            "`" . implode($fields_names, "`, `") . "`",
-            ":" . implode($fields_names, ", :")
+            '`'.implode($fields_names, '`, `').'`',
+            ':'.implode($fields_names, ', :')
         );
     }
 
@@ -276,7 +288,8 @@ abstract class BaseRepository
      * of where array keys and values.
      * Used in Exceptions.
      *
-     * @param  array $where
+     * @param array $where
+     *
      * @return string
      */
     private function describeWhereFields($where)
@@ -284,5 +297,16 @@ abstract class BaseRepository
         return implode(', ', array_map(function ($v, $k) {
             return sprintf("%s='%s'", $k, $v);
         }, $where, array_keys($where)));
+    }
+
+    public function getByLibraryId($libraryId)
+    {
+        $statement = $this->pdo->prepare(sprintf(
+            'SELECT * FROM `%s` WHERE library_id=:libid',
+            $this->getTable()
+        ));
+        $statement->execute(['libid' => $libraryId]);
+
+        return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
     }
 }
