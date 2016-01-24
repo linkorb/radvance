@@ -48,6 +48,7 @@ class Generator
         // App directory
         $this->ensureFile($this->appConfig->getAppPath() . '/bootstrap.php');
         $this->ensureFile($this->appConfig->getAppPath() . '/schema.xml');
+        $this->ensureFile($this->appConfig->getAppPath() . '/config/config.yml');
         $this->ensureFile($this->appConfig->getAppPath() . '/config/parameters.yml.dist');
         $this->ensureFile($this->appConfig->getAppPath() . '/config/routes.yml');
 

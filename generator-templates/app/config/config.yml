@@ -1,0 +1,13 @@
+---
+parameters:
+    app_name: My App
+
+app:
+    name: %app_name%
+    
+security:
+    providers:
+        UserBase:
+            url: %userbase_url%
+            username: %userbase_username%
+            password: %userbase_password%
