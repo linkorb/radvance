@@ -70,10 +70,15 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     {
         $loader = new ConfigLoader();
         $path = $this->getRootPath() . '/app/config';
-        if (!file_exists($path . '/config.yml')) {
-            throw new RuntimeException("config.yml not found. Please read doc/configuration.md");
+        if (file_exists($path . '/config.yml')) {
+            $config = $loader->load($path, 'config.yml');
+        } else {
+            // Legacy config mode
+            $config = array();
+            $config['parameters'] = $loader->load($path, 'parameters.yml');
+            $config['app']['name'] = $config['parameters']['name'];
+            $config['security'] = $config['parameters']['security'];
         }
-        $config = $loader->load($path, 'config.yml');
     
         // Add the config data to the DI container
         foreach ($config as $key => $value) {
