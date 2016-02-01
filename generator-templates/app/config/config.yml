@@ -1,4 +1,8 @@
 ---
+# Import further configuration files
+imports:
+    - { resource: parameters.yml }
+
 parameters:
     app_name: My App
 
