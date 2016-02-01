@@ -3,7 +3,7 @@
 {% block content_wrapper %}
     <div class="container">
         <h1>Permissions</h1>
-        <h3>{{ accountName }} / <a href="{{ path('library_view', {'accountName': accountName, 'libraryName': libraryName}) }}">{{ libraryName }}</a></h3>
+        <h3>{{ accountName }} / <a href="{{ path('space_view', {'accountName': accountName, 'spaceName': spaceName}) }}">{{ spaceName }}</a></h3>
         <table class="table table-bordered table-responsive">
             <thead>
                 <tr><th>Username</th><th></th></tr>
@@ -13,7 +13,7 @@
                 <tr>
                     <td>{{ p.username }}</td>
                     <td>
-                        <a class="btn btn-danger" href="{{ path('permission_delete', {'accountName': accountName, 'libraryName': libraryName, 'permissionId': p.id}) }}">
+                        <a class="btn btn-danger" href="{{ path('permission_delete', {'accountName': accountName, 'spaceName': spaceName, 'permissionId': p.id}) }}">
                             <i class="fa fa-remove"></i>
                         </a>
                     </td>
@@ -27,7 +27,7 @@
             {% if error %}
             <div class="alert alert-danger">{{ error }}</div>
             {% endif %}
-            <form action="{{ path('permission_add', {'accountName': accountName, 'libraryName': libraryName}) }}" method="post">
+            <form action="{{ path('permission_add', {'accountName': accountName, 'spaceName': spaceName}) }}" method="post">
                 <div class="form-group">
                     <label>Username</label>
                     <input type="text" class="form-control" name="P_username" />

@@ -11,10 +11,10 @@ class PdoPermissionRepository extends BaseRepository implements RepositoryInterf
         return Permission::createNew();
     }
 
-    public function findByLibraryId($libraraId)
+    public function findBySpaceId($spaceId)
     {
         return $this->findBy(
-            array('library_id' => $libraraId)
+            array('space_id' => $spaceId)
         );
     }
 }

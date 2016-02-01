@@ -10,7 +10,7 @@ use Symfony\Component\Yaml\Parser as YamlParser;
 
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
-use Radvance\Repository\PdoLibraryRepository;
+use Radvance\Repository\PdoSpaceRepository;
 use Radvance\Repository\PdoPermissionRepository;
 use Radvance\Component\Config\ConfigLoader;
 use Exception;
@@ -30,6 +30,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this->loadConfig();
         $this->configureParameters();
+        $this->configureSpaces();
         $this->configurePdo();
         $this->configureService();
         $this->configureRepositories();
@@ -189,7 +190,9 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         // library repository
         // TODO: make flag to load it optionally
-        $this->addRepository(new PdoLibraryRepository($this->pdo));
+        $spaceRepository = new PdoSpaceRepository($this->pdo);
+        $spaceRepository->setTableName($this->getSpaceConfig()->getTableName());
+        $this->addRepository($spaceRepository);
         $this->addRepository(new PdoPermissionRepository($this->pdo));
     }
 
@@ -210,7 +213,6 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         if (!isset($this['repository'])) {
             return array();
         }
-
         return $this['repository'];
     }
 
@@ -267,5 +269,21 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             case 'get':
                 return $this['repository'][$repository];
         }
+    }
+    
+    private $spaceConfig;
+    
+    public function configureSpaces()
+    {
+        $spaceConfig = new SpaceConfig();
+        $spaceConfig->setTableName('book');
+        $spaceConfig->setDisplayName('B00k');
+        $spaceConfig->setDisplayNamePlural('B00kz');
+        $this->spaceConfig = $spaceConfig;
+    }
+    
+    public function getSpaceConfig()
+    {
+        return $this->spaceConfig;
     }
 }

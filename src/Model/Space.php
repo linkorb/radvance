@@ -2,7 +2,7 @@
 
 namespace Radvance\Model;
 
-class Library extends BaseModel implements ModelInterface
+class Space extends BaseModel implements ModelInterface
 {
     protected $id;
     protected $name;

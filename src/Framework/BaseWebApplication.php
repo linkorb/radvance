@@ -157,6 +157,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         // 2. breaks the loading order of routes and template engine
         // $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
         $this['twig']->addGlobal('app_name', $this['app']['name']);
+        $this['twig']->addGlobal('spaceConfig', $this->getSpaceConfig());
         
         // Define userbaseUrl in twig templates for login + signup links
         if (isset($this['userbaseUrl'])) {

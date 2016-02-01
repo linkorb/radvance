@@ -1,0 +1,15 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% block content_wrapper %}
+    <div class="container">
+        <h1>{{ spaceConfig.getDisplayNamePlural() }} in {{ accountName }}</h1>
+        <ul>
+        {% for space in spaces %}
+            <li>{{ space.getAccountName() }} / <a href="{{ path('space_view', {'accountName': accountName, 'spaceName': space.name }) }}">{{ space.name }}</a></li>
+        {% endfor %}
+        </ul>
+        <div class="btn-group">
+            <a class="btn btn-primary" href="{{ path('space_add', {'accountName': accountName}) }}">Add {{ spaceConfig.getDisplayName() }}</a>
+        </div>
+    </div>
+{% endblock %}

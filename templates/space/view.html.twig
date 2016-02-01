@@ -1,0 +1,12 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% block content_wrapper %}
+    <div class="container">
+        <h1>{{ spaceConfig.getDisplayName() }} "{{ space.getName }}"</h1>
+        Name: {{ space.getName }}<br />
+        <div class="buttonbox">
+            <a class="btn btn-default" href="{{ path('space_index', {'accountName': accountName }) }}">Back</a>
+            <a class="btn btn-primary" href="{{ path('space_edit', {'accountName': accountName, 'spaceName': space.getName }) }}">Edit</a>
+        </div>
+    </div>
+{% endblock %}
