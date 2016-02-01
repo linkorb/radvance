@@ -7,6 +7,7 @@ use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Radvance\Component\Config\ConfigLoader\YamlConfigLoader;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use RuntimeException;
 
 class ConfigLoader
 {
