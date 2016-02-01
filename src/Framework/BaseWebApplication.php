@@ -2,36 +2,28 @@
 
 namespace Radvance\Framework;
 
-use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\SecurityServiceProvider as SilexSecurityServiceProvider;
 use Silex\Provider\RoutingServiceProvider;
 use Silex\Provider\FormServiceProvider;
-use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\SessionServiceProvider;
-use Silex\Provider\MonologServiceProvider;
-
 use WhoopsSilex\WhoopsServiceProvider;
 use Whoops\Handler\PrettyPageHandler;
 use Radvance\WhoopsHandler\UserWhoopsHandler;
-
 use UserBase\Client\UserProvider as UserBaseUserProvider;
 use UserBase\Client\Client as UserBaseClient;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
-use Symfony\Component\Yaml\Parser as YamlParser;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
 use Silex\Application as SilexApplication;
-
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use RuntimeException;
 use PDO;
 
 /**
  * Crud application using
- * routes/controllers/security/sessions/assets/themes
+ * routes/controllers/security/sessions/assets/themes.
  */
 abstract class BaseWebApplication extends BaseConsoleApplication implements FrameworkApplicationInterface
 {
@@ -66,7 +58,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             isset($this['theme']) ? $this['theme'] : 'default'
         );
     }
-    
+
     protected function getSessionsPath()
     {
         return sprintf('/tmp/%s/sessions', $this['app']['name']);
@@ -86,13 +78,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         // Sessions
         $this->register(new SessionServiceProvider(), array(
-            'session.storage.save_path' => $this->getSessionsPath()
+            'session.storage.save_path' => $this->getSessionsPath(),
         ));
 
         // Forms
         $this->register(new FormServiceProvider());
     }
-    
+
     protected function configureExceptionHandling()
     {
         $this->register(new WhoopsServiceProvider());
@@ -108,7 +100,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     protected function configureRoutes()
     {
         $locator = new FileLocator(array(
-            $this->getRoutesPath()
+            $this->getRoutesPath(),
         ));
         $loader = new YamlFileLoader($locator);
         $newCollection = $loader->load('routes.yml');
@@ -118,7 +110,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             foreach ($orgCollection->all() as $orgName => $orgRoute) {
                 if ($name == $orgName) {
                     throw new RuntimeException(
-                        "Duplicate definition of route: `" . $name . '`. Please remove it from the routes.yml files'
+                        'Duplicate definition of route: `'.$name.'`. Please remove it from the routes.yml files'
                     );
                 }
             }
@@ -158,7 +150,6 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         // $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
         $this['twig']->addGlobal('app_name', $this['app']['name']);
         $this['twig']->addGlobal('spaceConfig', $this->getSpaceConfig());
-        
         // Define userbaseUrl in twig templates for login + signup links
         if (isset($this['userbaseUrl'])) {
             $this['twig']->addGlobal('userbaseUrl', $this['userbaseUrl']);
@@ -171,10 +162,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $app->before(function (Request $request, SilexApplication $app) {
             $urlGenerator = $app['url_generator'];
             $urlGeneratorContext = $urlGenerator->getContext();
-            
+
             if ($request->attributes->has('accountName')) {
                 $accountName = $request->attributes->get('accountName');
-                
+
                 $app['twig']->addGlobal('accountName', $accountName);
                 $app['accountName'] = $accountName;
                 $urlGeneratorContext->setParameter('accountName', $accountName);
@@ -220,7 +211,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $route = new Route(
             $loginPath,
             array(
-                '_controller' => 'Radvance\Controller\AuthenticationController::loginAction'
+                '_controller' => 'Radvance\Controller\AuthenticationController::loginAction',
             )
         );
         $collection->add('login', $route);
@@ -234,11 +225,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $route = new Route(
             $logoutPath,
             array(
-                '_controller' => 'Radvance\Controller\AuthenticationController::logoutAction'
+                '_controller' => 'Radvance\Controller\AuthenticationController::logoutAction',
             )
         );
         $collection->add('logout', $route);
-
 
         $this['routes']->addCollection($collection);
 
@@ -255,10 +245,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'pattern' => '^/',
                 'form' => array(
                     'login_path' => $loginPath,
-                    'check_path' => $checkPath
+                    'check_path' => $checkPath,
                 ),
                 'logout' => array(
-                    'logout_path' => $logoutPath
+                    'logout_path' => $logoutPath,
                 ),
                 'users' => $this->getUserSecurityProvider(),
             ),
@@ -268,7 +258,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $app->before(function (Request $request, SilexApplication $app) {
             $token = $app['security.token_storage']->getToken();
             if ($token) {
-                if ($request->getRequestUri()!='/login') {
+                if ($request->getRequestUri() != '/login') {
                     if ($token->getUser() == 'anon.') {
                         // visitor is not authenticated
                     } else {
@@ -296,14 +286,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 case 'UserBase':
                     // Sanity checks
                     if (!$providerConfig['url']) {
-                        throw new RuntimeException("Userbase URL not configured");
+                        throw new RuntimeException('Userbase URL not configured');
                     }
                     if (!$providerConfig['username']) {
-                        throw new RuntimeException("Userbase username not configured");
+                        throw new RuntimeException('Userbase username not configured');
                     }
                     if (!$providerConfig['password']) {
-                        throw new RuntimeException("Userbase password not configured");
+                        throw new RuntimeException('Userbase password not configured');
                     }
+
                     return new UserBaseUserProvider(
                         new UserBaseClient(
                             $providerConfig['url'],
@@ -333,5 +324,18 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     public function addFlash($type, $message)
     {
         $this['session']->getFlashBag()->add($type, $message);
+    }
+
+    public function getLibrary()
+    {
+        if (!$this['current_user']) {
+            throw new AccessDeniedException('Access denied. Please login first.');
+        }
+
+        return $this->getRepository('library')->getByAccountNameLibraryNameUsername(
+            $this['accountName'],
+            $this['libraryName'],
+            $this['current_user']->getName()
+        );
     }
 }
