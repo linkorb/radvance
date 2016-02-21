@@ -113,13 +113,18 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $user = parse_url($url, PHP_URL_USER);
         $pass = parse_url($url, PHP_URL_PASS);
         $host = parse_url($url, PHP_URL_HOST);
+        $port = parse_url($url, PHP_URL_PORT);
         $dbname = parse_url($url, PHP_URL_PATH);
+        if (!$port) {
+            $port = 3306;
+        }
 
         $dsn = sprintf(
-            '%s:dbname=%s;host=%s',
+            '%s:dbname=%s;host=%s;port=%d',
             $scheme,
             substr($dbname, 1),
-            $host
+            $host,
+            $port
         );
         //echo $dsn;exit();
 
