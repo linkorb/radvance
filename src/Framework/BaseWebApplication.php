@@ -294,14 +294,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     if (!$providerConfig['password']) {
                         throw new RuntimeException('Userbase password not configured');
                     }
-
-                    return new UserBaseUserProvider(
-                        new UserBaseClient(
-                            $providerConfig['url'],
-                            $providerConfig['username'],
-                            $providerConfig['password']
-                        )
+                    
+                    $client = new UserBaseClient(
+                        $providerConfig['url'],
+                        $providerConfig['username'],
+                        $providerConfig['password']
                     );
+                    $this['userbase.client'] = $client;
+                    return new UserBaseUserProvider($client);
+                    
                 default:
                     break;
             }
