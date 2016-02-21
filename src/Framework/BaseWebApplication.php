@@ -154,6 +154,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (isset($this['userbaseUrl'])) {
             $this['twig']->addGlobal('userbaseUrl', $this['userbaseUrl']);
         }
+        if (isset($this['parameters']['userbase_url'])) {
+            $this['twig']->addGlobal('userbase_url', $this['parameters']['userbase_url']);
+        }
     }
 
     protected function configureUrlPreprocessor()
