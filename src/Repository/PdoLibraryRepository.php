@@ -32,11 +32,13 @@ class PdoLibraryRepository extends BaseRepository implements RepositoryInterface
     public function findByUsername($username)
     {
         $statement = $this->pdo->prepare(sprintf(
-            'SELECT l.* FROM `%s` AS l
+            "SELECT l.* FROM `%s` AS l
             INNER JOIN `%s` AS p ON p.library_id = l.id
-            ORDER BY l.account_name, l.name',
+            WHERE p.username='%s'
+            ORDER BY l.account_name, l.name",
             $this->getTable(),
-            'permission'
+            'permission',
+            $username
         ));
         $statement->execute();
 
