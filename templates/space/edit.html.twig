@@ -1,0 +1,38 @@
+{% extends "@Theme/layout.html.twig" %}
+
+{% block content_wrapper %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Edit {{ spaceConfig.getDisplayName() }}</h1>
+                {% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+                {{ form_start(form) }}
+                    {{ form_errors(form) }}
+                    {{ form_widget(form) }}
+
+                    <div class="buttonbox">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i>
+                            {{ 'save'|trans }}
+                        </button>
+                        {% if space.getId() %}
+                        <a href="{{ path('space_delete', {'accountName': accountName, 'spaceName': space.getName() }) }}" class="btn btn-danger">
+                            <i class="fa fa-trash-o"></i>
+                            Delete
+                        </a>
+                        <a href="{{ path('permission_index', {'accountName': accountName, 'spaceName': space.getName() }) }}" class="btn btn-warning">
+                            <i class="fa fa-users"></i>
+                            Permissions
+                        </a>
+                        {% endif %}
+                        <a href="{{ path('space_index', {'accountName': accountName}) }}" class="btn btn-default" role="button">
+                            <i class="fa fa-chevron-left"></i>
+                            Back
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -149,10 +149,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         // 2. breaks the loading order of routes and template engine
         // $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
         $this['twig']->addGlobal('app_name', $this['app']['name']);
-
+        $this['twig']->addGlobal('spaceConfig', $this->getSpaceConfig());
         // Define userbaseUrl in twig templates for login + signup links
         if (isset($this['userbaseUrl'])) {
             $this['twig']->addGlobal('userbaseUrl', $this['userbaseUrl']);
+        }
+        if (isset($this['parameters']['userbase_url'])) {
+            $this['twig']->addGlobal('userbase_url', $this['parameters']['userbase_url']);
         }
     }
 
@@ -294,14 +297,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     if (!$providerConfig['password']) {
                         throw new RuntimeException('Userbase password not configured');
                     }
-
-                    return new UserBaseUserProvider(
-                        new UserBaseClient(
-                            $providerConfig['url'],
-                            $providerConfig['username'],
-                            $providerConfig['password']
-                        )
+                    
+                    $client = new UserBaseClient(
+                        $providerConfig['url'],
+                        $providerConfig['username'],
+                        $providerConfig['password']
                     );
+                    $this['userbase.client'] = $client;
+                    return new UserBaseUserProvider($client);
+                    
                 default:
                     break;
             }

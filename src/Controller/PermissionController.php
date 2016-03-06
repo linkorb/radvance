@@ -9,51 +9,58 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PermissionController
 {
-    public function indexAction(Application $app, Request $request, $accountName, $libraryName)
+    public function indexAction(Application $app, Request $request, $accountName, $spaceName)
     {
-        $library = $app->getRepository('library')->findByNameAndAccountName($libraryName, $accountName);
+        $space = $app->getRepository(
+            $app->getSpaceConfig()->getTableName()
+        )->findByNameAndAccountName($spaceName, $accountName);
 
         return new Response($app['twig']->render(
             '@BaseTemplates/permission/index.html.twig',
             array(
-                // 'libraries' => $libraries,
                 'accountName' => $accountName,
-                'libraryName' => $libraryName,
-                'permissions' => $app->getRepository('permission')->findByLibraryId($library->getId()),
+                'spaceName' => $spaceName,
+                'permissions' => $app->getRepository('permission')->findBySpaceId($space->getId()),
                 'error' => $request->query->get('error'),
             )
         ));
     }
 
-    public function addAction(Application $app, Request $request, $accountName, $libraryName)
+    public function addAction(Application $app, Request $request, $accountName, $spaceName)
     {
         $username = trim($request->request->get('P_username'));
 
-        $library = $app->getRepository('library')->findByNameAndAccountName($libraryName, $accountName);
+        $space = $app->getRepository(
+            $app->getSpaceConfig()->getTableName()
+        )->findByNameAndAccountName($spaceName, $accountName);
+        
         $error = null;
-        if ($library) {
+        if ($space) {
             $repo = $app->getRepository('permission');
             $permission = new Permission();
-            $permission->setUsername($username)->setLibraryId($library->getId());
+            $permission->setUsername($username)->setSpaceId($space->getId());
             if (!$repo->persist($permission)) {
                 $error = 'user exists';
             }
         } else {
-            $error = 'Invalid library';
+            $error = 'Invalid space';
         }
 
         return $app->redirect(
             $app['url_generator']->generate(
                 'permission_index',
-                array('accountName' => $accountName, 'libraryName' => $libraryName, 'error' => $error)
+                array('accountName' => $accountName, 'spaceName' => $spaceName, 'error' => $error)
             )
         );
     }
 
-    public function deleteAction(Application $app, Request $request, $accountName, $libraryName, $permissionId)
+    public function deleteAction(Application $app, Request $request, $accountName, $spaceName, $permissionId)
     {
-        $library = $app->getRepository('library')->findByNameAndAccountName($libraryName, $accountName);
-        if ($library) {
+        $space = $app->getRepository(
+            $app->getSpaceConfig()->getTableName()
+        )->findByNameAndAccountName($spaceName, $accountName);
+        
+        if ($space) {
             $app->getRepository('permission')->remove(
                 $app->getRepository('permission')->find($permissionId)
             );
@@ -62,7 +69,7 @@ class PermissionController
         return $app->redirect(
             $app['url_generator']->generate(
                 'permission_index',
-                array('accountName' => $accountName, 'libraryName' => $libraryName)
+                array('accountName' => $accountName, 'spaceName' => $spaceName)
             )
         );
     }

@@ -2,14 +2,24 @@
 
 namespace Radvance\Repository;
 
-use Radvance\Model\Library;
+use Radvance\Model\Space;
 use PDO;
 
-class PdoLibraryRepository extends BaseRepository implements RepositoryInterface
+class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
 {
+    public function setTableName($tableName)
+    {
+        $this->tableName = $tableName;
+    }
+    
+    public function getTable()
+    {
+        return $this->tableName;
+    }
+    
     public function createEntity()
     {
-        return Library::createNew();
+        return Space::createNew();
     }
 
     public function findByAccountName($accountName)
@@ -45,12 +55,12 @@ class PdoLibraryRepository extends BaseRepository implements RepositoryInterface
         return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    public function getByAccountNameLibraryNameUsername($accountName, $libraryName, $username)
+    public function getByAccountNameSpaceNameUsername($accountName, $spaceName, $username)
     {
         $statement = $this->pdo->prepare(sprintf(
             'SELECT l.* FROM `%s` AS l
             INNER JOIN `%s` AS p ON p.library_id = l.id
-            WHERE p.username=:username AND l.name=:libname AND l.account_name=:accname
+            WHERE p.username=:username AND l.name=:space_name AND l.account_name=:account_name
             ORDER BY l.account_name, l.name LIMIT 1',
             $this->getTable(),
             'permission'
@@ -58,8 +68,8 @@ class PdoLibraryRepository extends BaseRepository implements RepositoryInterface
         $statement->execute(
             [
                 'username' => $username,
-                'libname' => $libraryName,
-                'accname' => $accountName,
+                'space_name' => $spaceName,
+                'account_name' => $accountName,
             ]
         );
 

@@ -1,6 +1,6 @@
 frontpage:
     path: /
-    defaults:  { _controller: BlogApp\Controller\AppController::frontpageAction }
+    defaults:  { _controller: MyApp\Controller\AppController::frontpageAction }
 
 assets:
     path: "/.{postfix}"
@@ -9,13 +9,14 @@ assets:
 
 # Example
 
-example_index:
+account_view:
     path: /{accountName}
     defaults:  { _controller: Radvance\Controller\AccountController::viewAction }
 
-example_view:
-    path: /{accountName}/{exampleName}
-    defaults:  { _controller: ExampleApp\Controller\ExampleController::viewAction }
+space_view:
+    path: /{accountName}/{spaceName}
+    defaults:  { _controller: Radvance\Controller\SpaceController::viewAction }
 
-example_add:
-    path: /{accountName}/addExample
+space_add:
+    path: /{accountName}/addSpace
+    defaults:  { _controller: Radvance\Controller\SpaceController::addAction }

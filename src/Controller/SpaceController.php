@@ -3,57 +3,71 @@
 namespace Radvance\Controller;
 
 use Radvance\Framework\BaseWebApplication as Application;
-use Radvance\Model\Library;
+use Radvance\Model\Space;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class LibraryController
+class SpaceController
 {
     public function indexAction(Application $app, Request $request, $accountName)
     {
-        $libraries = $app->getRepository('library')->findByAccountName($accountName);
+        $spaces = $app->getRepository($app->getSpaceConfig()->getTableName())->findByAccountName($accountName);
 
         return new Response($app['twig']->render(
-            '@BaseTemplates/library/index.html.twig',
+            '@BaseTemplates/space/index.html.twig',
             array(
-                'libraries' => $libraries,
+                'spaces' => $spaces,
                 'accountName' => $accountName,
+            )
+        ));
+    }
+    
+    public function viewAction(Application $app, Request $request, $accountName, $spaceName)
+    {
+        $repo = $app->getRepository($app->getSpaceConfig()->getTableName());
+
+        $space = $repo->findByNameAndAccountName($spaceName, $accountName);
+
+        return new Response($app['twig']->render(
+            '@BaseTemplates/space/view.html.twig',
+            array(
+                'space' => $space
             )
         ));
     }
 
     public function addAction(Application $app, Request $request, $accountName)
     {
-        return $this->getLibraryEditForm($app, $request, $accountName);
+        return $this->getSpaceEditForm($app, $request, $accountName);
     }
 
-    public function editAction(Application $app, Request $request, $accountName, $libraryName)
+    public function editAction(Application $app, Request $request, $accountName, $spaceName)
     {
-        return $this->getLibraryEditForm($app, $request, $accountName, $libraryName);
+        return $this->getSpaceEditForm($app, $request, $accountName, $spaceName);
     }
 
-    private function getLibraryEditForm(Application $app, Request $request, $accountName, $libraryName = null)
+    private function getSpaceEditForm(Application $app, Request $request, $accountName, $spaceName = null)
     {
         $error = $request->query->get('error');
-        $repo = $app->getRepository('library');
+        $repo = $app->getRepository($app->getSpaceConfig()->getTableName());
         $add = false;
-        $libraryName = trim($libraryName);
+        $spaceName = trim($spaceName);
 
-        // $library = $repo->findOneOrNullBy(array('id' => $libraryName));
-        $library = $repo->findByNameAndAccountName($libraryName, $accountName);
+        // $space = $repo->findOneOrNullBy(array('id' => $spaceName));
+        $space = $repo->findByNameAndAccountName($spaceName, $accountName);
 
-        if (null === $library) {
+        if (null === $space) {
             $add = true;
             $defaults = array(
                 'account_name' => $accountName,
             );
-            $library = new Library();
-            $library->setAccountName($accountName);
+            $space = new Space();
+            $space->setAccountName($accountName);
         } else {
             $defaults = array(
                 'account_name' => $accountName,
-                'name' => $library->getName(),
-                'description' => $library->getDescription(),
+                'name' => $space->getName(),
+                'description' => $space->getDescription(),
             );
         }
 
@@ -68,15 +82,15 @@ class LibraryController
         $form->handleRequest($request);
         if ($form->isValid()) {
             $data = $form->getData();
-            $library->setName($data['name'])
+            $space->setName($data['name'])
                 ->setDescription($data['description']);
 
-            if (!$repo->persist($library)) {
+            if (!$repo->persist($space)) {
                 return $app->redirect(
                     $app['url_generator']->generate(
-                        'library_add',
+                        'space_add',
                         array(
-                            'error' => 'Library exists',
+                            'error' => 'Space exists',
                             'accountName' => $accountName,
                         )
                     )
@@ -85,34 +99,34 @@ class LibraryController
 
             return $app->redirect(
                 $app['url_generator']->generate(
-                    'library_index',
+                    'space_index',
                     array('accountName' => $accountName)
                 )
             );
         }
 
         return new Response($app['twig']->render(
-            '@BaseTemplates/library/edit.html.twig',
+            '@BaseTemplates/space/edit.html.twig',
             array(
                 'form' => $form->createView(),
-                'library' => $library,
+                'space' => $space,
                 'error' => $error,
                 'accountName' => $accountName,
             )
         ));
     }
 
-    public function deleteAction(Application $app, Request $request, $accountName, $libraryName)
+    public function deleteAction(Application $app, Request $request, $accountName, $spaceName)
     {
-        $library = $app->getRepository('library')
-            ->findByNameAndAccountName($libraryName, $accountName);
-        if ($library) {
-            $app->getRepository('library')->remove($library);
+        $spaceRepository = $app->getRepository($app->getSpaceConfig()->getTableName());
+        $spaceRepository->findByNameAndAccountName($spaceName, $accountName);
+        if ($space) {
+            $spaceRepository->remove($space);
         }
 
         return $app->redirect(
             $app['url_generator']->generate(
-                'library_index',
+                'space_index',
                 array('accountName' => $accountName)
             )
         );
