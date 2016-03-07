@@ -297,7 +297,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     if (!$providerConfig['password']) {
                         throw new RuntimeException('Userbase password not configured');
                     }
-                    
+
                     $client = new UserBaseClient(
                         $providerConfig['url'],
                         $providerConfig['username'],
@@ -305,7 +305,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     );
                     $this['userbase.client'] = $client;
                     return new UserBaseUserProvider($client);
-                    
+
                 default:
                     break;
             }
@@ -336,7 +336,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             throw new AccessDeniedException('Access denied. Please login first.');
         }
 
-        return $this->getRepository('library')->getByAccountNameLibraryNameUsername(
+        return $this->getRepository('library')->getByAccountNameSpaceNameUsername(
             $this['accountName'],
             $this['libraryName'],
             $this['current_user']->getName()
