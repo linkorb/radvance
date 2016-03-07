@@ -332,6 +332,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     public function getLibrary()
     {
+        return $this->getSpace();
+    }
+
+    public function getSpace()
+    {
         if (!$this['current_user']) {
             throw new AccessDeniedException('Access denied. Please login first.');
         }
