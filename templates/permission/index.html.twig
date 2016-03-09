@@ -1,7 +1,7 @@
 {% extends "@Theme/layout.html.twig" %}
 
 {% block content_wrapper %}
-    <div class="container">
+    <div class="row">
         <h1>Permissions</h1>
         <h3>{{ accountName }} / <a href="{{ path('space_view', {'accountName': accountName, 'spaceName': spaceName}) }}">{{ spaceName }}</a></h3>
         <table class="table table-bordered table-responsive">

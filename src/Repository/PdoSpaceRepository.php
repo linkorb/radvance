@@ -11,6 +11,8 @@ class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
     public function setTableName($tableName)
     {
         $this->tableName = $tableName;
+
+        return $this;
     }
 
     public function getTable()

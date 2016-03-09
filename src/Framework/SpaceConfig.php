@@ -60,6 +60,20 @@ class SpaceConfig
         return $this;
     }
 
+    private $permissionClassName;
+
+    public function getPermissionClassName()
+    {
+        return $this->permissionClassName;
+    }
+
+    public function setPermissionClassName($permissionClassName)
+    {
+        $this->permissionClassName = $permissionClassName;
+
+        return $this;
+    }
+
     private $displayName;
     public function getDisplayName()
     {

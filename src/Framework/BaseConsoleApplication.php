@@ -194,10 +194,13 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         }
 
         // library repository
-        $this->configureSpaceAndPermissionRepositories();
+        $this->configureSpaceRepository();
+
+        // Permission repository
+        $this->configurePermissionRepository();
     }
 
-    private function configureSpaceAndPermissionRepositories()
+    protected function configureSpaceRepository()
     {
         // space repository
         // TODO: make flag to load it optionally
@@ -208,9 +211,12 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $spaceRepository->setModelClassName($config->getModelClassName());
         $spaceRepository->setPermissionToSpaceForeignKeyName($config->getPermissionToSpaceForeignKeyName());
         $this->addRepository($spaceRepository);
+    }
 
-        // permission repository
-        $this->addRepository(new PdoPermissionRepository($this->pdo));
+    protected function configurePermissionRepository()
+    {
+        $this->addRepository(new \Radvance\Repository\PdoPermissionRepository($this->pdo));
+        $this['permissionClassName'] = '\Radvance\Model\Permission';
     }
 
     /**

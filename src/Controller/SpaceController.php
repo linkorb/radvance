@@ -21,7 +21,7 @@ class SpaceController
             )
         ));
     }
-    
+
     public function viewAction(Application $app, Request $request, $accountName, $spaceName)
     {
         $repo = $app->getRepository($app->getSpaceConfig()->getTableName());
@@ -119,7 +119,7 @@ class SpaceController
     public function deleteAction(Application $app, Request $request, $accountName, $spaceName)
     {
         $spaceRepository = $app->getRepository($app->getSpaceConfig()->getTableName());
-        $spaceRepository->findByNameAndAccountName($spaceName, $accountName);
+        $space = $spaceRepository->findByNameAndAccountName($spaceName, $accountName);
         if ($space) {
             $spaceRepository->remove($space);
         }

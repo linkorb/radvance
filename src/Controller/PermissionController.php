@@ -20,7 +20,10 @@ class PermissionController
             array(
                 'accountName' => $accountName,
                 'spaceName' => $spaceName,
-                'permissions' => $app->getRepository('permission')->findBySpaceId($space->getId()),
+                // 'permissions' => $app->getRepository('permission')->findBySpaceId($space->getId()),
+                'permissions' => $app->getRepository('permission')->findBy(
+                    [$app->getSpaceConfig()->getPermissionToSpaceForeignKeyName() => $space->getId()]
+                ),
                 'error' => $request->query->get('error'),
             )
         ));
@@ -33,12 +36,15 @@ class PermissionController
         $space = $app->getRepository(
             $app->getSpaceConfig()->getTableName()
         )->findByNameAndAccountName($spaceName, $accountName);
-        
+
         $error = null;
         if ($space) {
             $repo = $app->getRepository('permission');
-            $permission = new Permission();
-            $permission->setUsername($username)->setSpaceId($space->getId());
+            $fkSetterName = ucwords($app->getSpaceConfig()->getPermissionToSpaceForeignKeyName(), '_');
+            $fkSetterName = 'set'.str_replace('_', '', $fkSetterName);
+            $permissionClassName = $app['permissionClassName'];
+            $permission = new $permissionClassName();
+            $permission->setUsername($username)->$fkSetterName($space->getId());
             if (!$repo->persist($permission)) {
                 $error = 'user exists';
             }
@@ -59,7 +65,7 @@ class PermissionController
         $space = $app->getRepository(
             $app->getSpaceConfig()->getTableName()
         )->findByNameAndAccountName($spaceName, $accountName);
-        
+
         if ($space) {
             $app->getRepository('permission')->remove(
                 $app->getRepository('permission')->find($permissionId)
