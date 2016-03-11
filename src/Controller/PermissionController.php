@@ -40,12 +40,21 @@ class PermissionController
         $error = null;
         if ($space) {
             $repo = $app->getRepository('permission');
-            $fkSetterName = ucwords($app->getSpaceConfig()->getPermissionToSpaceForeignKeyName(), '_');
-            $fkSetterName = 'set'.str_replace('_', '', $fkSetterName);
+            $fkSetterName = 'set';
+            $fk = explode('_', $app->getSpaceConfig()->getPermissionToSpaceForeignKeyName());
+            foreach ($fk as $value) {
+                $fkSetterName .= ucfirst($value);
+            }
+            // $fkSetterName = 'set'.str_replace('_', '', $fkSetterName);
             $permissionClassName = $app['permissionClassName'];
             $permission = new $permissionClassName();
             $permission->setUsername($username)->$fkSetterName($space->getId());
-            if (!$repo->persist($permission)) {
+            // if (!$repo->persist($permission)) {
+            //     $error = 'user exists';
+            // }
+            try {
+                $repo->persist($permission);
+            } catch (\Exception $e) {
                 $error = 'user exists';
             }
         } else {
