@@ -94,6 +94,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     {
         $this['debug'] = false;
         if (isset($this['parameters']['debug'])) {
+            error_reporting(E_ALL);
+            ini_set('display_errors', 'on');
             $this['debug'] = (bool) $this['parameters']['debug'];
         }
     }
