@@ -30,7 +30,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this->loadConfig();
         $this->configureParameters();
-        $this->configureSpaces();
+        // $this->configureSpaces();
         $this->configurePdo();
         $this->configureService();
         $this->configureRepositories();
@@ -190,18 +190,23 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         foreach (glob($dir.'/Pdo*Repository.php') as $filename) {
             $className = $ns.'\\Repository\\'.basename($filename, '.php');
             // only load the ones implements Radvance RepositoryInterface
-            if (in_array('Radvance\\Repository\\RepositoryInterface', class_implements($className))) {
+            if (in_array('Radvance\\Repository\\PermissionRepositoryInterface', class_implements($className))) {
+                $repo = new $className($this->pdo);
+                $this['permissionRepository'] = $repo;
+                $this['permissionModelClassName'] = $repo->getModelClassName();
+                $this->addRepository($repo);
+            } elseif (in_array('Radvance\\Repository\\SpaceRepositoryInterface', class_implements($className))) {
+                $repo = new $className($this->pdo);
+                $this['spaceRepository'] = $repo;
+                $this['spaceModelClassName'] = $repo->getModelClassName();
+                $this->addRepository($repo);
+            } elseif (in_array('Radvance\\Repository\\RepositoryInterface', class_implements($className))) {
                 $this->addRepository(new $className($this->pdo));
             }
         }
-
-        // library repository
-        $this->configureSpaceRepository();
-
-        // Permission repository
-        $this->configurePermissionRepository();
     }
 
+    /*
     protected function configureSpaceRepository()
     {
         // space repository
@@ -214,11 +219,16 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $spaceRepository->setPermissionToSpaceForeignKeyName($config->getPermissionToSpaceForeignKeyName());
         $this->addRepository($spaceRepository);
     }
+    */
 
-    protected function configurePermissionRepository()
+    public function getSpaceRepository()
     {
-        $this->addRepository(new \Radvance\Repository\PdoPermissionRepository($this->pdo));
-        $this['permissionClassName'] = '\Radvance\Model\Permission';
+        return isset($this['spaceRepository']) ? $this['spaceRepository'] : null;
+    }
+
+    public function getPermissionRepository()
+    {
+        return isset($this['permissionRepository']) ? $this['permissionRepository'] : null;
     }
 
     /**
@@ -300,22 +310,22 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         }
     }
 
-    protected $spaceConfig;
-
-    public function configureSpaces()
-    {
-        $spaceConfig = new SpaceConfig();
-
-        $this->spaceConfig = $spaceConfig->setTableName('book')
-            ->setModelClassName('\Radvance\Model\Space')
-            ->setRepositoryClassName('\Radvance\Repository\PdoSpaceRepository')
-            ->setDisplayName('B00k')
-            ->setDisplayNamePlural('B00kz')
-            ->setPermissionToSpaceForeignKeyName('space_id');
-    }
-
-    public function getSpaceConfig()
-    {
-        return $this->spaceConfig;
-    }
+    // protected $spaceConfig;
+    //
+    // public function configureSpaces()
+    // {
+    //     $spaceConfig = new SpaceConfig();
+    //
+    //     $this->spaceConfig = $spaceConfig->setTableName('book')
+    //         ->setModelClassName('\Radvance\Model\Space')
+    //         ->setRepositoryClassName('\Radvance\Repository\PdoSpaceRepository')
+    //         ->setDisplayName('B00k')
+    //         ->setDisplayNamePlural('B00kz')
+    //         ->setPermissionToSpaceForeignKeyName('space_id');
+    // }
+    //
+    // public function getSpaceConfig()
+    // {
+    //     return $this->spaceConfig;
+    // }
 }

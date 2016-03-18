@@ -4,7 +4,7 @@ namespace Radvance\Repository;
 
 use Radvance\Model\Permission;
 
-class PdoPermissionRepository extends BaseRepository implements RepositoryInterface
+class PdoPermissionRepository extends BaseRepository implements PermissionRepositoryInterface
 {
     public function createEntity()
     {
@@ -16,5 +16,10 @@ class PdoPermissionRepository extends BaseRepository implements RepositoryInterf
         return $this->findBy(
             array('space_id' => $spaceId)
         );
+    }
+
+    public function getModelClassName()
+    {
+        return '\Radvance\Model\Permission';
     }
 }

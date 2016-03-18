@@ -2,10 +2,24 @@
 
 {% block content_wrapper %}
     <div class="container">
-        <h1>{{ spaceConfig.getDisplayName() }} "{{ space.getName }}"</h1>
-        Name: {{ space.getName }}<br />
+        <h1>{{ nameOfSpace }} "{{ space.getName() }}"</h1>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <a href="{{ path('space_index', {'accountName': accountName}) }}">
+                    {{ accountName}}
+                </a>
+                / {{ space.getName }}
+            </div>
+            <div class="panel-body">
+                {{ space.getDescription()|nl2br }}
+            </div>
+        </div>
         <div class="buttonbox">
             <a class="btn btn-default" href="{{ path('space_index', {'accountName': accountName }) }}">Back</a>
+            <a href="{{ path('permission_index', {'accountName': accountName, 'spaceName': space.getName() }) }}" class="btn btn-warning">
+                <i class="fa fa-users"></i>
+                Permissions
+            </a>
             <a class="btn btn-primary" href="{{ path('space_edit', {'accountName': accountName, 'spaceName': space.getName }) }}">Edit</a>
         </div>
     </div>

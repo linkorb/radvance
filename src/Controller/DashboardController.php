@@ -22,7 +22,7 @@ class DashboardController
         return new Response($app['twig']->render(
             '@BaseTemplates/dashboard.html.twig',
             array(
-                'libraries' => $app->getRepository('library')
+                'libraries' => $app->getSpaceRepository()
                     ->findByUsername($app['current_user']->getName()),
             )
         ));
