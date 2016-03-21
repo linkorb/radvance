@@ -98,6 +98,11 @@ class SpaceController
                         )
                     )
                 );
+            } else {
+                // auto-add permission
+                if ($add) {
+                    $app->getPermissionRepository()->add($app['current_user']->getName(), $space->getId());
+                }
             }
 
             return $app->redirect(
