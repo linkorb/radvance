@@ -37,7 +37,6 @@ namespace Herald\Server\Repository;
 
 use Radvance\Repository\PermissionRepositoryInterface;
 use Radvance\Repository\PdoPermissionRepository as BaseRepository;
-use Herald\Server\Model\Permission;
 
 class PdoPermissionRepository extends BaseRepository implements PermissionRepositoryInterface
 {
