@@ -2,68 +2,44 @@
 
 namespace Radvance\Repository;
 
-use Radvance\Model\Space;
 use PDO;
 
-class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
+abstract class PdoSpaceRepository extends BaseRepository implements SpaceRepositoryInterface
 {
-    // protected $tableName;
-    //
-    // public function setTableName($tableName)
-    // {
-    //     $this->tableName = $tableName;
-    //
-    //     return $this;
-    // }
-    //
-    // public function getTable()
-    // {
-    //     return $this->tableName;
-    // }
-    //
-    // public function createEntity()
-    // {
-    //     $klass = $this->modelClassName;
-    //
-    //     return $klass::createNew();
-    // }
-    //
-    // protected $modelClassName = '\Radvance\Model\Space';
-    //
-    // public function getModelClassName()
-    // {
-    //     return $this->modelClassName;
-    // }
-    //
-    // public function setModelClassName($modelClassName)
-    // {
-    //     $this->modelClassName = $modelClassName;
-    //
-    //     return $this;
-    // }
-    //
-    // protected $permissionToSpaceForeignKeyName = 'space_id';
-    //
-    // public function getPermissionToSpaceForeignKeyName()
-    // {
-    //     return $this->permissionToSpaceForeignKeyName;
-    // }
-    //
-    // public function setPermissionToSpaceForeignKeyName($permissionToSpaceForeignKeyName)
-    // {
-    //     $this->permissionToSpaceForeignKeyName = $permissionToSpaceForeignKeyName;
-    //
-    //     return $this;
-    // }
+    protected $modelClassName = null;
+    protected $nameOfSpace = null;
+    protected $nameOfSpacePlural = null;
+    protected $permissionTableName = null;
+    protected $permissionTableForeignKeyName = null;
 
     public function createEntity()
     {
-        return Space::createNew();
+        $class = $this->getModelClassName();
+        return $class::createNew();
+    }
+
+    public function getModelClassName()
+    {
+        return $this->modelClassName;
     }
 
     public function getNameOfSpace($plural = false)
     {
-        return $plural ? 'Spaces' : 'Space';
+        if ($plural && $this->nameOfSpacePlural) {
+            return $this->nameOfSpacePlural;
+        }
+
+        return $this->nameOfSpace;
+    }
+
+    public function getPermissionTableName()
+    {
+        return $this->permissionTableName;
+    }
+
+    public function getPermissionTableForeignKeyName()
+    {
+        return $this->permissionTableForeignKeyName;
     }
 
     public function findByAccountName($accountName)
@@ -91,8 +67,8 @@ class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
             WHERE p.username='%s'
             ORDER BY l.account_name, l.name",
             $this->getTable(),
-            'permission',
-            $this->permissionToSpaceForeignKeyName,
+            $this->permissionTableName,
+            $this->permissionTableForeignKeyName,
             $username
         ));
         $statement->execute();
@@ -108,8 +84,8 @@ class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
             WHERE p.username=:username AND l.name=:space_name AND l.account_name=:account_name
             ORDER BY l.account_name, l.name LIMIT 1',
             $this->getTable(),
-            'permission',
-            $this->permissionToSpaceForeignKeyName
+            $this->permissionTableName,
+            $this->permissionTableForeignKeyName
         ));
         $statement->execute(
             [

@@ -191,35 +191,51 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             $className = $ns.'\\Repository\\'.basename($filename, '.php');
             // only load the ones implements Radvance RepositoryInterface
             if (in_array('Radvance\\Repository\\PermissionRepositoryInterface', class_implements($className))) {
-                $repo = new $className($this->pdo);
-                $this['permissionRepository'] = $repo;
-                $this['permissionModelClassName'] = $repo->getModelClassName();
-                $this->addRepository($repo);
+                $this->configurePermissionRepository($className);
             } elseif (in_array('Radvance\\Repository\\SpaceRepositoryInterface', class_implements($className))) {
-                $repo = new $className($this->pdo);
-                $this['spaceRepository'] = $repo;
-                $this['spaceModelClassName'] = $repo->getModelClassName();
-                $this->addRepository($repo);
+                $this->configureSpaceRepository($className);
             } elseif (in_array('Radvance\\Repository\\RepositoryInterface', class_implements($className))) {
                 $this->addRepository(new $className($this->pdo));
             }
         }
     }
 
-    /*
-    protected function configureSpaceRepository()
+    private function configureSpaceRepository($className)
     {
-        // space repository
-        // TODO: make flag to load it optionally
-        $config = $this->getSpaceConfig();
-        $klass = $config->getRepositoryClassName();
-        $spaceRepository = new $klass($this->pdo);
-        $spaceRepository->setTableName($config->getTableName());
-        $spaceRepository->setModelClassName($config->getModelClassName());
-        $spaceRepository->setPermissionToSpaceForeignKeyName($config->getPermissionToSpaceForeignKeyName());
-        $this->addRepository($spaceRepository);
+        $repo = new $className($this->pdo);
+
+        // checks the needed properties
+        if (!$repo->getModelClassName()
+            || !$repo->getNameOfSpace()
+            || !$repo->getPermissionTableName()
+            || !$repo->getPermissionTableForeignKeyName()
+        ) {
+            throw new RuntimeException(
+                'Space repository must contain the following properties:
+                $modelClassName, $nameOfSpace, $permissionTableName, $permissionTableForeignKeyName'
+            );
+        }
+
+        $this['spaceRepository'] = $repo;
+        $this['spaceModelClassName'] = $repo->getModelClassName();
+        $this->addRepository($repo);
     }
-    */
+    private function configurePermissionRepository($className)
+    {
+        $repo = new $className($this->pdo);
+
+        // checks the needed properties
+        if (!$repo->getModelClassName() || !$repo->getSpaceTableForeignKeyName()) {
+            throw new RuntimeException(
+                'Space repository must contain the following properties:
+                $modelClassName, $spaceTableForeignKeyName'
+            );
+        }
+
+        $this['permissionRepository'] = $repo;
+        $this['permissionModelClassName'] = $repo->getModelClassName();
+        $this->addRepository($repo);
+    }
 
     public function getSpaceRepository()
     {
