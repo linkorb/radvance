@@ -25,4 +25,11 @@ abstract class Space extends BaseModel implements SpaceInterface
     {
         return $this->description;
     }
+
+    public function setCreatedAt($time = null)
+    {
+        $this->created_at = $time ?: (new \DateTime());
+
+        return $this;
+    }
 }

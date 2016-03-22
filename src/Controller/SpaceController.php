@@ -74,7 +74,6 @@ class SpaceController
             );
         }
 
-
         $form = $app['form.factory']->createBuilder('form', $defaults)
             ->add('account_name', 'text', array('read_only' => true))
             ->add('name', 'text')
@@ -87,6 +86,9 @@ class SpaceController
             $data = $form->getData();
             $space->setName($data['name'])
                 ->setDescription($data['description']);
+            if (method_exists($space, 'setCreatedAt')) {
+                $space->setCreatedAt();
+            }
 
             if (!$repo->persist($space)) {
                 return $app->redirect(
