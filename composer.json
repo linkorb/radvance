@@ -28,6 +28,7 @@
         "texthtml/whoops-silex": "~1.0"
     },
     "require-dev": {
+        "droid/droid-plugins": "~1.0",
         "behat/behat": "^3.0",
         "behat/mink": "^1.6",
         "behat/mink-extension": "^2.0",
