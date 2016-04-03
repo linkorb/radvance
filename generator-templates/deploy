@@ -1,0 +1,17 @@
+#!/bin/bash
+
+git pull origin master
+composer install --prefer-dist
+read -p "MySQL database name: " dbname
+read -p "MySQL username: " username
+read -s -p "MySQL Password: " pswd
+vendor/bin/dbtk-schema-loader schema:load app/schema.xml mysql://$username:$pswd@localhost/$dbname --apply
+bower install
+
+if [ -f "app/config/parameters.yml" ]
+then
+	echo "Parameters already exists."
+else
+	cp app/config/parameters.yml.dist app/config/parameters.yml
+    echo "Parameters file created."
+fi

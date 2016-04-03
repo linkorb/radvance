@@ -10,15 +10,15 @@ class Generator
     private $appConfig;
     private $output;
     private $templatePath;
-    
+
     public function __construct(AppConfig $appConfig, $output, $templatePath)
     {
         $this->appConfig = $appConfig;
         $this->output = $output;
         $this->templatePath = realpath($templatePath);
-        
+
     }
-    
+
     public function generateProject()
     {
         $this->ensureDirectory($this->appConfig->getAppPath() . '');
@@ -32,19 +32,20 @@ class Generator
         $this->ensureDirectory($this->appConfig->getTemplatesPath() . '');
         $this->ensureDirectory($this->appConfig->getThemesPath() . '');
         $this->ensureDirectory($this->appConfig->getThemesPath() . '/default');
-        
+
         // Project root
         $this->ensureFile('README.md');
         $this->ensureFile('.gitignore');
         $this->ensureFile('.editorconfig');
-        
+
         $this->ensureFile('.bowerrc');
         $this->ensureFile('bower.json');
+        $this->ensureFile('deploy');
 
         // Web root
         $this->ensureFile($this->appConfig->getWebPath() . '/index.php');
         $this->ensureFile($this->appConfig->getWebPath() . '/.htaccess');
-        
+
         // App directory
         $this->ensureFile($this->appConfig->getAppPath() . '/bootstrap.php');
         $this->ensureFile($this->appConfig->getAppPath() . '/schema.xml');
@@ -56,11 +57,11 @@ class Generator
         $this->ensureFile($this->appConfig->getThemesPath() . '/default/style.less');
 
         $this->ensureFile($this->appConfig->getTemplatesPath() . '/frontpage.html.twig');
-        
+
         // src directory
         $this->ensureFile($this->appConfig->getCodePath() . '/Application.php');
     }
-    
+
     public function generateController($prefix)
     {
         if (substr($prefix, -10) == 'Controller') {
@@ -68,14 +69,14 @@ class Generator
         }
         $data = array();
         $data['CLASS_PREFIX'] = $prefix;
-        
+
         $this->ensureDirectory($this->appConfig->getCodePath() . '/Controller');
         $this->ensureFile(
             $this->appConfig->getCodePath() . '/Controller/' . $prefix . 'Controller.php',
             $this->appConfig->getCodePath() . '/Controller/ExampleController.php',
             $data
         );
-        
+
     }
 
 
@@ -83,7 +84,7 @@ class Generator
     {
         $data = array();
         $data['CLASS_PREFIX'] = $prefix;
-        
+
         $this->ensureDirectory($this->appConfig->getCodePath() . '/Model');
         $this->ensureFile(
             $this->appConfig->getCodePath() . '/Model/' . $prefix . '.php',
@@ -91,13 +92,13 @@ class Generator
             $data
         );
     }
-    
+
 
     public function generateRepository($prefix)
     {
         $data = array();
         $data['CLASS_PREFIX'] = $prefix;
-        
+
         $this->ensureDirectory($this->appConfig->getCodePath() . '/Repository');
         $this->ensureFile(
             $this->appConfig->getCodePath() . '/Repository/Pdo' . $prefix . 'Repository.php',
@@ -111,7 +112,7 @@ class Generator
     {
         $data = array();
         $data['CLASS_PREFIX'] = $prefix;
-        
+
         $this->ensureDirectory($this->appConfig->getTemplatePath() . '');
         $this->ensureDirectory($this->appConfig->getTemplatePath() . '/' . $prefix);
 
@@ -133,7 +134,7 @@ class Generator
             $data
         );
     }
-    
+
     private function ensureDirectory($path)
     {
         $fullPath = $this->appConfig->getRootPath() . '/' . $path;
@@ -142,14 +143,14 @@ class Generator
             mkdir($fullPath);
         }
     }
-    
+
     private function ensureFile($outputPath, $templatePath = null, $data = array())
     {
         if (!$templatePath) {
             $templatePath = $outputPath;
         }
         $fullOutputPath = $this->appConfig->getRootPath() . '/' . $outputPath;
-        
+
         if (!file_exists($this->templatePath . '/' . $templatePath)) {
             throw new RuntimeException("Missing template for: " . $templatePath . ' (' . $this->templatePath .'::' . $templatePath . ')');
         }
@@ -157,7 +158,7 @@ class Generator
         if (!file_exists($fullOutputPath)) {
             $this->output->writeln('- <fg=white>Ensure file: ' . $outputPath . ' (create)</fg=white>');
             $content = file_get_contents($this->templatePath . '/' . $templatePath);
-            
+
             $data['NAMESPACE'] = $this->appConfig->getNamespace();
             foreach ($data as $key => $value) {
                 echo "    * $key=\"$value\"\n";

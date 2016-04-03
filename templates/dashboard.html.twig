@@ -5,9 +5,9 @@
     <ul>
         {% for l in libraries %}
         <li>
-            <a href="{{ path('library_index', {'accountName':l.account_name}) }}">{{ l.account_name }}</a>
+            <a href="{{ path('space_index', {'accountName': l.account_name}) }}">{{ l.account_name }}</a>
              /
-             <a href="{{ path('library_edit', {'accountName': l.account_name, 'libraryName': l.name}) }}">{{ l.name }}</a>
+             <a href="{{ path('space_view', {'accountName': l.account_name, 'spaceName': l.name}) }}">{{ l.name }}</a>
          </li>
         {% endfor %}
     </ul>

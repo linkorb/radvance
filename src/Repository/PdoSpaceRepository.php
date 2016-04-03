@@ -2,24 +2,57 @@
 
 namespace Radvance\Repository;
 
-use Radvance\Model\Space;
 use PDO;
 
 class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
 {
+    protected $tableName;
+
     public function setTableName($tableName)
     {
         $this->tableName = $tableName;
+
+        return $this;
     }
-    
+
     public function getTable()
     {
         return $this->tableName;
     }
-    
+
     public function createEntity()
     {
-        return Space::createNew();
+        $klass = $this->modelClassName;
+
+        return $klass::createNew();
+    }
+
+    protected $modelClassName = '\Radvance\Model\Space';
+
+    public function getModelClassName()
+    {
+        return $this->modelClassName;
+    }
+
+    public function setModelClassName($modelClassName)
+    {
+        $this->modelClassName = $modelClassName;
+
+        return $this;
+    }
+
+    protected $permissionToSpaceForeignKeyName = 'space_id';
+
+    public function getPermissionToSpaceForeignKeyName()
+    {
+        return $this->permissionToSpaceForeignKeyName;
+    }
+
+    public function setPermissionToSpaceForeignKeyName($permissionToSpaceForeignKeyName)
+    {
+        $this->permissionToSpaceForeignKeyName = $permissionToSpaceForeignKeyName;
+
+        return $this;
     }
 
     public function findByAccountName($accountName)
@@ -42,11 +75,14 @@ class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
     public function findByUsername($username)
     {
         $statement = $this->pdo->prepare(sprintf(
-            'SELECT l.* FROM `%s` AS l
-            INNER JOIN `%s` AS p ON p.library_id = l.id
-            ORDER BY l.account_name, l.name',
+            "SELECT l.* FROM `%s` AS l
+            INNER JOIN `%s` AS p ON p.%s = l.id
+            WHERE p.username='%s'
+            ORDER BY l.account_name, l.name",
             $this->getTable(),
-            'permission'
+            'permission',
+            $this->permissionToSpaceForeignKeyName,
+            $username
         ));
         $statement->execute();
 
@@ -57,11 +93,12 @@ class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
     {
         $statement = $this->pdo->prepare(sprintf(
             'SELECT l.* FROM `%s` AS l
-            INNER JOIN `%s` AS p ON p.library_id = l.id
+            INNER JOIN `%s` AS p ON p.%s = l.id
             WHERE p.username=:username AND l.name=:space_name AND l.account_name=:account_name
             ORDER BY l.account_name, l.name LIMIT 1',
             $this->getTable(),
-            'permission'
+            'permission',
+            $this->permissionToSpaceForeignKeyName
         ));
         $statement->execute(
             [
