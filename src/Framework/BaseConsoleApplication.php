@@ -59,7 +59,16 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
     protected function getLogsPath()
     {
-        return sprintf('%s/app/logs/development.log', $this->getRootPath());
+        if (isset($this['parameters']['logging']['file'])) {
+            $file = $this['parameters']['logging']['file'];
+            if (strpos($file, '/') !== 0) {
+                $file = sprintf('%s/'.$file, $this->getRootPath());
+            }
+        } else {
+            $file = sprintf('%s/app/logs/development.log', $this->getRootPath());
+        }
+
+        return str_replace('//', '/', $file);
     }
 
     protected function getRepositoryPath()
@@ -164,9 +173,11 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
      */
     protected function configureLogging()
     {
-        $this->register(new MonologServiceProvider(), array(
-            'monolog.logfile' => $this->getLogsPath(),
-        ));
+        if (isset($this['parameters']['logging'])) {
+            $this->register(new MonologServiceProvider(), array(
+                'monolog.logfile' => $this->getLogsPath(),
+            ));
+        }
     }
 
 /**
