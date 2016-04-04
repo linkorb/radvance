@@ -122,8 +122,14 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     private function configureSpaceAndPermissionRoutes()
     {
-        $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
-        $this['routes']->addCollection($loader->load('space-permission-routes.yml'));
+        if (isset($this['spaceRepository'])) {
+            $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
+            $this['routes']->addCollection($loader->load('space-routes.yml'));
+        }
+        if (isset($this['permissionRepository'])) {
+            $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
+            $this['routes']->addCollection($loader->load('permission-routes.yml'));
+        }
     }
 
     private function configureTemplateEngine()

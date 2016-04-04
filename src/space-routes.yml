@@ -4,7 +4,7 @@ dashboard:
     pattern: /dashboard
     defaults: { _controller: Radvance\Controller\DashboardController::indexAction }
 
-# library routes
+# space routes
 
 space_index:
     pattern: /{accountName}
@@ -21,16 +21,3 @@ space_edit:
 space_delete:
     pattern: /{accountName}/{spaceName}/delete
     defaults: { _controller: Radvance\Controller\SpaceController::deleteAction }
-
-# Permission routes
-
-permission_index:
-    pattern: /{accountName}/{spaceName}/permissions
-    defaults: { _controller: Radvance\Controller\PermissionController::indexAction }
-permission_add:
-    pattern: /{accountName}/{spaceName}/permissions/add
-    defaults: { _controller: Radvance\Controller\PermissionController::addAction }
-    requirements: { _method: post }
-permission_delete:
-    pattern: /{accountName}/{spaceName}/permissions/{permissionId}/delete
-    defaults: { _controller: Radvance\Controller\PermissionController::deleteAction }
