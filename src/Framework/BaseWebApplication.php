@@ -317,6 +317,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                         $providerConfig['password']
                     );
                     $this['userbase.client'] = $client;
+
                     return new UserBaseUserProvider($client);
 
                 default:

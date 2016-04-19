@@ -10,7 +10,8 @@ interface ModelInterface
     public function toArray();
 
     /**
-     * @param  array $data
+     * @param array $data
+     *
      * @return ModelInterface
      */
     public function loadFromArray($data);

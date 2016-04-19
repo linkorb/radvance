@@ -15,6 +15,7 @@ abstract class PdoSpaceRepository extends BaseRepository implements SpaceReposit
     public function createEntity()
     {
         $class = $this->getModelClassName();
+
         return $class::createNew();
     }
 

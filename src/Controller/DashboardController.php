@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DashboardController
 {
-
     public function indexAction(Application $app, Request $request)
     {
         if (!$app['current_user']) {

@@ -14,7 +14,7 @@ class YamlConfigLoader extends FileLoader
         if (!$files) {
             throw new RuntimeException("Config file not found: $resource");
         }
-        
+
         foreach ($files as $file) {
             $config = Yaml::parse(file_get_contents($file));
             if (isset($config['imports'])) {
@@ -24,6 +24,7 @@ class YamlConfigLoader extends FileLoader
                 }
             }
         }
+
         return $config;
     }
 

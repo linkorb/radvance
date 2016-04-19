@@ -9,7 +9,8 @@ abstract class BaseModel
     public static function createNew()
     {
         $class = get_called_class();
-        return new $class;
+
+        return new $class();
     }
 
     /**
@@ -32,10 +33,10 @@ abstract class BaseModel
     public function __toString()
     {
         if (property_exists($this, 'name')) {
-            return (string)$this->getName();
+            return (string) $this->getName();
         }
 
-        return (string)$this->getId();
+        return (string) $this->getId();
     }
 
     /**
@@ -44,7 +45,7 @@ abstract class BaseModel
     public function loadFromArray($data, $allowed_keys = null)
     {
         if (is_null($allowed_keys)) {
-            $allowed_keys = array_keys((array)$data);
+            $allowed_keys = array_keys((array) $data);
         }
 
         foreach ($data as $key => $value) {
@@ -77,9 +78,10 @@ abstract class BaseModel
     }
 
     /**
-     * Magic getter
+     * Magic getter.
      *
-     * @param  mixed $name
+     * @param mixed $name
+     *
      * @return mixed
      */
     public function __get($propertyName)
@@ -103,9 +105,10 @@ abstract class BaseModel
     }
 
     /**
-     * Magic getter
+     * Magic getter.
      *
-     * @param  mixed $name
+     * @param mixed $name
+     *
      * @return mixed
      */
     public function __set($propertyName, $propertyValue)
@@ -129,10 +132,11 @@ abstract class BaseModel
     }
 
     /**
-     * Magic getters/setters
+     * Magic getters/setters.
      *
-     * @param  mixed $name
-     * @param  mixed $arguments
+     * @param mixed $name
+     * @param mixed $arguments
+     *
      * @return mixed
      */
     public function __call($name, $arguments)
@@ -172,6 +176,7 @@ abstract class BaseModel
         switch ($matchesArray[1]) {
             case 'set':
                 $this->$propertyName = $arguments[0];
+
                 return $this;
 
             case 'get':

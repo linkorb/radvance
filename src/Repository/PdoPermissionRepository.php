@@ -10,6 +10,7 @@ abstract class PdoPermissionRepository extends BaseRepository implements Permiss
     public function createEntity()
     {
         $class = $this->getModelClassName();
+
         return $class::createNew();
     }
 

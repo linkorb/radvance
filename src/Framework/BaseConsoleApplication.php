@@ -6,12 +6,8 @@ use Silex\Application as SilexApplication;
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\MonologServiceProvider;
-use Symfony\Component\Yaml\Parser as YamlParser;
-
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
-use Radvance\Repository\PdoSpaceRepository;
-use Radvance\Repository\PdoPermissionRepository;
 use Radvance\Component\Config\ConfigLoader;
 use Exception;
 use RuntimeException;
@@ -79,8 +75,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     protected function loadConfig()
     {
         $loader = new ConfigLoader();
-        $path = $this->getRootPath() . '/app/config';
-        if (file_exists($path . '/config.yml')) {
+        $path = $this->getRootPath().'/app/config';
+        if (file_exists($path.'/config.yml')) {
             $config = $loader->load($path, 'config.yml');
         } else {
             // Legacy config mode
@@ -279,6 +275,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         if (!isset($this['repository'])) {
             return array();
         }
+
         return $this['repository'];
     }
 

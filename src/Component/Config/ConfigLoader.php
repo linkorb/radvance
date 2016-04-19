@@ -15,7 +15,7 @@ class ConfigLoader
     {
         $configDirectories = array($path);
         $locator = new FileLocator($configDirectories);
-        
+
         $loaderResolver = new LoaderResolver(array(new YamlConfigLoader($locator)));
         $delegatingLoader = new DelegatingLoader($loaderResolver);
 
@@ -23,9 +23,10 @@ class ConfigLoader
         if (isset($config['parameters'])) {
             $config = $this->postProcessConfig($config, $config['parameters']);
         }
+
         return $config;
     }
-    
+
     private function postProcessConfigString($string, $parameters)
     {
         $language = new ExpressionLanguage();
@@ -56,9 +57,9 @@ class ConfigLoader
             $out = $language->evaluate($match, $variables);
             $string = str_replace('{{'.$match.'}}', $out, $string);
         }
-        
+
         // Inject parameters for strings between % characters
-        if ((substr($string, 0, 1)=='%') && (substr($string, -1, 1)=='%')) {
+        if ((substr($string, 0, 1) == '%') && (substr($string, -1, 1) == '%')) {
             $string = trim($string, '%');
             if (!isset($parameters[$string])) {
                 throw new RuntimeException("Required parameter '$string' not defined");
@@ -82,5 +83,4 @@ class ConfigLoader
 
         return $config;
     }
-
 }
