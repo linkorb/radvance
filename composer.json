@@ -25,7 +25,8 @@
         "userbase/client": "~0.0",
         "oyejorge/less.php": "~1.5",
         "monolog/monolog": "^1.17",
-        "texthtml/whoops-silex": "~1.0"
+        "texthtml/whoops-silex": "~1.0",
+        "maximebf/debugbar": "~1.0"
     },
     "require-dev": {
         "droid/droid-plugins": "~1.0",

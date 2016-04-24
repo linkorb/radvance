@@ -12,6 +12,7 @@ use Radvance\WhoopsHandler\UserWhoopsHandler;
 use UserBase\Client\UserProvider as UserBaseUserProvider;
 use UserBase\Client\Client as UserBaseClient;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\RouteCollection;
@@ -38,11 +39,40 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
          * security should be configured before the routes
          * as the routes are evaluated in order (login could be pre-empted by /{something})
          */
+        $this->configureDebugBar();
         $this->configureTemplateEngine();
         $this->configureSecurity();
         $this->configureRoutes();
         $this->configureUrlPreprocessor();
         $this->configureExceptionHandling();
+    }
+    
+    private $debugBar;
+    
+    public function configureDebugBar()
+    {
+        $this->debugBar = new \DebugBar\StandardDebugBar();
+        if ($this['debug']) {
+            // Wrap the pdo object in a TraceablePDO instance
+            $pdo = $this->pdo;
+            $this->pdo = new \DebugBar\DataCollector\PDO\TraceablePDO($pdo);
+            $this->debugBar->addCollector(new \DebugBar\DataCollector\PDO\PDOCollector($this->pdo));
+                    
+            // Inject the debugBarHtml before the closing body tag
+            $this->after(function (Request $request, Response $response) {
+                $body = $response->getContent();
+                $renderer = $this->debugBar->getJavascriptRenderer();
+                $debugBarHtml = $renderer->renderHead();
+                $debugBarHtml .= $renderer->render();
+                $body = str_replace('</body>', $debugBarHtml . '</body>', $body);
+                $response->setContent($body);
+            });
+        }
+    }
+    
+    public function getDebugBar()
+    {
+        return $this->debugBar;
     }
 
     public function getAssetsPath()
