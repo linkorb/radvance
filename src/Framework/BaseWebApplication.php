@@ -52,17 +52,26 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     public function configureDebugBar()
     {
         $this->debugBar = new \DebugBar\StandardDebugBar();
-        if ($this['debug']) {
+        if ($this['debug'] && isset($this['parameters']['debugbar']) && $this['parameters']['debugbar']) {
             // Wrap the pdo object in a TraceablePDO instance
             $pdo = $this->pdo;
             $this->pdo = new \DebugBar\DataCollector\PDO\TraceablePDO($pdo);
             $this->debugBar->addCollector(new \DebugBar\DataCollector\PDO\PDOCollector($this->pdo));
-                    
-            // Inject the debugBarHtml before the closing body tag
+
             $this->after(function (Request $request, Response $response) {
                 $body = $response->getContent();
                 $renderer = $this->debugBar->getJavascriptRenderer();
-                $debugBarHtml = $renderer->renderHead();
+            
+                // Re-gegenerate the assets for debugbar in the webroot
+                $renderer->setIncludeVendors(false);
+                $path = getcwd();
+                $renderer->dumpJsAssets($path . '/debugbar.js');
+                $renderer->dumpCssAssets($path . '/debugbar.css');
+
+                // Inject the debugBarHtml before the closing body tag
+                $debugBarHtml = '';
+                $debugBarHtml .= '<script type="text/javascript" src="/debugbar.js"></script>';
+                $debugBarHtml .= '<link rel="stylesheet" type="text/css" href="/debugbar.css">';
                 $debugBarHtml .= $renderer->render();
                 $body = str_replace('</body>', $debugBarHtml . '</body>', $body);
                 $response->setContent($body);
