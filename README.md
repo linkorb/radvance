@@ -40,6 +40,7 @@ use Radvance\Framework\FrameworkApplicationInterface;
 
 class Application extends BaseWebApplication implements FrameworkApplicationInterface
 {
+    // This is not needed from v1.0.0
     public function getRootPath()
     {
         return realpath(__DIR__.'/../');
@@ -246,6 +247,17 @@ Currently we have only one theme - `default`.
     </a>
     #}
 {% endblock %}
+```
+
+## Logging
+
+By default, logging is disabled. However, by specifying the log file location, Radvance automatically starts logging.
+```ymal
+# app/config/parameters.yml
+logging:
+    file: app/logs/radvance.log
+    # or use absolute path
+    # file: /tmp/logs/radvance.log
 ```
 
 ## Behat tests

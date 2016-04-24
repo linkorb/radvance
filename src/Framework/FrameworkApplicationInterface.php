@@ -7,7 +7,8 @@ interface FrameworkApplicationInterface
     public function getRootPath();
 
     /**
-     * @param  string $name
+     * @param string $name
+     *
      * @return RepositoryInterface
      */
     public function getRepository($name);

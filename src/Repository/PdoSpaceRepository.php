@@ -4,55 +4,43 @@ namespace Radvance\Repository;
 
 use PDO;
 
-class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
+abstract class PdoSpaceRepository extends BaseRepository implements SpaceRepositoryInterface
 {
-    protected $tableName;
-
-    public function setTableName($tableName)
-    {
-        $this->tableName = $tableName;
-
-        return $this;
-    }
-
-    public function getTable()
-    {
-        return $this->tableName;
-    }
+    protected $modelClassName = null;
+    protected $nameOfSpace = null;
+    protected $nameOfSpacePlural = null;
+    protected $permissionTableName = null;
+    protected $permissionTableForeignKeyName = null;
 
     public function createEntity()
     {
-        $klass = $this->modelClassName;
+        $class = $this->getModelClassName();
 
-        return $klass::createNew();
+        return $class::createNew();
     }
-
-    protected $modelClassName = '\Radvance\Model\Space';
 
     public function getModelClassName()
     {
         return $this->modelClassName;
     }
 
-    public function setModelClassName($modelClassName)
+    public function getNameOfSpace($plural = false)
     {
-        $this->modelClassName = $modelClassName;
+        if ($plural && $this->nameOfSpacePlural) {
+            return $this->nameOfSpacePlural;
+        }
 
-        return $this;
+        return $this->nameOfSpace;
     }
 
-    protected $permissionToSpaceForeignKeyName = 'space_id';
-
-    public function getPermissionToSpaceForeignKeyName()
+    public function getPermissionTableName()
     {
-        return $this->permissionToSpaceForeignKeyName;
+        return $this->permissionTableName;
     }
 
-    public function setPermissionToSpaceForeignKeyName($permissionToSpaceForeignKeyName)
+    public function getPermissionTableForeignKeyName()
     {
-        $this->permissionToSpaceForeignKeyName = $permissionToSpaceForeignKeyName;
-
-        return $this;
+        return $this->permissionTableForeignKeyName;
     }
 
     public function findByAccountName($accountName)
@@ -80,8 +68,8 @@ class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
             WHERE p.username='%s'
             ORDER BY l.account_name, l.name",
             $this->getTable(),
-            'permission',
-            $this->permissionToSpaceForeignKeyName,
+            $this->permissionTableName,
+            $this->permissionTableForeignKeyName,
             $username
         ));
         $statement->execute();
@@ -89,7 +77,7 @@ class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
         return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    public function getByAccountNameSpaceNameUsername($accountName, $spaceName, $username)
+    public function findByAccountNameSpaceNameUsername($accountName, $spaceName, $username)
     {
         $statement = $this->pdo->prepare(sprintf(
             'SELECT l.* FROM `%s` AS l
@@ -97,8 +85,8 @@ class PdoSpaceRepository extends BaseRepository implements RepositoryInterface
             WHERE p.username=:username AND l.name=:space_name AND l.account_name=:account_name
             ORDER BY l.account_name, l.name LIMIT 1',
             $this->getTable(),
-            'permission',
-            $this->permissionToSpaceForeignKeyName
+            $this->permissionTableName,
+            $this->permissionTableForeignKeyName
         ));
         $statement->execute(
             [

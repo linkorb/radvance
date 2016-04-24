@@ -44,7 +44,8 @@ class BaseController
     }
 
     /**
-     * @param  array $parameters
+     * @param array $parameters
+     *
      * @return Response
      */
     public function renderIndex(Application $app, $parameters = array())
@@ -58,7 +59,8 @@ class BaseController
     }
 
     /**
-     * @param  array $parameters
+     * @param array $parameters
+     *
      * @return Response
      */
     public function renderEdit(Application $app, $parameters = array())
@@ -72,7 +74,8 @@ class BaseController
     }
 
     /**
-     * @param  array $parameters
+     * @param array $parameters
+     *
      * @return Response
      */
     public function renderView(Application $app, $parameters = array())
@@ -86,35 +89,38 @@ class BaseController
     }
 
     /**
-     * @param  Application $app
-     * @param  Request     $request
-     * @param  array $parameters
+     * @param Application $app
+     * @param Request     $request
+     * @param array       $parameters
+     *
      * @return Response
      */
     public function indexAction(Application $app, Request $request)
     {
         return $this->renderIndex($app, array(
-            'entities' => $app->getRepository($this->getModelName())->findAll()
+            'entities' => $app->getRepository($this->getModelName())->findAll(),
         ));
     }
 
     /**
-     * @param  Application $app
-     * @param  Request     $request
-     * @param  array $parameters
+     * @param Application $app
+     * @param Request     $request
+     * @param array       $parameters
+     *
      * @return Response
      */
     public function viewAction(Application $app, Request $request, $id)
     {
         return $this->renderView($app, array(
-            'entity' => $app->getRepository($this->getModelName())->find($id)
+            'entity' => $app->getRepository($this->getModelName())->find($id),
         ));
     }
 
     /**
-     * @param  Application $app
-     * @param  Request     $request
-     * @param  array $parameters
+     * @param Application $app
+     * @param Request     $request
+     * @param array       $parameters
+     *
      * @return Response
      */
     public function addAction(Application $app, Request $request)
@@ -123,9 +129,10 @@ class BaseController
     }
 
     /**
-     * @param  Application $app
-     * @param  Request     $request
-     * @param  array $parameters
+     * @param Application $app
+     * @param Request     $request
+     * @param array       $parameters
+     *
      * @return Response
      */
     public function editAction(Application $app, Request $request, $id)
@@ -134,9 +141,10 @@ class BaseController
     }
 
     /**
-     * @param  Application $app
-     * @param  Request     $request
-     * @param  array $parameters
+     * @param Application $app
+     * @param Request     $request
+     * @param array       $parameters
+     *
      * @return Response
      */
     public function deleteAction(Application $app, Request $request, $id)

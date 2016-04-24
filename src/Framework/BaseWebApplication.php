@@ -147,6 +147,19 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         }
 
         $orgCollection->addCollection($newCollection);
+        $this->configureSpaceAndPermissionRoutes();
+    }
+
+    private function configureSpaceAndPermissionRoutes()
+    {
+        if (isset($this['spaceRepository'])) {
+            $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
+            $this['routes']->addCollection($loader->load('space-routes.yml'));
+        }
+        if (isset($this['permissionRepository'])) {
+            $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
+            $this['routes']->addCollection($loader->load('permission-routes.yml'));
+        }
     }
 
     private function configureTemplateEngine()
@@ -179,7 +192,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         // 2. breaks the loading order of routes and template engine
         // $this['twig']->addGlobal('main_menu', $this->buildMenu($this));
         $this['twig']->addGlobal('app_name', $this['app']['name']);
-        $this['twig']->addGlobal('spaceConfig', $this->getSpaceConfig());
+        // $this['twig']->addGlobal('spaceConfig', $this->getSpaceConfig());
         // Define userbaseUrl in twig templates for login + signup links
         if (isset($this['userbaseUrl'])) {
             $this['twig']->addGlobal('userbaseUrl', $this['userbaseUrl']);
@@ -334,6 +347,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                         $providerConfig['password']
                     );
                     $this['userbase.client'] = $client;
+
                     return new UserBaseUserProvider($client);
 
                 default:
@@ -360,20 +374,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this['session']->getFlashBag()->add($type, $message);
     }
 
-    public function getLibrary()
-    {
-        return $this->getSpace();
-    }
-
-    public function getSpace()
+    public function getSpace($spaceName = 'spaceName')
     {
         if (!$this['current_user']) {
             throw new AccessDeniedException('Access denied. Please login first.');
         }
 
-        return $this->getRepository('library')->getByAccountNameSpaceNameUsername(
+        return $this->getSpaceRepository()->findByAccountNameSpaceNameUsername(
             $this['accountName'],
-            $this['libraryName'],
+            $this[$spaceName],
             $this['current_user']->getName()
         );
     }

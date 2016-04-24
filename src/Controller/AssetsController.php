@@ -18,7 +18,7 @@ class AssetsController
         $parser->parseFile($filename, $app['parameters']['baseurl']);
 
         return new Response($parser->getCss(), 200, array(
-            'Content-Type' => 'text/css'
+            'Content-Type' => 'text/css',
         ));
     }
 
@@ -34,7 +34,7 @@ class AssetsController
 
         $filename = sprintf('%s/%s', $app->getAssetsPath(), $postfix);
         if (!file_exists($filename)) {
-            throw new RuntimeException("File not found: " . $filename);
+            throw new RuntimeException('File not found: '.$filename);
         }
         $options = array();
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
@@ -53,11 +53,12 @@ class AssetsController
                 break;
             default:
                 $options['Content-Type'] = 'application/octet-stream';
-                $options['Content-Disposition'] = 'attachment;filename="' . basename($filename) . '"';
+                $options['Content-Disposition'] = 'attachment;filename="'.basename($filename).'"';
                 break;
         }
 
         $data = file_get_contents($filename);
+
         return new Response($data, 200, $options);
     }
 }

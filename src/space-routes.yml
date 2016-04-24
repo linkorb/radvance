@@ -1,0 +1,23 @@
+# dashboard
+
+dashboard:
+    pattern: /dashboard
+    defaults: { _controller: Radvance\Controller\DashboardController::indexAction }
+
+# space routes
+
+space_index:
+    pattern: /{accountName}
+    defaults: { _controller: Radvance\Controller\SpaceController::indexAction }
+space_add:
+    pattern: /{accountName}/addlibrary
+    defaults: { _controller: Radvance\Controller\SpaceController::addAction }
+space_view:
+    pattern: /{accountName}/{spaceName}
+    defaults: { _controller: Radvance\Controller\SpaceController::viewAction }
+space_edit:
+    pattern: /{accountName}/{spaceName}/edit
+    defaults: { _controller: Radvance\Controller\SpaceController::editAction }
+space_delete:
+    pattern: /{accountName}/{spaceName}/delete
+    defaults: { _controller: Radvance\Controller\SpaceController::deleteAction }

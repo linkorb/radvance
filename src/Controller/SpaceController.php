@@ -11,27 +11,30 @@ class SpaceController
 {
     public function indexAction(Application $app, Request $request, $accountName)
     {
-        $spaces = $app->getRepository($app->getSpaceConfig()->getTableName())->findByAccountName($accountName);
+        $repo = $app->getSpaceRepository();
 
         return new Response($app['twig']->render(
             '@BaseTemplates/space/index.html.twig',
             array(
-                'spaces' => $spaces,
+                'spaces' => $repo->findByAccountName($accountName),
                 'accountName' => $accountName,
+                'nameOfSpace' => $repo->getNameOfSpace(),
+                'nameOfSpacePl' => $repo->getNameOfSpace(true),
             )
         ));
     }
 
     public function viewAction(Application $app, Request $request, $accountName, $spaceName)
     {
-        $repo = $app->getRepository($app->getSpaceConfig()->getTableName());
-
+        // $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
+        $repo = $app->getSpaceRepository();
         $space = $repo->findByNameAndAccountName($spaceName, $accountName);
 
         return new Response($app['twig']->render(
             '@BaseTemplates/space/view.html.twig',
             array(
-                'space' => $space
+                'space' => $space,
+                'nameOfSpace' => $repo->getNameOfSpace(),
             )
         ));
     }
@@ -49,11 +52,10 @@ class SpaceController
     private function getSpaceEditForm(Application $app, Request $request, $accountName, $spaceName = null)
     {
         $error = $request->query->get('error');
-        $repo = $app->getRepository($app->getSpaceConfig()->getTableName());
+        $repo = $app->getSpaceRepository();
         $add = false;
         $spaceName = trim($spaceName);
 
-        // $space = $repo->findOneOrNullBy(array('id' => $spaceName));
         $space = $repo->findByNameAndAccountName($spaceName, $accountName);
 
         if (null === $space) {
@@ -61,7 +63,8 @@ class SpaceController
             $defaults = array(
                 'account_name' => $accountName,
             );
-            $space = new Space();
+            $spaceClassName = $app['spaceModelClassName'];
+            $space = new $spaceClassName();
             $space->setAccountName($accountName);
         } else {
             $defaults = array(
@@ -70,7 +73,6 @@ class SpaceController
                 'description' => $space->getDescription(),
             );
         }
-
 
         $form = $app['form.factory']->createBuilder('form', $defaults)
             ->add('account_name', 'text', array('read_only' => true))
@@ -84,6 +86,9 @@ class SpaceController
             $data = $form->getData();
             $space->setName($data['name'])
                 ->setDescription($data['description']);
+            if (method_exists($space, 'setCreatedAt')) {
+                $space->setCreatedAt();
+            }
 
             if (!$repo->persist($space)) {
                 return $app->redirect(
@@ -95,6 +100,11 @@ class SpaceController
                         )
                     )
                 );
+            } else {
+                // auto-add permission
+                if ($add) {
+                    $app->getPermissionRepository()->add($app['current_user']->getName(), $space->getId());
+                }
             }
 
             return $app->redirect(
@@ -112,13 +122,15 @@ class SpaceController
                 'space' => $space,
                 'error' => $error,
                 'accountName' => $accountName,
+                'nameOfSpace' => $repo->getNameOfSpace(),
+                'nameOfSpacePl' => $repo->getNameOfSpace(true),
             )
         ));
     }
 
     public function deleteAction(Application $app, Request $request, $accountName, $spaceName)
     {
-        $spaceRepository = $app->getRepository($app->getSpaceConfig()->getTableName());
+        $spaceRepository = $app->getSpaceRepository();
         $space = $spaceRepository->findByNameAndAccountName($spaceName, $accountName);
         if ($space) {
             $spaceRepository->remove($space);

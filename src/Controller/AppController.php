@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AppController
 {
-
     public function frontpageAction(Application $app, Request $request)
     {
         return new Response($app['twig']->render(
@@ -22,7 +21,7 @@ class AppController
             $template
         ));
     }
-    
+
     public function accountsAction(Application $app, Request $request)
     {
         $data = array();

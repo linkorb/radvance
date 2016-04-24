@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DashboardController
 {
-
     public function indexAction(Application $app, Request $request)
     {
         if (!$app['current_user']) {
@@ -22,7 +21,7 @@ class DashboardController
         return new Response($app['twig']->render(
             '@BaseTemplates/dashboard.html.twig',
             array(
-                'libraries' => $app->getRepository('library')
+                'libraries' => $app->getSpaceRepository()
                     ->findByUsername($app['current_user']->getName()),
             )
         ));

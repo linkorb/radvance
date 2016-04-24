@@ -4,8 +4,6 @@ namespace Radvance\WhoopsHandler;
 
 use Silex\Application;
 use Whoops\Handler\Handler;
-use Whoops\Handler\PrettyPageHandler;
-
 
 class UserWhoopsHandler extends Handler
 {
@@ -29,6 +27,7 @@ class UserWhoopsHandler extends Handler
         );
         http_response_code(500);
         echo $html;
+
         return Handler::QUIT;
     }
 }
