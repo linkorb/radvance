@@ -65,8 +65,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 // Re-gegenerate the assets for debugbar in the webroot
                 $renderer->setIncludeVendors(false);
                 $path = getcwd();
-                $renderer->dumpJsAssets($path . '/debugbar.js');
-                $renderer->dumpCssAssets($path . '/debugbar.css');
+                $renderer->dumpJsAssets($path.'/debugbar.js');
+                $renderer->dumpCssAssets($path.'/debugbar.css');
 
                 // Inject the debugBarHtml before the closing body tag
                 $debugBarHtml = '';
