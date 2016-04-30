@@ -194,6 +194,10 @@ abstract class BaseRepository
      */
     protected function rowToObject($row)
     {
+        if ($this->returnDataType == 'array') {
+            return $row;
+        }
+
         if ($row) {
             return $this
                 ->createEntity()
@@ -308,5 +312,19 @@ abstract class BaseRepository
         $statement->execute(['libid' => $libraryId]);
 
         return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    protected $returnDataType = 'object';
+
+    public function getReturnDataType()
+    {
+        return $this->returnDataType;
+    }
+
+    public function setReturnDataType($returnDataType)
+    {
+        $this->returnDataType = $returnDataType;
+
+        return $this;
     }
 }
