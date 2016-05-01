@@ -250,7 +250,13 @@ abstract class BaseRepository
                 }, array_keys($value)), ', '));
             }
 
-            return sprintf('`%s`=:%s', $field, $field);
+            // return sprintf('`%s`=:%s', $field, $field);
+            // IS NULL
+            if (null === $value) {
+                return sprintf('`%s` IS NULL', $field);
+            } else {
+                return sprintf('`%s`=:%s', $field, $field);
+            }
         }, array_keys($where), $where), $delimiter);
     }
 
@@ -258,6 +264,11 @@ abstract class BaseRepository
     {
         $result = array();
         array_walk($fields, function ($value, $field) use (&$result) {
+            // IS NULL
+            if (null === $value) {
+                return;
+            }
+
             if (is_array($value)) {
                 # Transform [field=>[0=>a,1=>b,2=>c]] to [field_0=>a, field_1=>b, field_2=>c)
                 foreach ($value as $index => $index_value) {
