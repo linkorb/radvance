@@ -6,6 +6,7 @@ use Radvance\Model\BaseModel;
 use Radvance\Framework\BaseWebApplication as Application;
 use Symfony\Component\HttpFoundation\Request;
 use Radvance\Exception\BadMethodCallException;
+use Doctrine\Common\Inflector\Inflector;
 
 class BaseForm
 {
@@ -51,7 +52,7 @@ class BaseForm
             $data = $this->form->getData();
 
             foreach ($data as $d => $value) {
-                $method = 'set'.$this->underscoredTocamelCase($d);
+                $method = 'set' . Inflector::camelize($d);
                 // if (!method_exists($this->entity, $method)) {
                 //     throw new BadMethodCallException('No matching method to handle '.$d);
                 // }
@@ -107,7 +108,7 @@ class BaseForm
         $defaults = [];
         $fields = $this->fields();
         foreach ($fields as $value) {
-            $method = 'get'.$this->underscoredTocamelCase($value[0]);
+            $method = 'get' . Inflector::camelize($value[0]);
             switch ($value[1]) {
                 case 'date':
                 case 'datetime':
@@ -122,16 +123,5 @@ class BaseForm
         $this->defaults = $defaults;
 
         return $this;
-    }
-
-    private function underscoredTocamelCase($string, $capitalizeFirstCharacter = true)
-    {
-        $str = str_replace(' ', '', ucwords(preg_replace('/\_/', ' ', $string)));
-
-        if (!$capitalizeFirstCharacter) {
-            $str[0] = strtolower($str[0]);
-        }
-
-        return $str;
     }
 }
