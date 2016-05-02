@@ -3,6 +3,7 @@
 namespace Radvance\Model;
 
 use Radvance\Exception\BadMethodCallException;
+use Doctrine\Common\Inflector\Inflector;
 
 abstract class BaseModel
 {
@@ -22,7 +23,7 @@ abstract class BaseModel
 
         $result = array();
         foreach ($fields as $key => $value) {
-            $propertyName = $this->underscoredTocamelCase($key);
+            $propertyName = Inflector::camelize($key);
             $getter = sprintf('get%s', ucfirst($propertyName));
             $result[$key] = $this->$getter($value);
         }
@@ -53,28 +54,12 @@ abstract class BaseModel
                 continue;
             }
 
-            $propertyName = $this->underscoredTocamelCase($key);
+            $propertyName = Inflector::camelize($key);
             $setter = sprintf('set%s', ucfirst($propertyName));
             $this->$setter($value);
         }
 
         return $this;
-    }
-
-    protected function camelCaseToUnderscored($name)
-    {
-        return strtolower(preg_replace('/([A-Z])/', '_$1', lcfirst($name)));
-    }
-
-    protected function underscoredTocamelCase($string, $capitalizeFirstCharacter = false)
-    {
-        $str = str_replace(' ', '', ucwords(preg_replace('/\_/', ' ', $string)));
-
-        if (!$capitalizeFirstCharacter) {
-            $str[0] = strtolower($str[0]);
-        }
-
-        return $str;
     }
 
     /**
@@ -86,7 +71,7 @@ abstract class BaseModel
      */
     public function __get($propertyName)
     {
-        $propertyName = $this->camelCaseToUnderscored($propertyName);
+        $propertyName = Inflector::tableize($propertyName);
 
         if (!property_exists($this, $propertyName)) {
             throw new BadMethodCallException(
@@ -98,7 +83,7 @@ abstract class BaseModel
             );
         }
 
-        $propertyName = $this->underscoredTocamelCase($propertyName);
+        $propertyName = Inflector::camelize($propertyName);
         $getter = sprintf('get%s', ucfirst($propertyName));
 
         return $this->$getter();
@@ -113,7 +98,7 @@ abstract class BaseModel
      */
     public function __set($propertyName, $propertyValue)
     {
-        $propertyName = $this->camelCaseToUnderscored($propertyName);
+        $propertyName = Inflector::tableize($propertyName);
 
         if (!property_exists($this, $propertyName)) {
             throw new BadMethodCallException(
@@ -125,7 +110,7 @@ abstract class BaseModel
             );
         }
 
-        $propertyName = $this->underscoredTocamelCase($propertyName);
+        $propertyName = Inflector::camelize($propertyName);
         $setter = sprintf('set%s', ucfirst($propertyName));
 
         return $this->$setter($propertyValue);
@@ -160,8 +145,7 @@ abstract class BaseModel
             );
         }
 
-        // CamelCase to underscored
-        $propertyName = $this->camelCaseToUnderscored($matchesArray[2]);
+        $propertyName = Inflector::tableize($matchesArray[2]);
 
         if (!property_exists($this, $propertyName)) {
             throw new BadMethodCallException(

@@ -6,6 +6,7 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use PDOException;
+use Doctrine\Common\Inflector\Inflector;
 
 class BaseController
 {
@@ -22,8 +23,7 @@ class BaseController
             $model_name = end($model_name);
             $model_name = substr($model_name, 0, -strlen('Controller'));
 
-            // CamelCase to underscored
-            $model_name = strtolower(preg_replace('/([A-Z])/', '_$1', lcfirst($model_name)));
+            $model_name = Inflector::camelize($model_name);
         }
         $this->model_name = $model_name;
     }

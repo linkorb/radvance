@@ -5,6 +5,7 @@ namespace Radvance\Repository;
 use Radvance\Model\ModelInterface;
 use Exception;
 use PDO;
+use Doctrine\Common\Inflector\Inflector;
 
 abstract class BaseRepository
 {
@@ -19,8 +20,7 @@ abstract class BaseRepository
             $table = end($table);
             $table = substr($table, strlen('Pdo'), -strlen('Repository'));
 
-            // CamelCase to underscored
-            $table = strtolower(preg_replace('/([A-Z])/', '_$1', lcfirst($table)));
+            $table = Inflector::camelize($table);
         }
 
         $this->table = $table;

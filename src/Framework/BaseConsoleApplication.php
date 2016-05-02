@@ -9,6 +9,7 @@ use Silex\Provider\MonologServiceProvider;
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
 use Radvance\Component\Config\ConfigLoader;
+use Doctrine\Common\Inflector\Inflector;
 use Exception;
 use RuntimeException;
 use PDO;
@@ -316,8 +317,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             );
         }
 
-        // CamelCase to underscored
-        $repository = strtolower(preg_replace('/([A-Z])/', '_$1', lcfirst($matchesArray[2])));
+    
+        $repository = Inflector::tableize($matchesArray[2]);
 
         if (!isset($this['repository'][$repository])) {
             throw new BadMethodCallException(
