@@ -36,4 +36,4 @@ crashlytics-build.properties
 test/nginx/*.conf
 !test/nginx/.gitkeep
 
-
+web/debugbar*

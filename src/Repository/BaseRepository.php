@@ -194,6 +194,10 @@ abstract class BaseRepository
      */
     protected function rowToObject($row)
     {
+        if ($this->returnDataType == 'array') {
+            return $row;
+        }
+
         if ($row) {
             return $this
                 ->createEntity()
@@ -246,7 +250,13 @@ abstract class BaseRepository
                 }, array_keys($value)), ', '));
             }
 
-            return sprintf('`%s`=:%s', $field, $field);
+            // return sprintf('`%s`=:%s', $field, $field);
+            // IS NULL
+            if (null === $value) {
+                return sprintf('`%s` IS NULL', $field);
+            } else {
+                return sprintf('`%s`=:%s', $field, $field);
+            }
         }, array_keys($where), $where), $delimiter);
     }
 
@@ -254,6 +264,11 @@ abstract class BaseRepository
     {
         $result = array();
         array_walk($fields, function ($value, $field) use (&$result) {
+            // IS NULL
+            if (null === $value) {
+                return;
+            }
+
             if (is_array($value)) {
                 # Transform [field=>[0=>a,1=>b,2=>c]] to [field_0=>a, field_1=>b, field_2=>c)
                 foreach ($value as $index => $index_value) {
@@ -308,5 +323,19 @@ abstract class BaseRepository
         $statement->execute(['libid' => $libraryId]);
 
         return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    protected $returnDataType = 'object';
+
+    public function getReturnDataType()
+    {
+        return $this->returnDataType;
+    }
+
+    public function setReturnDataType($returnDataType)
+    {
+        $this->returnDataType = $returnDataType;
+
+        return $this;
     }
 }

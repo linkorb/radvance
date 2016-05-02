@@ -20,7 +20,7 @@ $app->before(function (Request $request, Application $app) {
     $app['current_user'] = null;
     $token = $app['security.token_storage']->getToken();
     if ($token) {
-        if ($request->getRequestUri()!='/login') {
+        if ($request->get('_route') != 'login') {
             if ($token->getUser() == 'anon.') {
                 // visitor is not authenticated
             } else {

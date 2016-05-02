@@ -48,9 +48,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureExceptionHandling();
         $this->debugBar['time']->stopMeasure('setup');
     }
-    
+
     private $debugBar;
-    
+
     public function configureDebugBar()
     {
         $this->debugBar = new \DebugBar\StandardDebugBar();
@@ -67,26 +67,26 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $this->debugBar['messages']->error('yo');
                 $body = $response->getContent();
                 $renderer = $this->debugBar->getJavascriptRenderer();
-            
+
                 // Re-gegenerate the assets for debugbar in the webroot
                 $renderer->setIncludeVendors(false);
                 $path = getcwd();
-                $renderer->dumpJsAssets($path . '/debugbar.js');
-                $renderer->dumpCssAssets($path . '/debugbar.css');
+                $renderer->dumpJsAssets($path.'/debugbar.js');
+                $renderer->dumpCssAssets($path.'/debugbar.css');
 
                 $this->debugBar['time']->stopMeasure('request');
 
                 // Inject the debugBarHtml before the closing body tag
                 $debugBarHtml = '';
-                $debugBarHtml .= '<script type="text/javascript" src="/debugbar.js"></script>';
-                $debugBarHtml .= '<link rel="stylesheet" type="text/css" href="/debugbar.css">';
+                $debugBarHtml .= '<script type="text/javascript" src="'.$request->getBasePath().'/debugbar.js"></script>';
+                $debugBarHtml .= '<link rel="stylesheet" type="text/css" href="'.$request->getBasePath().'/debugbar.css">';
                 $debugBarHtml .= $renderer->render();
-                $body = str_replace('</body>', $debugBarHtml . '</body>', $body);
+                $body = str_replace('</body>', $debugBarHtml.'</body>', $body);
                 $response->setContent($body);
             });
         }
     }
-    
+
     public function getDebugBar()
     {
         return $this->debugBar;
