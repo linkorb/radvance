@@ -40,11 +40,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
          * as the routes are evaluated in order (login could be pre-empted by /{something})
          */
         $this->configureDebugBar();
+        $this->debugBar['time']->startMeasure('setup', 'BaseWebApplication::setup');
         $this->configureTemplateEngine();
         $this->configureSecurity();
         $this->configureRoutes();
         $this->configureUrlPreprocessor();
         $this->configureExceptionHandling();
+        $this->debugBar['time']->stopMeasure('setup');
     }
     
     private $debugBar;
@@ -54,11 +56,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->debugBar = new \DebugBar\StandardDebugBar();
         if ($this['debug'] && isset($this['parameters']['debugbar']) && $this['parameters']['debugbar']) {
             // Wrap the pdo object in a TraceablePDO instance
+            $this->debugBar['time']->startMeasure('request', 'Request');
+            $this->debugBar['time']->startMeasure('wrappdo', 'Wrapping PDO');
             $pdo = $this->pdo;
             $this->pdo = new \DebugBar\DataCollector\PDO\TraceablePDO($pdo);
             $this->debugBar->addCollector(new \DebugBar\DataCollector\PDO\PDOCollector($this->pdo));
+            $this->debugBar['time']->stopMeasure('wrappdo');
 
             $this->after(function (Request $request, Response $response) {
+                $this->debugBar['messages']->error('yo');
                 $body = $response->getContent();
                 $renderer = $this->debugBar->getJavascriptRenderer();
             
@@ -67,6 +73,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $path = getcwd();
                 $renderer->dumpJsAssets($path . '/debugbar.js');
                 $renderer->dumpCssAssets($path . '/debugbar.css');
+
+                $this->debugBar['time']->stopMeasure('request');
 
                 // Inject the debugBarHtml before the closing body tag
                 $debugBarHtml = '';
