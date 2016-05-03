@@ -95,7 +95,7 @@ class BaseForm
 
     private function addFields()
     {
-        $fields = $this->fields();
+        $fields = $this->buildForm();
         foreach ($fields as $value) {
             $this->builder->add($value[0], $value[1], (isset($value[2])?$value[2]:null));
         }
@@ -106,7 +106,7 @@ class BaseForm
     private function setDefaults()
     {
         $defaults = [];
-        $fields = $this->fields();
+        $fields = $this->buildForm();
         foreach ($fields as $value) {
             $method = 'get' . Inflector::camelize($value[0]);
             switch ($value[1]) {
