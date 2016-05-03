@@ -67,14 +67,14 @@ class BaseForm
             if (!$this->entity->getId()) {
                 try {
                     $this->entity->setCreatedAt($formattedTime);
-                } catch (\Exception $e) {
+                } catch (\BadMethodCallException $e) {
                 }
             }
 
             // set updated at
             try {
                 $this->entity->setUpdatedAt($formattedTime);
-            } catch (\Exception $e) {
+            } catch (\BadMethodCallException $e) {
             }
 
             $this->submitted = true;
@@ -88,9 +88,9 @@ class BaseForm
         return $this->form->createView();
     }
 
-    protected function fields()
+    protected function buildForm()
     {
-        throw new BadMethodCallException('fields method must be implemented in your form class');
+        throw new BadMethodCallException('The buildForm method must be implemented in your form class');
     }
 
     private function addFields()
