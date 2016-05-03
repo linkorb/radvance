@@ -20,7 +20,7 @@ abstract class BaseRepository
             $table = end($table);
             $table = substr($table, strlen('Pdo'), -strlen('Repository'));
 
-            $table = Inflector::camelize($table);
+            $table = Inflector::tableize($table);
         }
 
         $this->table = $table;
