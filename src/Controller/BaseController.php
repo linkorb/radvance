@@ -23,7 +23,7 @@ class BaseController
             $model_name = end($model_name);
             $model_name = substr($model_name, 0, -strlen('Controller'));
 
-            $model_name = Inflector::camelize($model_name);
+            $model_name = Inflector::tableize($model_name);
         }
         $this->model_name = $model_name;
     }
