@@ -230,8 +230,8 @@ abstract class BaseRepository
         return sprintf(
             'UPDATE `%s` SET %s WHERE %s',
             $this->getTable(),
-            $this->buildKeyValuePairs($fields, ','),
-            $this->buildKeyValuePairs($where, ' and ')
+            $this->buildKeyValuePairs($fields, ',', false),
+            $this->buildKeyValuePairs($where, ' and ', false)
         );
     }
 
@@ -240,9 +240,9 @@ abstract class BaseRepository
      *
      * @return string
      */
-    protected function buildKeyValuePairs($where, $delimiter)
+    protected function buildKeyValuePairs($where, $delimiter, $isNullPatch = true)
     {
-        return implode(array_map(function ($field, $value) {
+        return implode(array_map(function ($field, $value) use ($isNullPatch) {
             if (is_array($value)) {
                 # Transform [field=>[0=>a,1=>b,2=>c]] to 'field in (:field_0, :field_1, :field_2)'
                 return sprintf('`%s` in (%s)', $field, implode(array_map(function ($index) use ($field) {
@@ -252,7 +252,7 @@ abstract class BaseRepository
 
             // return sprintf('`%s`=:%s', $field, $field);
             // IS NULL
-            if (null === $value) {
+            if ($isNullPatch && null === $value) {
                 return sprintf('`%s` IS NULL', $field);
             } else {
                 return sprintf('`%s`=:%s', $field, $field);
