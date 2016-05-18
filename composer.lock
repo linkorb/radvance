@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "771350f8aa80c9164d5b481376174ace",
-    "content-hash": "28f73bd44b43ecf32729889c50ebb0f0",
+    "hash": "7ce791777d765862cdfcb1541a9c2ba9",
+    "content-hash": "2a9bbd2ef08d0f106a06121984a30530",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -221,6 +221,48 @@
                 "tune"
             ],
             "time": "2016-02-01 12:45:07"
+        },
+        {
+            "name": "linkorb/xuid",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/linkorb/xuid.git",
+                "reference": "dfc86729b198e375bf9724b6193ed994f322e6cc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/linkorb/xuid/zipball/dfc86729b198e375bf9724b6193ed994f322e6cc",
+                "reference": "dfc86729b198e375bf9724b6193ed994f322e6cc",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~5.0",
+                "ramsey/uuid": "~3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Xuid\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Joost Faassen",
+                    "email": "j.faassen@linkorb.com",
+                    "role": "Development"
+                }
+            ],
+            "description": "XUID library for PHP",
+            "homepage": "https://github.com/linkorb/xuid",
+            "keywords": [
+                "xuid"
+            ],
+            "time": "2015-12-13 20:56:49"
         },
         {
             "name": "maximebf/debugbar",
@@ -565,7 +607,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/silexphp/Silex/zipball/670fd5d37eb074d451564edbc69e9f6d0cedc6ca",
+                "url": "https://api.github.com/repos/silexphp/Silex/zipball/1bbf31d9bde881c2e2088287c91190f50892ac3e",
                 "reference": "a3881a5a2fc7e0233307c8240d4adc909a559b49",
                 "shasum": ""
             },
@@ -636,7 +678,7 @@
             "keywords": [
                 "microframework"
             ],
-            "time": "2015-08-24 09:40:42"
+            "time": "2016-01-03 15:41:33"
         },
         {
             "name": "symfony/config",
@@ -3557,49 +3599,6 @@
                 "php"
             ],
             "time": "2016-04-03 14:58:57"
-        },
-        {
-            "name": "droid/droid-plugins",
-            "version": "v1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/droid-php/droid-plugins.git",
-                "reference": "33981af4fd06508ce7ad700e04e3bd9c8f62f5c1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/droid-php/droid-plugins/zipball/33981af4fd06508ce7ad700e04e3bd9c8f62f5c1",
-                "reference": "33981af4fd06508ce7ad700e04e3bd9c8f62f5c1",
-                "shasum": ""
-            },
-            "require": {
-                "droid/droid": "~1.0",
-                "droid/droid-bower": "~1.0",
-                "droid/droid-composer": "~1.0",
-                "droid/droid-dbtk": "~1.0",
-                "droid/droid-haigha": "~1.0"
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "LinkORB Engineering",
-                    "email": "engineering@linkorb.com",
-                    "role": "Development"
-                }
-            ],
-            "description": "Droid default plugins",
-            "homepage": "http://www.github.com/droid-php/droid-plugins",
-            "keywords": [
-                "droid",
-                "linkorb",
-                "php",
-                "plugins"
-            ],
-            "time": "2016-04-03 17:36:50"
         },
         {
             "name": "fabpot/goutte",

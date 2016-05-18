@@ -27,10 +27,10 @@
         "monolog/monolog": "^1.17",
         "texthtml/whoops-silex": "~1.0",
         "maximebf/debugbar": "~1.0",
-        "doctrine/inflector": "~1.0"
+        "doctrine/inflector": "~1.0",
+        "linkorb/xuid": "^1.0"
     },
     "require-dev": {
-        "droid/droid-plugins": "~1.0",
         "behat/behat": "^3.0",
         "behat/mink": "^1.6",
         "behat/mink-extension": "^2.0",
