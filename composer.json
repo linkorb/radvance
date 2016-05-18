@@ -28,7 +28,7 @@
         "texthtml/whoops-silex": "~1.0",
         "maximebf/debugbar": "~1.0",
         "doctrine/inflector": "~1.0",
-        "linkorb/xuid": "^1.0"
+        "linkorb/xuid": "dev-master"
     },
     "require-dev": {
         "behat/behat": "^3.0",
