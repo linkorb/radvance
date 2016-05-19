@@ -126,10 +126,18 @@ abstract class BaseRepository
      */
     public function persist(ModelInterface $entity)
     {
-        if ($entity->getId()) {
-            $fields = $entity->toArray();
-            unset($fields['id']);
+        // XUID
+        if (property_exists($entity, 'xuid')) {
+            $xuid = $entity->getXuid();
+            if (!$xuid) {
+                $xuid = new Xuid();
+                $entity->setXuid($xuid->getXuid());
+            }
+        }
+        $fields = $entity->toArray();
+        unset($fields['id']);
 
+        if ($entity->getId()) {
             $where = array(
                 'id' => $entity->getId(),
             );
@@ -137,14 +145,6 @@ abstract class BaseRepository
             $statement = $this->pdo->prepare($sql);
             $res = $statement->execute($this->prepareFieldsValues($fields + $where));
         } else {
-            // XUID
-            if (property_exists($entity, 'xuid')) {
-                $xuid = new Xuid();
-                $entity->setXuid($xuid->getXuid());
-            }
-            $fields = $entity->toArray();
-            unset($fields['id']);
-
             $sql = $this->buildInsertSql($fields);
             $this->pdo->prepare($sql)->execute($this->prepareFieldsValues($fields));
             $entity->setId($this->pdo->lastInsertId());
