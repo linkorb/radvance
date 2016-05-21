@@ -38,22 +38,30 @@ class ControllerResolver extends BaseControllerResolver
         
         $reflectionClass = new \ReflectionClass($className);
         $constructor = $reflectionClass->getConstructor();
+        
         $args = [];
         if ($constructor) {
             $parameters = $constructor->getParameters();
-            foreach ($parameters as $parameter) {
-                if ($parameter->getName()=='app') {
-                    $args['app'] = $this->app;
-                }
-                if (substr($parameter->getName(), -10) == 'Repository') {
-                    $args[$parameter->getName()] = $this->app->getRepository(substr($parameter->getName(), 0, -10));
-                }
-            }
+            $args = $this->injectArguments($parameters);
         }
         
         $class = $reflectionClass->newInstanceArgs($args);
         
         return array($class, $methodName);
+    }
+    
+    protected function injectArguments(array $parameters)
+    {
+        $args = [];
+        foreach ($parameters as $parameter) {
+            if ($parameter->getName()=='app') {
+                $args['app'] = $this->app;
+            }
+            if (substr($parameter->getName(), -10) == 'Repository') {
+                $args[$parameter->getName()] = $this->app->getRepository(substr($parameter->getName(), 0, -10));
+            }
+        }
+        return $args;
     }
     
     protected function doGetArguments(Request $request, $controller, array $parameters)
@@ -64,6 +72,11 @@ class ControllerResolver extends BaseControllerResolver
                 $request->attributes->set($param->getName(), $this->app);
                 break;
             }
+            //todo: inject repositories here too?
+        }
+        $args = $this->injectArguments($parameters);
+        foreach ($args as $key => $value) {
+            $request->attributes->set($key, $value);
         }
         return parent::doGetArguments($request, $controller, $parameters);
     }
