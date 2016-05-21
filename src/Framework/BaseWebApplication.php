@@ -19,6 +19,8 @@ use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
 use Silex\Application as SilexApplication;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Knp\Menu\MenuFactory;
+use Knp\Menu\Renderer\ListRenderer;
 use RuntimeException;
 use PDO;
 
@@ -29,6 +31,7 @@ use PDO;
 abstract class BaseWebApplication extends BaseConsoleApplication implements FrameworkApplicationInterface
 {
     protected $pdo;
+    protected $spaceMenu;
 
     public function __construct(array $values = array())
     {
@@ -46,6 +49,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureRoutes();
         $this->configureUrlPreprocessor();
         $this->configureExceptionHandling();
+        $this->configureSpaceMenu();
         $this->debugBar['time']->stopMeasure('setup');
     }
 
@@ -402,5 +406,17 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this[$spaceName],
             $this['current_user']->getName()
         );
+    }
+    
+    public function configureSpaceMenu()
+    {
+        $factory = new MenuFactory();
+        $this->spaceMenu = $factory->createItem('Space menu');
+        $this['twig']->addGlobal('space_menu', $this->spaceMenu);
+    }
+    
+    public function getSpaceMenu()
+    {
+        return $this->spaceMenu;
     }
 }
