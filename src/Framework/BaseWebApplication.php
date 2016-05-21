@@ -106,7 +106,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         return sprintf(
             '%s/themes/%s',
             $global ? sprintf('%s/../..', rtrim(__DIR__)) : $this->getRootPath(),
-            isset($this['theme']) ? $this['theme'] : 'default'
+            isset($this['parameters']['theme']) ? $this['parameters']['theme'] : 'default'
         );
     }
 
