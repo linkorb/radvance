@@ -287,6 +287,9 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
      */
     public function getRepository($name)
     {
+        if (!isset($this['repository'])) {
+            throw new RuntimeException("Repositories have not (yet) been initialized");
+        }
         if (!isset($this['repository'][$name])) {
             throw new Exception(sprintf(
                 "Repository '%s' not found",
