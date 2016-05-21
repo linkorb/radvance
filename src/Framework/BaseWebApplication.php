@@ -50,6 +50,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureUrlPreprocessor();
         $this->configureExceptionHandling();
         $this->configureSpaceMenu();
+        $this->configureControllerResolver();
         $this->debugBar['time']->stopMeasure('setup');
     }
 
@@ -418,5 +419,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     public function getSpaceMenu()
     {
         return $this->spaceMenu;
+    }
+    
+    public function configureControllerResolver()
+    {
+        $app = $this;
+        $this->extend('resolver', function ($resolver, $app) {
+            return new ControllerResolver($app);
+        });
     }
 }
