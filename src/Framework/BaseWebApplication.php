@@ -104,6 +104,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     public function getThemePath($global = false)
     {
+        if (isset($this['parameters']['theme'])) {
+            $this['parameters']['theme'];
+        }
+        
         return sprintf(
             '%s/themes/%s',
             $global ? sprintf('%s/../..', rtrim(__DIR__)) : $this->getRootPath(),
