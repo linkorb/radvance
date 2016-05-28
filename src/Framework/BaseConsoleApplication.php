@@ -10,6 +10,7 @@ use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
 use Radvance\Component\Config\ConfigLoader;
 use Doctrine\Common\Inflector\Inflector;
+use Aws\S3\S3Client;
 use Exception;
 use RuntimeException;
 use PDO;
@@ -33,6 +34,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureRepositories();
         $this->configureTemplateEngine();
         $this->configureLogging();
+        $this->configureObjectStorage();
     }
 
     // abstract public function getRootPath();
@@ -336,6 +338,58 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             case 'get':
                 return $this['repository'][$repository];
         }
+    }
+    
+    public function configureObjectStorage()
+    {
+        $adapterName = null;
+        if (isset($this['parameters']['objectstorage_adapter'])) {
+            $adapterName = $this['parameters']['objectstorage_adapter'];
+        }
+        if (!$adapterName) {
+            // Setup a default path in /tmp during development
+            $appName = strtolower(str_replace(' ', '-', $this['app']['name']));
+            $filePath = $this->getRootPath() . '/app/storage/';
+            if (!file_exists($filePath)) {
+                mkdir($filePath);
+            }
+            $adapter = new \ObjectStorage\Adapter\FileAdapter($filePath);
+        } else {
+            switch ($adapterName) {
+                case 'file':
+                    $filepath = $this['parameters']['objectstorage_file_path'];
+                    $adapter = new \ObjectStorage\Adapter\FileAdapter($filepath);
+                    break;
+                case 's3':
+                    $bucketName = $this['parameters']['objectstorage_s3_bucket'];
+                    $prefix = $this['parameters']['objectstorage_s3_prefix'];
+                    $key = (string)$this['parameters']['objectstorage_s3_key'];
+                    $secret = (string)$this['parameters']['objectstorage_s3_secret'];
+                    $s3client = S3Client::factory(array(
+                        'key' => $key,
+                        'secret' => $secret
+                    ));
+                    $adapter = new \ObjectStorage\Adapter\S3Adapter($s3client, $bucketName, $prefix);
+                    break;
+                default:
+                    throw new RuntimeException('Unsupported objectstorage adapter: ' . $adapterName);
+            }
+        }
+        
+        if (isset($this['parameters']['objectstorage_encryption_key'])) {
+            // Wrap the adapter in an encryption adapter
+            $key = $this['parameters']['objectstorage_encryption_key'];
+            $iv = $this['parameters']['objectstorage_encryption_iv'];
+            $adapter = new \ObjectStorage\Adapter\EncryptionAdapter($adapter, $key, $iv);
+        }
+        
+        if (isset($this['parameters']['objectstorage_bzip2_level'])) {
+            // Wrap the adapter in a compression adapter
+            $level = $this['parameters']['objectstorage_bzip2_level'];
+            $adapter = new \ObjectStorage\Adapter\Bzip2Adapter($adapter, $level);
+        }
+    
+        $this['objectstorage'] = $adapter;
     }
 
     // protected $spaceConfig;
