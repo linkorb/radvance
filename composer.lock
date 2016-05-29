@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "44099beb3cf9b1f3dc8dd263b8be35e1",
-    "content-hash": "77c6be74e2a0248e1e2e34b9f0a04ff8",
+    "hash": "fe3277f8073b188d553ca4070f0cd24f",
+    "content-hash": "a109616446613722eea423247e05a6ee",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -287,6 +287,58 @@
                 "tune"
             ],
             "time": "2016-02-01 12:45:07"
+        },
+        {
+            "name": "linkorb/objectstorage",
+            "version": "v2.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/linkorb/objectstorage.git",
+                "reference": "e347eb4a67ff4f555ffbe1feddb9e9027e1690f7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/linkorb/objectstorage/zipball/e347eb4a67ff4f555ffbe1feddb9e9027e1690f7",
+                "reference": "e347eb4a67ff4f555ffbe1feddb9e9027e1690f7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "aws/aws-sdk-php": "~2.7",
+                "symfony/console": "~2.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ObjectStorage\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Joost Faassen",
+                    "email": "j.faassen@linkorb.com",
+                    "role": "Development"
+                }
+            ],
+            "description": "ObjectStorage library for your cloud-based applications",
+            "homepage": "http://www.github.com/linkorb/objectstorage",
+            "keywords": [
+                "GridFS",
+                "cloud storage",
+                "mongodb",
+                "objectstorage",
+                "objectstore",
+                "osd",
+                "s3",
+                "storage"
+            ],
+            "time": "2015-05-09 10:16:45"
         },
         {
             "name": "linkorb/xuid",
@@ -762,10 +814,10 @@
             "require": {
                 "php": ">=5.5.9",
                 "pimple/pimple": "~3.0",
-                "symfony/event-dispatcher": "~2.8|3.0.*",
-                "symfony/http-foundation": "~2.8|3.0.*",
-                "symfony/http-kernel": "~2.8|3.0.*",
-                "symfony/routing": "~2.8|3.0.*"
+                "symfony/event-dispatcher": "~2.8|^3.0",
+                "symfony/http-foundation": "~2.8|^3.0",
+                "symfony/http-kernel": "~2.8|^3.0",
+                "symfony/routing": "~2.8|^3.0"
             },
             "replace": {
                 "silex/api": "self.version",
@@ -2349,16 +2401,16 @@
         },
         {
             "name": "userbase/client",
-            "version": "V0.6.2",
+            "version": "v0.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/userbase-project/userbase-client-php.git",
-                "reference": "1b0eb0b3f64ab73d28b1e4c6bae97cce580b8399"
+                "reference": "e299cfb58f12bf8036fc1c7297dfa6b912fcc8ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/userbase-project/userbase-client-php/zipball/1b0eb0b3f64ab73d28b1e4c6bae97cce580b8399",
-                "reference": "1b0eb0b3f64ab73d28b1e4c6bae97cce580b8399",
+                "url": "https://api.github.com/repos/userbase-project/userbase-client-php/zipball/e299cfb58f12bf8036fc1c7297dfa6b912fcc8ab",
+                "reference": "e299cfb58f12bf8036fc1c7297dfa6b912fcc8ab",
                 "shasum": ""
             },
             "require": {
@@ -2387,7 +2439,7 @@
                 "signup",
                 "user"
             ],
-            "time": "2016-03-02 06:06:14"
+            "time": "2016-05-27 08:17:20"
         }
     ],
     "packages-dev": [
@@ -3620,16 +3672,16 @@
         },
         {
             "name": "fabpot/php-cs-fixer",
-            "version": "v1.11.2",
+            "version": "v1.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/FriendsOfPHP/PHP-CS-Fixer.git",
-                "reference": "41f70154642ec0f9ea9ea9c290943f3b5dfa76fc"
+                "reference": "b0a383d856d884d6b16e15892f507ecf89f8dbd2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/zipball/41f70154642ec0f9ea9ea9c290943f3b5dfa76fc",
-                "reference": "41f70154642ec0f9ea9ea9c290943f3b5dfa76fc",
+                "url": "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/zipball/b0a383d856d884d6b16e15892f507ecf89f8dbd2",
+                "reference": "b0a383d856d884d6b16e15892f507ecf89f8dbd2",
                 "shasum": ""
             },
             "require": {
@@ -3670,7 +3722,8 @@
                 }
             ],
             "description": "A tool to automatically fix PHP code style",
-            "time": "2016-02-26 07:37:29"
+            "abandoned": "friendsofphp/php-cs-fixer",
+            "time": "2016-05-26 23:49:24"
         },
         {
             "name": "fzaninotto/faker",
