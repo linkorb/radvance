@@ -30,6 +30,7 @@
         "maximebf/debugbar": "~1.0",
         "doctrine/inflector": "~1.0",
         "linkorb/xuid": "~1.0",
+        "materia/materia": "~1.0",
         "knplabs/knp-menu": "~2.0"
     },
     "require-dev": {
