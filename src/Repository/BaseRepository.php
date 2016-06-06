@@ -97,7 +97,7 @@ abstract class BaseRepository
     public function findAll()
     {
         $statement = $this->pdo->prepare(sprintf(
-            'SELECT * FROM %s',
+            'SELECT * FROM `%s`',
             $this->getTable()
         ));
         $statement->execute();
