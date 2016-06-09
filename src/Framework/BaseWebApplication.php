@@ -107,7 +107,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (isset($this['parameters']['theme'])) {
             return $this['parameters']['theme'];
         }
-        
+
         return sprintf(
             '%s/themes/%s',
             $global ? sprintf('%s/../..', rtrim(__DIR__)) : $this->getRootPath(),
@@ -226,6 +226,46 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (isset($this['parameters']['userbase_url'])) {
             $this['twig']->addGlobal('userbase_url', $this['parameters']['userbase_url']);
         }
+
+        $app = $this;
+        $this['twig']->addFilter(
+            new \Twig_SimpleFilter('rdate', function ($date, $forceFormat = null) use ($app) {
+                return \Radvance\Framework\BaseWebApplication::rDateTime(
+                    $date,
+                    (($forceFormat?:$app->getFormat('date')) ?: 'Y-m-d')
+                );
+            })
+        );
+        $this['twig']->addFilter(
+            new \Twig_SimpleFilter('rtime', function ($date, $forceFormat = null) use ($app) {
+                return \Radvance\Framework\BaseWebApplication::rDateTime(
+                    $date,
+                    (($forceFormat?:$app->getFormat('time')) ?: 'H:i')
+                );
+            })
+        );
+        $this['twig']->addFilter(
+            new \Twig_SimpleFilter('rdatetime', function ($date, $forceFormat = null) use ($app) {
+                return \Radvance\Framework\BaseWebApplication::rDateTime(
+                    $date,
+                    (($forceFormat?:$app->getFormat('datetime')) ?: 'Y-m-d H:i')
+                );
+            })
+        );
+    }
+
+    public function getFormat($key)
+    {
+        return isset($this['parameters']['format'][$key]) ? $this['parameters']['format'][$key] : null;
+    }
+
+    public static function rDateTime($date, $format)
+    {
+        if (gettype($date) == 'string') {
+            $date = \DateTime::createFromFormat('Y-m-d H:i:s', $date);
+        }
+
+        return $date->format($format);
     }
 
     protected function configureUrlPreprocessor()
@@ -412,19 +452,19 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this['current_user']->getName()
         );
     }
-    
+
     public function configureSpaceMenu()
     {
         $factory = new MenuFactory();
         $this->spaceMenu = $factory->createItem('Space menu');
         $this['twig']->addGlobal('space_menu', $this->spaceMenu);
     }
-    
+
     public function getSpaceMenu()
     {
         return $this->spaceMenu;
     }
-    
+
     public function configureControllerResolver()
     {
         $app = $this;

@@ -2,3 +2,7 @@
 parameters:
     debug: false
     pdo: mysql://username:password@localhost/exampledb
+    format:
+        date: Y-m-d
+        time: H:i
+        datetime: "Y-m-d H:i"
