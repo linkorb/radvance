@@ -10,6 +10,8 @@ use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
 use Radvance\Component\Config\ConfigLoader;
 use Doctrine\Common\Inflector\Inflector;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
+use Radvance\Translation\RecursiveYamlFileMessageLoader;
 use Aws\S3\S3Client;
 use Exception;
 use RuntimeException;
@@ -106,6 +108,12 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             ini_set('display_errors', 'on');
             $this['debug'] = (bool) $this['parameters']['debug'];
         }
+
+        $this['locale'] = 'en_US';
+        if (isset($this['parameters']['locale'])) {
+            $this['locale'] = $this['parameters']['locale'];
+        }
+
     }
 
     /**
@@ -148,11 +156,18 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     protected function configureService()
     {
         // Translations
-        $this->register(new TranslationServiceProvider(), array(
-            'locale' => 'en',
-            'translation.class_path' => sprintf('%s/vendor/symfony/src', $this->getRootPath()),
-            'translator.messages' => array(),
-        ));
+        $this['locale_fallbacks'] = array('en_US');
+        $this->register(new TranslationServiceProvider());
+        
+        $translator = $this['translator'];
+        $translator->addLoader('yaml', new RecursiveYamlFileMessageLoader());
+        
+        $files = glob($this->getRootPath() .'/app/l10n/*.yml');
+        foreach ($files as $filename) {
+            $locale = str_replace('.yml', '', basename($filename));
+            $translator->addResource('yaml', $filename, $locale);
+        }
+
     }
 
     /**

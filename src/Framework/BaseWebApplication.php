@@ -244,6 +244,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 );
             })
         );
+
         $this['twig']->addFilter(
             new \Twig_SimpleFilter('rdatetime', function ($date, $forceFormat = null) use ($app) {
                 return \Radvance\Framework\BaseWebApplication::rDateTime(
@@ -252,6 +253,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 );
             })
         );
+        
+        
+        $app = $this;
+        $app->before(function (Request $request, SilexApplication $app) {
+            $this['twig']->addExtension(new \Radvance\Twig\TranslateExtension($request, $app));
+        });
     }
 
     public function getFormat($key)
