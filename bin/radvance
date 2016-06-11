@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+use Symfony\Component\Console\Application;
+
 function includeIfExists($file)
 {
     if (file_exists($file)) {
@@ -22,9 +24,10 @@ if (!file_exists($loader)) {
     );
 }
 
-require $loader;
-
-use Symfony\Component\Console\Application;
+$autoLoader = require($loader);
+if (class_exists('AutoTune\Tuner')) {
+    \AutoTune\Tuner::init($autoLoader);
+}
 
 $application = new Application('Radvance', '0.0.1');
 $application->setCatchExceptions(true);
@@ -34,4 +37,5 @@ $application->add(new \Radvance\Command\GenerateModelCommand());
 $application->add(new \Radvance\Command\GenerateRepositoryCommand());
 $application->add(new \Radvance\Command\GenerateCrudCommand());
 $application->add(new \Radvance\Command\GenerateTemplatesCommand());
+$application->add(new \Radvance\Command\SchemaLoadCommand());
 $application->run();
