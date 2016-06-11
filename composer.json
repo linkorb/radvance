@@ -31,7 +31,8 @@
         "doctrine/inflector": "~1.0",
         "linkorb/xuid": "~1.0",
         "materia/materia": "~1.0",
-        "knplabs/knp-menu": "~2.0"
+        "knplabs/knp-menu": "~2.0",
+        "symfony/process": "~2.7"
     },
     "require-dev": {
         "behat/behat": "^3.0",
