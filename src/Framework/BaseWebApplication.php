@@ -253,8 +253,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 );
             })
         );
-        
-        
+
+
         $app = $this;
         $app->before(function (Request $request, SilexApplication $app) {
             $this['twig']->addExtension(new \Radvance\Twig\TranslateExtension($request, $app));
@@ -268,6 +268,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     public static function rDateTime($date, $format)
     {
+        if (!$date) {
+            return '-';
+        }
         if (gettype($date) == 'string') {
             $date = \DateTime::createFromFormat('Y-m-d H:i:s', $date);
         }
