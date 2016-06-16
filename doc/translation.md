@@ -77,6 +77,32 @@ Use `route.{routeName}.{element}`. For example `route.dashboard.header` to speci
 
 Try to minimize this type of strings
 
+### Translating forms
+
+Find the Controller (if needed, using the `routes.yml`) (usually in `src/Controller/XyzController.php`)
+
+Find the form "label", and change:
+
+```php
+->add(
+    'start_at',
+    'date',
+    array(
+        'label' => "Start at",
+```
+
+```php
+->add(
+    'start_at',
+    'date',
+    array(
+        'label' => $app['translator']->trans('model.discount.start_at'),
+```
+
+
+
+
+
 ### Model field names
 
 Model field names are often re-used between templates (on index, view, edit, add, delete screens, etc). This can be achieved by following the id format: `model.{modelName}.{fieldName}`. For example: `model.contact.firstName`
