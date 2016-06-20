@@ -272,7 +272,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             return '-';
         }
         if (gettype($date) == 'string') {
-            $date = \DateTime::createFromFormat('Y-m-d H:i:s', $date);
+            $date = \DateTime::createFromFormat((strpos($date, ' ')?'Y-m-d H:i:s':'Y-m-d'), $date);
         }
 
         return $date->format($format);
