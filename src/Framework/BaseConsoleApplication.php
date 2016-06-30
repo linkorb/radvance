@@ -33,10 +33,12 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         // $this->configureSpaces();
         $this->configurePdo();
         $this->configureService();
-        $this->configureRepositories();
         $this->configureTemplateEngine();
+        $this->configureRepositories();
         $this->configureLogging();
         $this->configureObjectStorage();
+        $this->configurePackages();
+        $this->initPackages();
     }
 
     // abstract public function getRootPath();
@@ -70,11 +72,6 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         }
 
         return str_replace('//', '/', $file);
-    }
-
-    protected function getRepositoryPath()
-    {
-        return sprintf('%s/src/Repository', $this->getRootPath());
     }
 
     protected function loadConfig()
@@ -148,6 +145,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this->pdo = new PDO($dsn, $user, $pass);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this['pdo'] = $this->pdo;
     }
 
     /**
@@ -200,20 +198,25 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     // abstract protected function configureRepositories();
     protected function configureRepositories()
     {
-        $this->configurePdoRepositories();
+        $path = sprintf('%s/src/Repository', $this->getRootPath());
+
+        $ns = (new \ReflectionObject($this))->getNamespaceName() . '\\Repository';
+        $this->autoloadPdoRepositories($path, $ns);
         // TODO: support other types of repositories
     }
 
-    private function configurePdoRepositories()
+    private function autoloadPdoRepositories($path, $ns)
     {
+        if (!file_exists($path)) {
+            return;
+        }
+        
         if (!$this->pdo) {
             throw new RuntimeException('PDO not configured yet');
         }
-        $ns = (new \ReflectionObject($this))->getNamespaceName();
 
-        $dir = $this->getRepositoryPath();
-        foreach (glob($dir.'/Pdo*Repository.php') as $filename) {
-            $className = $ns.'\\Repository\\'.basename($filename, '.php');
+        foreach (glob($path.'/Pdo*Repository.php') as $filename) {
+            $className = $ns . '\\' . basename($filename, '.php');
             // only load the ones implements Radvance RepositoryInterface
             if (in_array('Radvance\\Repository\\PermissionRepositoryInterface', class_implements($className))) {
                 $this->configurePermissionRepository($className);
@@ -275,7 +278,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     /**
      * @param RepositoryInterface $repository
      */
-    protected function addRepository(RepositoryInterface $repository)
+    public function addRepository(RepositoryInterface $repository)
     {
         $name = $repository->getTable();
         if ($name && !isset($this['repository'][$name])) {
@@ -425,4 +428,34 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     // {
     //     return $this->spaceConfig;
     // }
+    
+    protected function configurePackages()
+    {
+        // implement this method in your main application
+        // in order to register 'packages'
+    }
+    
+    private function initPackages()
+    {
+        foreach ($this->providers as $provider) {
+            //print_r($provider);
+            $reflectionObject = new \ReflectionObject($provider);
+            $ns = $reflectionObject->getNamespaceName() . '\\Repository';
+            $shortName = $reflectionObject->getShortName();
+            $shortName = str_replace('Provider', 'Package', $shortName);
+
+            $reflector = new \ReflectionClass(get_class($provider));
+            $packagePath = dirname($reflector->getFileName());
+            
+            $this->autoloadPdoRepositories($packagePath . '/Repository', $ns);
+            
+            $templatePath = $packagePath . '/Resources/views';
+            if (file_exists($templatePath)) {
+                $this['twig.loader.filesystem']->addPath(
+                    $templatePath,
+                    $shortName
+                );
+            }
+        }
+    }
 }

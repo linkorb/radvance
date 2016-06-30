@@ -12,6 +12,8 @@ abstract class BaseRepository
 {
     private $table;
     protected $pdo;
+    protected $filter;
+    protected $modelClassName;
 
     public function __construct(PDO $pdo, $table = null)
     {
@@ -26,6 +28,46 @@ abstract class BaseRepository
 
         $this->table = $table;
         $this->pdo = $pdo;
+    }
+    
+    public function createEntity()
+    {
+        $name = $this->getModelClassName();
+        return $name::createNew();
+    }
+    
+    public function getModelClassName()
+    {
+        if (!$this->modelClassName) {
+            // If the modelClassName is not explicitly defined in the subclass,
+            // make an educated guess based on the repository class name
+            $name = get_class($this);
+            $name = str_replace('\\Repository\\', '\\Model\\', $name);
+            
+            $name = str_replace('\\Pdo', '\\', $name);
+            $name = substr($name, 0, -strlen('Repository'));
+            $this->modelClassName = $name;
+        }
+        return $this->modelClassName;
+    }
+    
+    public function setPdo(PDO $pdo)
+    {
+        $this->pdo = $pdo;
+    }
+
+    public function setFilter($filter)
+    {
+        // Only add filters for properties that are present on this repository's model class.
+        $res = [];
+        foreach ($filter as $key => $value) {
+            if (property_exists($this->getModelClassName(), $key)) {
+                $res[$key] = $value;
+            }
+        }
+        if (count($res)>0) {
+            $this->filter = $res;
+        }
     }
 
     /**
@@ -52,6 +94,15 @@ abstract class BaseRepository
         $entity = $this->findOneOrNullBy(array('id' => $id));
         if (!$entity) {
             $entity = $this->createEntity();
+            if ($this->filter) {
+                foreach ($this->filter as $key => $value) {
+                    if (property_exists($entity, $key)) {
+                        $propertyName = Inflector::camelize($key);
+                        $setter = sprintf('set%s', ucfirst($propertyName));
+                        $entity->$setter($value);
+                    }
+                }
+            }
         }
 
         return $entity;
@@ -78,31 +129,35 @@ abstract class BaseRepository
     /**
      * {@inheritdoc}
      */
-    public function findOneOrNullBy($where)
-    {
-        $statement = $this->pdo->prepare(sprintf(
-            'SELECT * FROM `%s` WHERE %s LIMIT 1',
-            $this->getTable(),
-            $this->buildKeyValuePairs($where, ' and ')
-        ));
-        $where = $this->flattenValues($where);
-        $statement->execute($where);
-
-        return $this->rowToObject($statement->fetch(PDO::FETCH_ASSOC));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function findAll()
     {
-        $statement = $this->pdo->prepare(sprintf(
-            'SELECT * FROM `%s`',
-            $this->getTable()
-        ));
-        $statement->execute();
+        return $this->findBy([]);
+    }
+    
+    public function fetchRows($where, $limit = null)
+    {
+        if ($this->filter) {
+            $where = array_merge($where, $this->filter);
+        }
+        $sql = sprintf('SELECT * FROM `%s` WHERE true', $this->getTable());
+        
+        if (count($where)>0) {
+            $sql .= sprintf(' AND %s', $this->buildKeyValuePairs($where, ' and '));
+        };
+        
+        if ($this->getSoftDeleteColumnName()) {
+            $sql .= sprintf(' AND %s is null', $this->getSoftDeleteColumnName());
+        }
+        
+        if ($limit>0) {
+            $sql .= sprintf(' LIMIT %d', $limit);
+        }
 
-        return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
+        $statement = $this->pdo->prepare($sql);
+        $where = $this->flattenValues($where);
+        $statement->execute($where);
+        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+        return $rows;
     }
 
     /**
@@ -110,16 +165,22 @@ abstract class BaseRepository
      */
     public function findBy($where)
     {
-        $statement = $this->pdo->prepare(sprintf(
-            'SELECT * FROM `%s` WHERE %s',
-            $this->getTable(),
-            $this->buildKeyValuePairs($where, ' and ')
-        ));
-        $where = $this->flattenValues($where);
-        $statement->execute($where);
-
-        return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
+        $rows = $this->fetchRows($where);
+        return $this->rowsToObjects($rows);
     }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function findOneOrNullBy($where)
+    {
+        $rows = $this->fetchRows($where, 1);
+        if (!$rows) {
+            return null;
+        }
+        return $this->rowToObject($rows[0]);
+    }
+
 
     /**
      * {@inheritdoc}
@@ -168,17 +229,34 @@ abstract class BaseRepository
             return $value;
         }, $fields);
     }
+    
+    protected function getSoftDeleteColumnName()
+    {
+        if (property_exists($this->getModelClassName(), 'deleted_at')) {
+            return 'deleted_at';
+        }
+        return null; // no soft-delete field
+    }
 
     /**
      * {@inheritdoc}
      */
     public function remove(ModelInterface $entity)
     {
-        $statement = $this->pdo->prepare(sprintf(
-            'DELETE FROM `%s` WHERE id=:id',
-            $this->getTable()
-        ));
-        $statement->execute(array('id' => $entity->getId()));
+        if ($this->getSoftDeleteColumnName()) {
+            // Yes, use soft-delete
+            $propertyName = Inflector::camelize($this->getSoftDeleteColumnName());
+            $setter = sprintf('set%s', ucfirst($propertyName));
+            $entity->$setter(date('Y-m-d H:i:s'));
+            $this->persist($entity);
+        } else {
+            // No, use hard-delete
+            $statement = $this->pdo->prepare(sprintf(
+                'DELETE FROM `%s` WHERE id=:id',
+                $this->getTable()
+            ));
+            $statement->execute(array('id' => $entity->getId()));
+        }
     }
 
     /**
@@ -323,15 +401,12 @@ abstract class BaseRepository
         }, $where, array_keys($where)));
     }
 
+    
     public function getByLibraryId($libraryId)
     {
-        $statement = $this->pdo->prepare(sprintf(
-            'SELECT * FROM `%s` WHERE library_id=:libid',
-            $this->getTable()
-        ));
-        $statement->execute(['libid' => $libraryId]);
-
-        return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
+        throw new RuntimeException(
+            "getByLibraryId should not be in the BaseRepository. Implement it in subclass if you need it."
+        );
     }
 
     protected $returnDataType = 'object';

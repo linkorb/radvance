@@ -2,7 +2,7 @@
 
 namespace Radvance\Repository;
 
-interface SpaceRepositoryInterface extends RepositoryInterface
+interface SpaceRepositoryInterface extends GlobalRepositoryInterface
 {
     public function getModelClassName();
     public function getNameOfSpace($plural = false);

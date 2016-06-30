@@ -292,6 +292,38 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $app['accountName'] = $accountName;
                 $urlGeneratorContext->setParameter('accountName', $accountName);
             }
+            
+            $spaceName = null;
+            if ($request->attributes->has('spaceName')) {
+                $spaceName = $request->attributes->get('spaceName');
+            }
+            $spaceRepo = $this->getSpaceRepository();
+            if ($spaceRepo) {
+                // Figure out the Name of the SpaceName (hence: SpaceNameName)
+                $spaceNameName = lcfirst($spaceRepo->getNameOfSpace()) . 'Name';
+                if ($request->attributes->has($spaceNameName)) {
+                    $spaceName = $request->attributes->get($spaceNameName);
+                }
+                
+                if ($spaceName) {
+                    $space = $spaceRepo->findByNameAndAccountName($spaceName, $accountName);
+                    $app['twig']->addGlobal('spaceName', $spaceName);
+                    $app['twig']->addGlobal($spaceNameName, $spaceName);
+                    $app['spaceName'] = $spaceName;
+                    $app[$spaceNameName] = $spaceName;
+                    $urlGeneratorContext->setParameter('spaceName', $spaceName);
+                    $urlGeneratorContext->setParameter($spaceNameName, $spaceName);
+                    $app['space'] = $space;
+                    $app[ucfirst($space->getName())] = $space;
+                    
+                    foreach ($this->getRepositories() as $repository) {
+                        if ($repository instanceof \Radvance\Repository\GlobalRepositoryInterface) {
+                        } else {
+                            $repository->setFilter([$spaceRepo->getPermissionTableForeignKeyName() => $space->getId()]);
+                        }
+                    }
+                }
+            }
         });
     }
 
