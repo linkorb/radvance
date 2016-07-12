@@ -53,12 +53,25 @@ class ControllerResolver extends BaseControllerResolver
     protected function injectArguments(array $parameters)
     {
         $args = [];
+        $repositoryManager = $this->app['repository-manager'];
         foreach ($parameters as $parameter) {
             if ($parameter->getName()=='app') {
                 $args['app'] = $this->app;
             }
-            if (substr($parameter->getName(), -10) == 'Repository') {
-                $args[$parameter->getName()] = $this->app->getRepository(substr($parameter->getName(), 0, -10));
+            if ($parameter->getName()=='twig') {
+                $args['twig'] = $this->app['twig'];
+            }
+            $class = $parameter->getClass();
+            if ($class) {
+                $className = (string)$class->getName();
+                if (substr($className, -10) == 'Repository') {
+                    foreach ($repositoryManager->getRepositories() as $repository) {
+                        if (get_class($repository) == $className) {
+                            $args[$parameter->getName()] = $repository;
+                        }
+                        
+                    }
+                }
             }
         }
         return $args;

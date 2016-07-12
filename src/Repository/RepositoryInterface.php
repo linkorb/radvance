@@ -4,7 +4,7 @@ namespace Radvance\Repository;
 
 use Radvance\Model\ModelInterface;
 
-interface RepositoryInterface
+interface RepositoryInterface extends \Minerva\Orm\RepositoryInterface
 {
     public function createEntity();
 
@@ -67,20 +67,4 @@ interface RepositoryInterface
      * @return ModelInterface[]
      */
     public function findBy($where);
-
-    /**
-     * Insert or update record.
-     *
-     * @param ModelInterface $entity
-     *
-     * @return ModelInterface
-     */
-    public function persist(ModelInterface $entity);
-
-    /**
-     * Remove record from database.
-     *
-     * @param ModelInterface $entity
-     */
-    public function remove(ModelInterface $entity);
 }

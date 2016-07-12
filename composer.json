@@ -12,6 +12,11 @@
     }],
     "require": {
         "silex/silex": "2.0.x-dev#a3881a5a2fc7e0233307c8240d4adc909a559b49",
+        "minerva/orm": "~1.0",
+        "interophp/injector": "~1.0",
+        "interophp/module": "~1.0",
+        "interophp/container": "~1.0",
+        "interophp/module-manager": "~1.0",
         "linkorb/autotune": "~1.0",
         "linkorb/objectstorage": "~2.0",
         "symfony/yaml": "2.7.*",

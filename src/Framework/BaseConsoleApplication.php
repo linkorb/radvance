@@ -12,6 +12,9 @@ use Radvance\Component\Config\ConfigLoader;
 use Doctrine\Common\Inflector\Inflector;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Radvance\Translation\RecursiveYamlFileMessageLoader;
+use InteroPhp\ModuleManager\ModuleManagerInterface;
+use InteroPhp\ModuleManager\ModuleManager;
+use Minerva\Orm\RepositoryManager;
 use Aws\S3\S3Client;
 use Exception;
 use RuntimeException;
@@ -26,8 +29,6 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     {
         parent::__construct($values);
 
-        $this['repository'] = new \ArrayObject();
-
         $this->loadConfig();
         $this->configureParameters();
         // $this->configureSpaces();
@@ -37,8 +38,9 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureRepositories();
         $this->configureLogging();
         $this->configureObjectStorage();
-        $this->configurePackages();
-        $this->initPackages();
+        $this->configureModuleManager();
+        $this->configureModules();
+        $this->initModules();
     }
 
     // abstract public function getRootPath();
@@ -198,40 +200,28 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     // abstract protected function configureRepositories();
     protected function configureRepositories()
     {
+        $repositoryManager = new RepositoryManager();
+        $this['repository-manager'] = $repositoryManager;
+        
         $path = sprintf('%s/src/Repository', $this->getRootPath());
 
         $ns = (new \ReflectionObject($this))->getNamespaceName() . '\\Repository';
-        $this->autoloadPdoRepositories($path, $ns);
-        // TODO: support other types of repositories
-    }
-
-    private function autoloadPdoRepositories($path, $ns)
-    {
-        if (!file_exists($path)) {
-            return;
-        }
+        $repositoryManager->autoloadPdoRepositories($path, $ns, $this->pdo);
         
-        if (!$this->pdo) {
-            throw new RuntimeException('PDO not configured yet');
-        }
-
-        foreach (glob($path.'/Pdo*Repository.php') as $filename) {
-            $className = $ns . '\\' . basename($filename, '.php');
-            // only load the ones implements Radvance RepositoryInterface
-            if (in_array('Radvance\\Repository\\PermissionRepositoryInterface', class_implements($className))) {
-                $this->configurePermissionRepository($className);
-            } elseif (in_array('Radvance\\Repository\\SpaceRepositoryInterface', class_implements($className))) {
-                $this->configureSpaceRepository($className);
-            } elseif (in_array('Radvance\\Repository\\RepositoryInterface', class_implements($className))) {
-                $this->addRepository(new $className($this->pdo));
+        foreach ($repositoryManager->getRepositories() as $repository) {
+            if (is_a($repository, 'Radvance\\Repository\\PermissionRepositoryInterface')) {
+                $this->configurePermissionRepository($repository);
             }
+            
+            if (is_a($repository, 'Radvance\\Repository\\SpaceRepositoryInterface')) {
+                $this->configureSpaceRepository($repository);
+            }
+            // TODO: support other types of repositories
         }
     }
 
-    private function configureSpaceRepository($className)
+    private function configureSpaceRepository($repo)
     {
-        $repo = new $className($this->pdo);
-
         // checks the needed properties
         if (!$repo->getModelClassName()
             || !$repo->getNameOfSpace()
@@ -246,12 +236,10 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this['spaceRepository'] = $repo;
         $this['spaceModelClassName'] = $repo->getModelClassName();
-        $this->addRepository($repo);
     }
-    private function configurePermissionRepository($className)
+    
+    private function configurePermissionRepository($repo)
     {
-        $repo = new $className($this->pdo);
-
         // checks the needed properties
         if (!$repo->getModelClassName() || !$repo->getSpaceTableForeignKeyName()) {
             throw new RuntimeException(
@@ -262,7 +250,6 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this['permissionRepository'] = $repo;
         $this['permissionModelClassName'] = $repo->getModelClassName();
-        $this->addRepository($repo);
     }
 
     public function getSpaceRepository()
@@ -276,28 +263,11 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     }
 
     /**
-     * @param RepositoryInterface $repository
-     */
-    public function addRepository(RepositoryInterface $repository)
-    {
-        $name = $repository->getTable();
-        if ($name && !isset($this['repository'][$name])) {
-            $this['repository'][$name] = $repository;
-        } else {
-            // var_dump($name);
-        }
-    }
-
-    /**
      * @return RepositoryInterface[]
      */
     public function getRepositories()
     {
-        if (!isset($this['repository'])) {
-            return array();
-        }
-
-        return $this['repository'];
+        return $this['repository-manager']->getRepositories();
     }
 
     /**
@@ -307,17 +277,10 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
      */
     public function getRepository($name)
     {
-        if (!isset($this['repository'])) {
-            throw new RuntimeException("Repositories have not (yet) been initialized");
+        if (!isset($this['repository-manager'])) {
+            throw new RuntimeException("Repository manager not (yet) initialized");
         }
-        if (!isset($this['repository'][$name])) {
-            throw new Exception(sprintf(
-                "Repository '%s' not found",
-                $name
-            ));
-        }
-
-        return $this['repository'][$name];
+        return $this['repository-manager']->getRepositoryByTableName($name);
     }
 
     /**
@@ -340,22 +303,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             );
         }
 
-    
-        $repository = Inflector::tableize($matchesArray[2]);
-
-        if (!isset($this['repository'][$repository])) {
-            throw new BadMethodCallException(
-                sprintf(
-                    'Repository %s does not exists',
-                    $repository
-                )
-            );
-        }
-
-        switch ($matchesArray[1]) {
-            case 'get':
-                return $this['repository'][$repository];
-        }
+        $name = Inflector::tableize($matchesArray[2]);
+        return $this['repository-manager']->getRepositoryByTableName($name);
     }
     
     public function configureObjectStorage()
@@ -428,32 +377,35 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     // {
     //     return $this->spaceConfig;
     // }
-    
-    protected function configurePackages()
+
+    protected function configureModuleManager()
     {
-        // implement this method in your main application
-        // in order to register 'packages'
+        $m = new ModuleManager();
+        $this['module-manager'] = $m;
     }
     
-    private function initPackages()
+    protected function configureModules()
     {
-        foreach ($this->providers as $provider) {
+        // implement this method in your main application
+        // in order to register 'modules'
+    }
+    
+    private function initModules()
+    {
+        $m = $this['module-manager'];
+        $repositoryManager = $this['repository-manager'];
+        foreach ($m->getModules() as $module) {
             //print_r($provider);
-            $reflectionObject = new \ReflectionObject($provider);
-            $ns = $reflectionObject->getNamespaceName() . '\\Repository';
-            $shortName = $reflectionObject->getShortName();
-            $shortName = str_replace('Provider', 'Package', $shortName);
-
-            $reflector = new \ReflectionClass(get_class($provider));
-            $packagePath = dirname($reflector->getFileName());
+            $ns = $module->getNamespace() . '\\Repository';
+            $shortName = $module->getName();
+            $modulePath = $module->getPath();
+            $repositoryManager->autoloadPdoRepositories($modulePath . '/Repository', $ns, $this->pdo);
             
-            $this->autoloadPdoRepositories($packagePath . '/Repository', $ns);
-            
-            $templatePath = $packagePath . '/Resources/views';
+            $templatePath = $modulePath . '/res/views';
             if (file_exists($templatePath)) {
                 $this['twig.loader.filesystem']->addPath(
                     $templatePath,
-                    $shortName
+                    $shortName . 'Module'
                 );
             }
         }
