@@ -267,7 +267,11 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
      */
     public function getRepositories()
     {
-        return $this['repository-manager']->getRepositories();
+        $res = [];
+        foreach ($this['repository-manager']->getRepositories() as $repository) {
+            $res[$repository->getTableName()] = $repository;
+        }
+        return $res;
     }
 
     /**
