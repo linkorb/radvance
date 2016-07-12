@@ -5,8 +5,10 @@ namespace Radvance\Framework;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver as BaseControllerResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 use Silex\Application;
 use RuntimeException;
+use Twig_Environment;
 
 class ControllerResolver extends BaseControllerResolver
 {
@@ -61,21 +63,23 @@ class ControllerResolver extends BaseControllerResolver
         $args = [];
         $repositoryManager = $this->app['repository-manager'];
         foreach ($parameters as $parameter) {
-            if ($parameter->getName()=='app') {
-                $args['app'] = $this->app;
-            }
-            if ($parameter->getName()=='twig') {
-                $args['twig'] = $this->app['twig'];
-            }
             $class = $parameter->getClass();
             if ($class) {
                 $className = (string)$class->getName();
+                if ($class->isInstance($this->app)) {
+                    $args[$parameter->getName()] = $this->app;
+                }
+                if ($className == Twig_Environment::class) {
+                    $args[$parameter->getName()] = $this->app['twig'];
+                }
+                if ($className == UrlGenerator::class) {
+                    $args[$parameter->getName()] = $this->app['url_generator'];
+                }
                 if (substr($className, -10) == 'Repository') {
                     foreach ($repositoryManager->getRepositories() as $repository) {
                         if (get_class($repository) == $className) {
                             $args[$parameter->getName()] = $repository;
                         }
-                        
                     }
                 }
             }
@@ -85,14 +89,6 @@ class ControllerResolver extends BaseControllerResolver
     
     protected function doGetArguments(Request $request, $controller, array $parameters)
     {
-        //print_r($parameters);
-        foreach ($parameters as $param) {
-            if ($param->getClass() && $param->getClass()->isInstance($this->app)) {
-                $request->attributes->set($param->getName(), $this->app);
-                break;
-            }
-            //todo: inject repositories here too?
-        }
         $args = $this->injectArguments($parameters);
         foreach ($args as $key => $value) {
             $request->attributes->set($key, $value);
