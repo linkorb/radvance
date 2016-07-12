@@ -36,6 +36,11 @@ class BaseForm
         return $this->entity;
     }
 
+    public function getForm()
+    {
+        return $this->form;
+    }
+
     public function isSubmitted()
     {
         return $this->submitted;
