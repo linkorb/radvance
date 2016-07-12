@@ -47,6 +47,12 @@ class ControllerResolver extends BaseControllerResolver
         
         $class = $reflectionClass->newInstanceArgs($args);
         
+        // Workaround for BaseController methods
+        if (!method_exists($class, $methodName)) {
+            if (method_exists($class, 'default' . ucfirst($methodName))) {
+                $methodName = 'default' . ucfirst($methodName);
+            }
+        }
         return array($class, $methodName);
     }
     

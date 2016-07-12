@@ -26,7 +26,7 @@ class BaseController
      *
      * @return Response
      */
-    public function indexAction(Application $app, Request $request)
+    public function defaultIndexAction(Application $app, Request $request)
     {
         return $this->renderIndex($app, array(
             'entities' => $app->getRepository($this->getModelName())->findAll(),
@@ -40,7 +40,7 @@ class BaseController
      *
      * @return Response
      */
-    public function viewAction(Application $app, Request $request, $id)
+    public function defaultViewAction(Application $app, Request $request, $id)
     {
         return $this->renderView($app, array(
             'entity' => $app->getRepository($this->getModelName())->find($id),
@@ -54,7 +54,7 @@ class BaseController
      *
      * @return Response
      */
-    public function addAction(Application $app, Request $request)
+    public function defaultAddAction(Application $app, Request $request)
     {
         return $this->getEditForm($app, $request);
     }
@@ -66,7 +66,7 @@ class BaseController
      *
      * @return Response
      */
-    public function editAction(Application $app, Request $request, $id)
+    public function defaultEditAction(Application $app, Request $request, $id)
     {
         return $this->getEditForm($app, $request, $id);
     }
@@ -78,7 +78,7 @@ class BaseController
      *
      * @return Response
      */
-    public function deleteAction(Application $app, Request $request, $id)
+    public function defaultDeleteAction(Application $app, Request $request, $id)
     {
         return $this->delete($app, $request, $id);
     }
