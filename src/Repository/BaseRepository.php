@@ -16,7 +16,7 @@ class BaseRepository extends BasePdoRepository
         $rows = $this->fetchRows($where);
         return $this->rowsToObjects($rows);
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -28,13 +28,13 @@ class BaseRepository extends BasePdoRepository
         }
         return $this->rowToObject($rows[0]);
     }
-    
+
     public function findOneBy($where)
     {
         $entity = $this->findOneOrNullBy($where);
 
         if (is_null($entity)) {
-            throw new Exception(sprintf(
+            throw new \Exception(sprintf(
                 "Entity '%s' with %s not found",
                 $this->getTable(),
                 $this->describeWhereFields($where)
@@ -43,10 +43,10 @@ class BaseRepository extends BasePdoRepository
 
         return $entity;
     }
-    
+
     public function getByLibraryId($libraryId)
     {
-        throw new RuntimeException(
+        throw new \RuntimeException(
             "getByLibraryId should not be in the BaseRepository. Implement it in subclass if you need it."
         );
     }
