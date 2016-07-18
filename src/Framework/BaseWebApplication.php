@@ -54,7 +54,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->debugBar['time']->stopMeasure('setup');
     }
 
-    private $debugBar;
+    protected $debugBar;
 
     public function configureDebugBar()
     {
@@ -176,7 +176,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureSpaceAndPermissionRoutes();
     }
 
-    private function configureSpaceAndPermissionRoutes()
+    protected function configureSpaceAndPermissionRoutes()
     {
         if (isset($this['spaceRepository'])) {
             $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
@@ -188,7 +188,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         }
     }
 
-    private function configureTemplateEngine()
+    protected function configureTemplateEngine()
     {
         $this['twig.loader.filesystem']->addPath(
             $this->getThemePath(true),
