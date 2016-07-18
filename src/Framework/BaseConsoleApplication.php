@@ -173,7 +173,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     /**
      * Configure templates.
      */
-    private function configureTemplateEngine()
+    protected function configureTemplateEngine()
     {
         $this->register(new TwigServiceProvider(), array(
             'twig.path' => array(
@@ -220,7 +220,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         }
     }
 
-    private function configureSpaceRepository($repo)
+    protected function configureSpaceRepository($repo)
     {
         // checks the needed properties
         if (!$repo->getModelClassName()
@@ -238,7 +238,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this['spaceModelClassName'] = $repo->getModelClassName();
     }
     
-    private function configurePermissionRepository($repo)
+    protected function configurePermissionRepository($repo)
     {
         // checks the needed properties
         if (!$repo->getModelClassName() || !$repo->getSpaceTableForeignKeyName()) {
@@ -394,7 +394,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         // in order to register 'modules'
     }
     
-    private function initModules()
+    protected function initModules()
     {
         $m = $this['module-manager'];
         $repositoryManager = $this['repository-manager'];
