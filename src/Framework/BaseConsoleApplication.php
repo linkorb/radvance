@@ -34,7 +34,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         // $this->configureSpaces();
         $this->configurePdo();
         $this->configureService();
-        $this->configureTemplateEngine();
+        $this->configureTemplateService();
         $this->configureRepositories();
         $this->configureLogging();
         $this->configureObjectStorage();
@@ -173,7 +173,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     /**
      * Configure templates.
      */
-    protected function configureTemplateEngine()
+    protected function configureTemplateService()
     {
         $this->register(new TwigServiceProvider(), array(
             'twig.path' => array(
