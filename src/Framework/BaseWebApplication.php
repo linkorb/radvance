@@ -292,7 +292,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $app['accountName'] = $accountName;
                 $urlGeneratorContext->setParameter('accountName', $accountName);
             }
-            
+
             $spaceName = null;
             if ($request->attributes->has('spaceName')) {
                 $spaceName = $request->attributes->get('spaceName');
@@ -304,7 +304,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 if ($request->attributes->has($spaceNameName)) {
                     $spaceName = $request->attributes->get($spaceNameName);
                 }
-                
+
                 if ($spaceName) {
                     $space = $spaceRepo->findByNameAndAccountName($spaceName, $accountName);
                     $app['twig']->addGlobal('spaceName', $spaceName);
@@ -315,7 +315,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     $urlGeneratorContext->setParameter($spaceNameName, $spaceName);
                     $app['space'] = $space;
                     $app[ucfirst($space->getName())] = $space;
-                    
+
                     foreach ($this->getRepositories() as $repository) {
                         if ($repository instanceof \Radvance\Repository\GlobalRepositoryInterface) {
                         } else {
@@ -429,8 +429,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     {
         foreach ($this['security']['providers'] as $provider => $providerConfig) {
             switch ($provider) {
-                // case 'JsonFile':
-                // return new \Radvance\Security\JsonFileUserProvider(__DIR__.'/../'.$providerConfig['path']);
+                case 'JsonFile':
+                    return new \Radvance\Component\Security\JsonFileUserProvider(
+                        realpath($providerConfig['path']) ? $providerConfig['path'] : ($this->getRootPath().'/'.$providerConfig['path'])
+                    );
                 // case 'Pdo':
                 //     $dbmanager = new DatabaseManager();
                 //
