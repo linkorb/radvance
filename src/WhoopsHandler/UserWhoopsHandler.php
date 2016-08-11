@@ -21,8 +21,13 @@ class UserWhoopsHandler extends Handler
     {
         $app = $this->application;
         $data = array();
+        
+        $filename = 'exception.html.twig';
+        if (!$app['twig.loader']->exists($filename)) {
+            $filename = '@BaseTemplates/app/exception.html.twig';
+        }
         $html = $app['twig']->render(
-            '@BaseTemplates/app/exception.html.twig',
+            $filename,
             $data
         );
         http_response_code(500);

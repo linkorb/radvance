@@ -9,6 +9,8 @@ use Silex\Provider\SessionServiceProvider;
 use WhoopsSilex\WhoopsServiceProvider;
 use Whoops\Handler\PrettyPageHandler;
 use Radvance\WhoopsHandler\UserWhoopsHandler;
+use Radvance\WhoopsHandler\LogWhoopsHandler;
+use Radvance\WhoopsHandler\WebhookWhoopsHandler;
 use UserBase\Client\UserProvider as UserBaseUserProvider;
 use UserBase\Client\Client as UserBaseClient;
 use Symfony\Component\HttpFoundation\Request;
@@ -150,6 +152,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $whoops->pushHandler(new PrettyPageHandler());
         } else {
             $whoops->pushHandler(new UserWhoopsHandler($this));
+        }
+        $whoops->pushHandler(new LogWhoopsHandler($this));
+        if (isset($this['parameters']['exception_webhook'])) {
+            $url = $this['parameters']['exception_webhook'];
+            $whoops->pushHandler(new WebhookWhoopsHandler($this, $url));
         }
     }
 
