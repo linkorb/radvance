@@ -53,6 +53,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureExceptionHandling();
         $this->configureSpaceMenu();
         $this->configureControllerResolver();
+        $this->configureRequestLogger();
         $this->debugBar['time']->stopMeasure('setup');
     }
 
@@ -92,6 +93,50 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $response->setContent($body);
             });
         }
+    }
+    
+    public function configureRequestLogger()
+    {
+        if (!isset($this['parameters']['request_log'])) {
+            return;
+        }
+        
+        $this->after(function (Request $request, Response $response) {
+            $data = [
+                'datetime' => date('Y-m-d H:i:s'),
+                'method' => $request->getMethod(),
+                'scheme' => $request->getScheme(),
+                'host' => $request->getHttpHost(),
+                'uri' => $request->getRequestUri(),
+                'route' => $request->get('_route'),
+            ];
+            if (isset($this['current_user'])) {
+                $data['username'] = $this['current_user']->getName();
+            }
+            $data['address'] = $request->getClientIp();
+            $data['session-id'] = $request->getSession()->getId();
+            $data['agent'] = $request->getSession()->getId();
+            if ($request->headers->has('User-Agent')) {
+                $data['agent'] = $request->headers->get('User-Agent');
+            }
+            if ($request->headers->has('referer')) {
+                $data['referer'] = $request->headers->get('referer');
+            }
+            
+            // response details
+            $data['status'] = $response->getStatusCode();
+            if ($response->headers->has('Content-Type')) {
+                $data['content-type'] = $response->headers->get('content-type');
+            }
+
+            $json = json_encode($data, JSON_PARTIAL_OUTPUT_ON_ERROR|JSON_UNESCAPED_SLASHES);
+            $path = $this->getRootPath() . '/app/logs/requests/' . date('Ymd') . '/';
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+            $filename = $path . '/' . date('Ymd-His') . '-' . sha1(rand()) . '.json';
+            file_put_contents($filename, $json);
+        });
     }
 
     public function getDebugBar()
