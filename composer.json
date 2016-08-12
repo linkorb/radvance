@@ -38,7 +38,8 @@
         "linkorb/xuid": "~1.0",
         "materia/materia": "~1.0",
         "knplabs/knp-menu": "~2.0",
-        "symfony/process": "~2.7"
+        "symfony/process": "~2.7",
+        "graylog2/gelf-php": "~1.0"
     },
     "require-dev": {
         "behat/behat": "^3.0",
