@@ -12,9 +12,9 @@ use Twig_Environment;
 
 class ControllerResolver extends BaseControllerResolver
 {
-    
+
     protected $app;
-    
+
     public function __construct(Application $app)
     {
         $logger = null;
@@ -37,18 +37,18 @@ class ControllerResolver extends BaseControllerResolver
         }
         $className = $part[0];
         $methodName = $part[2];
-        
+
         $reflectionClass = new \ReflectionClass($className);
         $constructor = $reflectionClass->getConstructor();
-        
+
         $args = [];
         if ($constructor) {
             $parameters = $constructor->getParameters();
             $args = $this->injectArguments($parameters);
         }
-        
+
         $class = $reflectionClass->newInstanceArgs($args);
-        
+
         // Workaround for BaseController methods
         if (!method_exists($class, $methodName)) {
             if (method_exists($class, 'default' . ucfirst($methodName))) {
@@ -57,7 +57,7 @@ class ControllerResolver extends BaseControllerResolver
         }
         return array($class, $methodName);
     }
-    
+
     protected function injectArguments(array $parameters)
     {
         $args = [];
@@ -75,6 +75,9 @@ class ControllerResolver extends BaseControllerResolver
                 if ($className == UrlGenerator::class) {
                     $args[$parameter->getName()] = $this->app['url_generator'];
                 }
+                if ($className == \Symfony\Component\Form\FormFactory::class) {
+                    $args[$parameter->getName()] = $this->app['form.factory'];
+                }
                 if (substr($className, -10) == 'Repository') {
                     foreach ($repositoryManager->getRepositories() as $repository) {
                         if (get_class($repository) == $className) {
@@ -86,7 +89,7 @@ class ControllerResolver extends BaseControllerResolver
         }
         return $args;
     }
-    
+
     protected function doGetArguments(Request $request, $controller, array $parameters)
     {
         $args = $this->injectArguments($parameters);
