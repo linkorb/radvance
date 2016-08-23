@@ -78,6 +78,9 @@ class ControllerResolver extends BaseControllerResolver
                 if ($className == \Symfony\Component\Form\FormFactory::class) {
                     $args[$parameter->getName()] = $this->app['form.factory'];
                 }
+                if ($className == \Radvance\Model\Space::class) {
+                    $args[$parameter->getName()] = $this->app['space'];
+                }
                 if (substr($className, -10) == 'Repository') {
                     foreach ($repositoryManager->getRepositories() as $repository) {
                         if (get_class($repository) == $className) {
