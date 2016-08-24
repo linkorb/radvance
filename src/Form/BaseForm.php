@@ -2,25 +2,25 @@
 
 namespace Radvance\Form;
 
-use Radvance\Model\BaseModel;
-use Radvance\Framework\BaseWebApplication as Application;
 use Symfony\Component\HttpFoundation\Request;
-use Radvance\Exception\BadMethodCallException;
+use Symfony\Component\Form\FormFactory;
 use Doctrine\Common\Inflector\Inflector;
+use Radvance\Model\BaseModel;
+use Radvance\Exception\BadMethodCallException;
 
 class BaseForm
 {
     protected $defaults;
     protected $builder;
     protected $form;
-    protected $application;
+    protected $formFactory;
     protected $request;
     protected $submitted = false;
 
-    public function __construct(Application $app, Request $request)
+    public function __construct(FormFactory $formFactory, Request $request = null)
     {
-        $this->application = $app;
-        $this->request = $request;
+        $this->formFactory = $formFactory;
+        $this->request = $request ?: Request::createFromGlobals();
     }
 
     public function setEntity(BaseModel $entity)
@@ -48,7 +48,7 @@ class BaseForm
 
     public function dispatch()
     {
-        $this->builder = $this->application['form.factory']->createBuilder('form', $this->defaults);
+        $this->builder = $this->formFactory->createBuilder('form', $this->defaults);
         $this->addFields();
 
         // handle submission
