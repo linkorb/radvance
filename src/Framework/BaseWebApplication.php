@@ -38,6 +38,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     public function __construct(array $values = array())
     {
         parent::__construct($values);
+        $this->processMetaRequests();
 
         /*
          * A note about ordering:
@@ -55,6 +56,26 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureControllerResolver();
         $this->configureRequestLogger();
         $this->debugBar['time']->stopMeasure('setup');
+    }
+
+    protected function processMetaRequests()
+    {
+        $this->before(function (Request $request, BaseConsoleApplication $app) {
+            $method = null;
+            switch ($request->get('_route')) {
+                case 'meta_robot':
+                    $method = 'robotAction';
+                    break;
+                case 'meta_favicon':
+                    $method = 'faviconAction';
+                    break;
+                default:
+                    break;
+            }
+            if ($method) {
+                return (new \Radvance\Controller\MetaController())->$method();
+            }
+        });
     }
 
     protected $debugBar;
@@ -246,6 +267,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function configureRoutes()
     {
+        // put meta b4 other routes otherwise it's a new space or catched by app's routes
+        $this->configureMetaRoutes();
+
         $locator = new FileLocator(array(
             $this->getRoutesPath(),
         ));
@@ -264,8 +288,6 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         }
 
         $orgCollection->addCollection($newCollection);
-        // put meta b4 space-permission routes otherwise it's a new space
-        $this->configureMetaRoutes();
         $this->configureSpaceAndPermissionRoutes();
     }
 
