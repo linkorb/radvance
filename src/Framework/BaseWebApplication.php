@@ -94,13 +94,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             });
         }
     }
-    
+
     public function configureRequestLogger()
     {
         if (!isset($this['parameters']['request_log'])) {
             return;
         }
-        
+
         $this->after(function (Request $request, Response $response) {
             $data = [
                 'datetime' => date('Y-m-d H:i:s'),
@@ -122,13 +122,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             if ($request->headers->has('referer')) {
                 $data['referer'] = $request->headers->get('referer');
             }
-            
+
             // response details
             $data['status'] = $response->getStatusCode();
             if ($response->headers->has('Content-Type')) {
                 $data['content-type'] = $response->headers->get('content-type');
             }
-            
+
             $urls = $this['parameters']['request_log'];
             foreach (explode(',', $urls) as $url) {
                 $url = trim($url);
@@ -146,7 +146,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                         $filename = $path . '/' . date('Ymd-His') . '-' . sha1(rand()) . '.json';
                         file_put_contents($filename, $json . "\n");
                         break;
-                        
+
                     case 'gelf-udp':
                         $transport = new \Gelf\Transport\UdpTransport(
                             $url['host'],
@@ -264,6 +264,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         }
 
         $orgCollection->addCollection($newCollection);
+        // put meta b4 space-permission routes otherwise it's a new space
+        $this->configureMetaRoutes();
         $this->configureSpaceAndPermissionRoutes();
     }
 
@@ -277,6 +279,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
             $this['routes']->addCollection($loader->load('permission-routes.yml'));
         }
+    }
+
+    protected function configureMetaRoutes()
+    {
+        $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
+        $this['routes']->addCollection($loader->load('meta-routes.yml'));
     }
 
     protected function configureTemplateEngine()

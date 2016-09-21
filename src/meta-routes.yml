@@ -1,0 +1,8 @@
+# Meta routes
+
+meta_robot:
+    pattern: /robot.txt
+    defaults: { _controller: Radvance\Controller\MetaController::robotAction }
+meta_favicon:
+    pattern: /favicon.ico
+    defaults: { _controller: Radvance\Controller\MetaController::faviconAction }
