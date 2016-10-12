@@ -34,7 +34,7 @@ class PermissionController
         $error = null;
         if ($space) {
             $repo = $app->getPermissionRepository();
-            $error = $repo->add($username, $roles, $space->getId());
+            $error = $repo->add($username, $space->getId(), $roles);
         } else {
             $error = 'Invalid space';
         }

@@ -31,7 +31,7 @@ abstract class PdoPermissionRepository extends BaseRepository implements Permiss
         );
     }
 
-    public function add($username, $roles, $spaceId)
+    public function add($username, $spaceId, $roles = null)
     {
         $error = null;
 
@@ -44,8 +44,10 @@ abstract class PdoPermissionRepository extends BaseRepository implements Permiss
 
         $permission = new $class();
         $permission->setUsername($username);
-        $permission->setRoles($roles);
         $permission->$foreignMethod($spaceId);
+        if (property_exists($permission, 'roles')) {
+            $permission->setRoles($roles);
+        }
         try {
             $this->persist($permission);
         } catch (\Exception $e) {
