@@ -37,9 +37,26 @@
                     <label>Username</label>
                     <input type="text" class="form-control" name="P_username" required="required" />
 
-                    <label>Roles</label>
-                    <input type="text" class="form-control" name="P_roles" />
+                    {% if app['space_roles'] is defined %}
+                        <label>Roles</label>
 
+                        {% if app.space_roles is iterable %}
+                            <select name="P_roles"  class="form-control">
+                                {% for key, role in app.space_roles %}
+                                    <option value="{{ key }}" >
+                                        {% if  role['label'] is defined %}
+                                            {{ role.label }}
+                                        {% else %}
+                                            {{ key }}
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input  name="P_roles"  class="form-control" />
+                        {% endif %}
+
+                    {% endif %}
                 </div>
                 <div class="buttonbox">
                     <button type="submit" class="btn btn-primary">Add</button>
