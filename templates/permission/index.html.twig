@@ -37,9 +37,14 @@
                     <label>Username</label>
                     <input type="text" class="form-control" name="P_username" required="required" />
 
-                    <label>Roles</label>
-                    <input type="text" class="form-control" name="P_roles" />
-
+                    {% if app.space_roles %}
+                        <label>Roles</label>
+                        <select name="P_roles"  class="form-control">
+                            {% for key, role in app.space_roles %}
+                                <option value="{{ key }}" >{{ role.label }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
                 </div>
                 <div class="buttonbox">
                     <button type="submit" class="btn btn-primary">Add</button>
