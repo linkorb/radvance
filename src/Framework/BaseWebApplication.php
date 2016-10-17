@@ -347,6 +347,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (isset($this['parameters']['userbase_url'])) {
             $this['twig']->addGlobal('userbase_url', $this['parameters']['userbase_url']);
         }
+        
+        $this['twig']->getExtension('core')->setDateFormat('d/m/Y', '%d days');
+        if(isset($this['parameters']['twig_date_format'])) {
+            $this['twig']->getExtension('core')->setDateFormat($this['parameters']['twig_date_format'], '%d days');
+        }
 
         $app = $this;
         $this['twig']->addFilter(
