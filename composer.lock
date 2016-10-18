@@ -2718,12 +2718,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "b98f431828d1e30fe9a3634fdbd4a818930772e5"
+                "reference": "ed5506e3c6f3e4f270bd9d7b7e54aea785f92ddb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/b98f431828d1e30fe9a3634fdbd4a818930772e5",
-                "reference": "b98f431828d1e30fe9a3634fdbd4a818930772e5",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/ed5506e3c6f3e4f270bd9d7b7e54aea785f92ddb",
+                "reference": "ed5506e3c6f3e4f270bd9d7b7e54aea785f92ddb",
                 "shasum": ""
             },
             "require": {
@@ -2736,7 +2736,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.26-dev"
+                    "dev-master": "1.27-dev"
                 }
             },
             "autoload": {
@@ -2771,7 +2771,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2016-10-15 18:18:26"
+            "time": "2016-10-18 00:56:52"
         },
         {
             "name": "userbase/client",
