@@ -112,7 +112,13 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         if (isset($this['parameters']['locale'])) {
             $this['locale'] = $this['parameters']['locale'];
         }
-
+        setlocale(LC_ALL, $this['locale']);
+        
+        $this['timezone'] = 'UTC';
+        if (isset($this['parameters']['timezone'])) {
+            $this['timezone'] = $this['parameters']['timezone'];
+        }
+        date_default_timezone_set($this['timezone']);
     }
 
     /**
