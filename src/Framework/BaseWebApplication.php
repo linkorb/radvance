@@ -25,6 +25,7 @@ use Knp\Menu\MenuFactory;
 use Knp\Menu\Renderer\ListRenderer;
 use RuntimeException;
 use PDO;
+use DateTime;
 
 /**
  * Crud application using
@@ -397,11 +398,19 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (!$date) {
             return '-';
         }
-        if (gettype($date) == 'string') {
-            $date = \DateTime::createFromFormat((strpos($date, ' ')?'Y-m-d H:i:s':'Y-m-d'), $date);
+        if (is_numeric($date)) {
+            $dt = new DateTime();
+            $dt->setTimestamp($date);
+            $date = $dt;
         }
 
-        return $date->format($format);
+        if (gettype($date) == 'string') {
+            $date = DateTime::createFromFormat((strpos($date, ' ')?'Y-m-d H:i:s':'Y-m-d'), $date);
+        }
+        if ($date instanceof DateTime) {
+            return $date->format($format);
+        }
+        return '---';
     }
 
     protected function configureUrlPreprocessor()
