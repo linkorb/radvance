@@ -6,12 +6,17 @@
         <h3>{{ accountName }} / <a href="{{ path('space_view', {'accountName': accountName, 'spaceName': spaceName}) }}">{{ spaceName }}</a></h3>
         <table class="table table-bordered table-responsive">
             <thead>
-                <tr><th>Username</th><th></th></tr>
+                <tr>
+                    <th>Username</th>
+                    <th>Roles</th>
+                    <th></th>
+                </tr>
             </thead>
             <tbody>
                 {% for p in permissions %}
                 <tr>
                     <td>{{ p.username }}</td>
+                    <td>{{ p.roles }}</td>
                     <td>
                         <a class="btn btn-danger" href="{{ path('permission_delete', {'accountName': accountName, 'spaceName': spaceName, 'permissionId': p.id}) }}">
                             <i class="fa fa-remove"></i>
@@ -30,7 +35,28 @@
             <form action="{{ path('permission_add', {'accountName': accountName, 'spaceName': spaceName}) }}" method="post">
                 <div class="form-group">
                     <label>Username</label>
-                    <input type="text" class="form-control" name="P_username" />
+                    <input type="text" class="form-control" name="P_username" required="required" />
+
+                    {% if app['space_roles'] is defined %}
+                        <label>Roles</label>
+
+                        {% if app.space_roles is iterable %}
+                            <select name="P_roles"  class="form-control">
+                                {% for key, role in app.space_roles %}
+                                    <option value="{{ key }}" >
+                                        {% if  role['label'] is defined %}
+                                            {{ role.label }}
+                                        {% else %}
+                                            {{ key }}
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input  name="P_roles"  class="form-control" />
+                        {% endif %}
+
+                    {% endif %}
                 </div>
                 <div class="buttonbox">
                     <button type="submit" class="btn btn-primary">Add</button>

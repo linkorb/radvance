@@ -11,4 +11,9 @@ abstract class Permission extends BaseModel implements PermissionInterface
     {
         return $this->username;
     }
+
+    public function getRoles()
+    {
+        return property_exists($this, 'roles') ? $this->roles : '';
+    }
 }

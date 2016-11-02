@@ -27,13 +27,14 @@ class PermissionController
     public function addAction(Application $app, Request $request, $accountName, $spaceName)
     {
         $username = trim($request->request->get('P_username'));
+        $roles = trim($request->request->get('P_roles'));
 
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         $error = null;
         if ($space) {
             $repo = $app->getPermissionRepository();
-            $error = $repo->add($username, $space->getId());
+            $error = $repo->add($username, $space->getId(), $roles);
         } else {
             $error = 'Invalid space';
         }
