@@ -222,6 +222,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             isset($this['parameters']['theme']) ? $this['parameters']['theme'] : 'default'
         );
     }
+    
+    
 
     protected function getSessionsPath()
     {
@@ -268,14 +270,34 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function configureRoutes()
     {
-        // put meta b4 other routes otherwise it's a new space or catched by app's routes
+        // initialize meta routes before other routes
+        // otherwise it's a new space or caught by apps routes
         $this->configureMetaRoutes();
-
         $locator = new FileLocator(array(
             $this->getRoutesPath(),
         ));
         $loader = new YamlFileLoader($locator);
-        $newCollection = $loader->load('routes.yml');
+        $this['fqdn_space'] = false;
+        $fqdn = explode(':', $_SERVER['HTTP_HOST'])[0];
+        if (isset($this['fqdn']) && isset($this['fqdn']['default'])) {
+            $fqdnDefault = $this['fqdn']['default'];
+            if ($fqdn != $fqdnDefault) {
+                $spaceRepo = $this->getSpaceRepository();
+                $space = $spaceRepo->findOneOrNullByFqdn($fqdn);
+                $this['fqdn_space'] = $space;
+                if (!$space) {
+                    throw new RuntimeException("No space found with this FQDN: " . $fqdn);
+                }
+                $newCollection = $loader->load('routes-fqdn.yml');
+            }
+        }
+        
+        
+        if (!$this['fqdn_space']) {
+            // regular routing
+            $newCollection = $loader->load('routes.yml');
+        }
+        
         $orgCollection = $this['routes'];
         foreach ($newCollection->all() as $name => $route) {
             //echo $name .'/' . $route->getPath();
@@ -324,6 +346,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'Theme'
             );
         }
+        
+        $path = $this->getRootPath() . '/themes/fqdn';
+        if (file_exists($path)) {
+            $this['twig.loader.filesystem']->addPath(
+                $path,
+                'FqdnTheme'
+            );
+        }
+
 
         $this['twig.loader.filesystem']->addPath(
             sprintf('%s/../../templates', __DIR__),
@@ -419,43 +450,54 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $app->before(function (Request $request, SilexApplication $app) {
             $urlGenerator = $app['url_generator'];
             $urlGeneratorContext = $urlGenerator->getContext();
+            
+            $accountName = null;
+            $spaceName = null;
+            $spaceRepo = $this->getSpaceRepository();
+            if ($spaceRepo) {
+                // Figure out the Name of the SpaceName (hence: SpaceNameName)
+                // for example `libraryName`, `projectName`, etc
+                $spaceNameName = lcfirst($spaceRepo->getNameOfSpace()) . 'Name';
+            }
+            if ($this['fqdn_space']) {
+                // resolve accountName and spaceName from fqdn
+                $space = $this['fqdn_space'];
+                $accountName = $space->getAccountName();
+                $spaceName = $space->getName();
+            } else {
+                // try to resolve accountName and spaceName from url
+                if ($request->attributes->has('accountName')) {
+                    $accountName = $request->attributes->get('accountName');
+                }
+                if ($request->attributes->has('spaceName')) {
+                    $spaceName = $request->attributes->get('spaceName');
+                }
+                if ($request->attributes->has($spaceNameName)) {
+                    $spaceName = $request->attributes->get($spaceNameName);
+                }
+            }
 
-            if ($request->attributes->has('accountName')) {
-                $accountName = $request->attributes->get('accountName');
-
+            if ($accountName) {
                 $app['twig']->addGlobal('accountName', $accountName);
                 $app['accountName'] = $accountName;
                 $urlGeneratorContext->setParameter('accountName', $accountName);
             }
 
-            $spaceName = null;
-            if ($request->attributes->has('spaceName')) {
-                $spaceName = $request->attributes->get('spaceName');
-            }
-            $spaceRepo = $this->getSpaceRepository();
-            if ($spaceRepo) {
-                // Figure out the Name of the SpaceName (hence: SpaceNameName)
-                $spaceNameName = lcfirst($spaceRepo->getNameOfSpace()) . 'Name';
-                if ($request->attributes->has($spaceNameName)) {
-                    $spaceName = $request->attributes->get($spaceNameName);
-                }
+            if ($spaceName) {
+                $space = $spaceRepo->findByNameAndAccountName($spaceName, $accountName);
+                $app['twig']->addGlobal('spaceName', $spaceName);
+                $app['twig']->addGlobal($spaceNameName, $spaceName);
+                $app['spaceName'] = $spaceName;
+                $app[$spaceNameName] = $spaceName;
+                $urlGeneratorContext->setParameter('spaceName', $spaceName);
+                $urlGeneratorContext->setParameter($spaceNameName, $spaceName);
+                $app['space'] = $space;
+                $app[ucfirst($space->getName())] = $space;
 
-                if ($spaceName) {
-                    $space = $spaceRepo->findByNameAndAccountName($spaceName, $accountName);
-                    $app['twig']->addGlobal('spaceName', $spaceName);
-                    $app['twig']->addGlobal($spaceNameName, $spaceName);
-                    $app['spaceName'] = $spaceName;
-                    $app[$spaceNameName] = $spaceName;
-                    $urlGeneratorContext->setParameter('spaceName', $spaceName);
-                    $urlGeneratorContext->setParameter($spaceNameName, $spaceName);
-                    $app['space'] = $space;
-                    $app[ucfirst($space->getName())] = $space;
-
-                    foreach ($this->getRepositories() as $repository) {
-                        if ($repository instanceof \Radvance\Repository\GlobalRepositoryInterface) {
-                        } else {
-                            $repository->setFilter([$spaceRepo->getPermissionTableForeignKeyName() => $space->getId()]);
-                        }
+                foreach ($this->getRepositories() as $repository) {
+                    if ($repository instanceof \Radvance\Repository\GlobalRepositoryInterface) {
+                    } else {
+                        $repository->setFilter([$spaceRepo->getPermissionTableForeignKeyName() => $space->getId()]);
                     }
                 }
             }
