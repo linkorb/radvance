@@ -246,7 +246,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->register(new SessionServiceProvider(), array(
             'session.storage.save_path' => $this->getSessionsPath(),
         ));
-
+        
         // Forms
         $this->register(new FormServiceProvider());
     }
@@ -453,6 +453,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             
             $accountName = null;
             $spaceName = null;
+            $spaceNameName = null;
             $spaceRepo = $this->getSpaceRepository();
             if ($spaceRepo) {
                 // Figure out the Name of the SpaceName (hence: SpaceNameName)
@@ -472,8 +473,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 if ($request->attributes->has('spaceName')) {
                     $spaceName = $request->attributes->get('spaceName');
                 }
-                if ($request->attributes->has($spaceNameName)) {
-                    $spaceName = $request->attributes->get($spaceNameName);
+                if ($spaceNameName) {
+                    if ($request->attributes->has($spaceNameName)) {
+                        $spaceName = $request->attributes->get($spaceNameName);
+                    }
                 }
             }
 
