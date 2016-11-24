@@ -42,6 +42,13 @@ class CodeUpdateCommand extends Command
             $output->writeLn('<info>parameters.yml exists already.</info>');
         }
 
+        // ensure app/storage
+        $this->ensureDirectories('app/storage');
+
+        // ensure app/logs
+        $this->ensureDirectories('app/logs');
+        $this->ensureDirectories('app/logs/exceptions');
+
         // git update
         $this->runCommandProcess('git pull origin master', $output);
 
@@ -68,5 +75,13 @@ class CodeUpdateCommand extends Command
         $output->writeLn('<comment>'.$process->getCommandLine().'</comment>');
         $process->run();
         $output->writeLn($process->getOutput());
+    }
+
+    private function ensureDirectories($path)
+    {
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+            chmod($path, 0777);
+        }
     }
 }

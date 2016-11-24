@@ -3,7 +3,12 @@
 /app/config/parameters.yml.bak
 
 # Logs
-app/logs
+app/logs/*
+!app/logs/.gitkeep
+
+# Storage
+app/storage/*
+!app/storage/.gitkeep
 
 # Managed by package managers
 /vendor/
