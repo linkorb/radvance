@@ -278,8 +278,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         ));
         $loader = new YamlFileLoader($locator);
         $this['fqdn_space'] = false;
-        $fqdn = explode(':', $_SERVER['HTTP_HOST'])[0];
         if (isset($this['fqdn']) && isset($this['fqdn']['default'])) {
+            $fqdn = explode(':', $_SERVER['HTTP_HOST'])[0];
             $fqdnDefault = $this['fqdn']['default'];
             if ($fqdn != $fqdnDefault) {
                 $spaceRepo = $this->getSpaceRepository();
