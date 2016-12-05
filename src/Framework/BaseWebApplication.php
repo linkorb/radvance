@@ -61,7 +61,6 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureExceptionHandling();
         $this->configureSpaceMenu();
         $this->configureControllerResolver();
-        $this->configureRequestLogger();
         $this->debugBar['time']->stopMeasure('setup');
     }
     
@@ -72,6 +71,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $generator = new UuidRequestIdGenerator();
 
         $this->stack = new StackBuilder();
+        
+        $this->stack->push(RequestId::class, $generator, 'X-Request-Id', 'X-Request-Id');
+
         
         if (isset($this['parameters']['piwik'])) {
             $config = $this['parameters']['piwik'];
@@ -111,7 +113,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this->stack->push(Middleware\InspectletMiddleware::class, $key);
         }
         
-        $this->stack->push(RequestId::class, $generator, 'X-Request-Id', 'X-Request-Id');
+        if (isset($this['parameters']['request_log'])) {
+            $urls = $this['parameters']['request_log']['urls'];
+            $this->stack->push(Middleware\RequestLogMiddleware::class, $urls);
+        }
+
     }
     
     public function getStack()
@@ -176,90 +182,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             });
         }
     }
-
-    public function configureRequestLogger()
-    {
-        if (!isset($this['parameters']['request_log'])) {
-            return;
-        }
-
-        $this->after(function (Request $request, Response $response) {
-            $data = [
-                'datetime' => date('Y-m-d H:i:s'),
-                'method' => $request->getMethod(),
-                'scheme' => $request->getScheme(),
-                'host' => $request->getHttpHost(),
-                'uri' => $request->getRequestUri(),
-                'route' => $request->get('_route'),
-            ];
-            if (isset($this['current_user'])) {
-                $data['username'] = $this['current_user']->getName();
-            }
-            $data['address'] = $request->getClientIp();
-            $data['session-id'] = $request->getSession()->getId();
-            $data['agent'] = $request->getSession()->getId();
-            if ($request->headers->has('User-Agent')) {
-                $data['agent'] = $request->headers->get('User-Agent');
-            }
-            if ($request->headers->has('referer')) {
-                $data['referer'] = $request->headers->get('referer');
-            }
-
-            // response details
-            $data['status'] = $response->getStatusCode();
-            if ($response->headers->has('Content-Type')) {
-                $data['content-type'] = $response->headers->get('content-type');
-            }
-
-            $urls = $this['parameters']['request_log'];
-            foreach (explode(',', $urls) as $url) {
-                $url = trim($url);
-                $url = parse_url($url);
-                //print_r($url);
-                switch ($url['scheme']) {
-                    case 'json-path':
-                        $path = '/' . $url['scheme'] . $url['path'];
-
-                        $json = json_encode($data, JSON_PARTIAL_OUTPUT_ON_ERROR|JSON_UNESCAPED_SLASHES);
-                        $path = $this->getRootPath() . '/app/logs/requests/' . date('Ymd') . '/';
-                        if (!file_exists($path)) {
-                            mkdir($path, 0777, true);
-                        }
-                        $filename = $path . '/' . date('Ymd-His') . '-' . sha1(rand()) . '.json';
-                        file_put_contents($filename, $json . "\n");
-                        break;
-
-                    case 'gelf-udp':
-                        $transport = new \Gelf\Transport\UdpTransport(
-                            $url['host'],
-                            $url['port'],
-                            \Gelf\Transport\UdpTransport::CHUNK_SIZE_WAN
-                        );
-                        $gelfData = $data;
-                        $publisher = new \Gelf\Publisher();
-                        $publisher->addTransport($transport);
-                        $message = new \Gelf\Message();
-                        $message->setShortMessage("Request")
-                            ->setLevel(\Psr\Log\LogLevel::DEBUG)
-                            ->setFullMessage("")
-                            ->setFacility("")
-                            ->setHost($data['host'])
-                        ;
-                        $gelfData['host'] = null;
-                        $gelfData['datetime'] = null;
-                        array_filter($gelfData);
-                        foreach ($gelfData as $key => $value) {
-                            $message->setAdditional($key, $value);
-                        }
-                        $res = $publisher->publish($message);
-                        break;
-                    default:
-                        throw new RuntimeException('Unsupported request_log url scheme: ' . $url['scheme']);
-                }
-            }
-        });
-    }
-
+    
     public function getDebugBar()
     {
         return $this->debugBar;
