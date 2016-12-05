@@ -26,6 +26,10 @@ use Knp\Menu\Renderer\ListRenderer;
 use RuntimeException;
 use PDO;
 use DateTime;
+use Stack\Builder as StackBuilder;
+use Qandidate\Stack\UuidRequestIdGenerator;
+use Qandidate\Stack\RequestId;
+use Radvance\Middleware;
 
 /**
  * Crud application using
@@ -40,6 +44,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     {
         parent::__construct($values);
         $this->processMetaRequests();
+        
+        $this->configureStack();
 
         /*
          * A note about ordering:
@@ -57,6 +63,60 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureControllerResolver();
         $this->configureRequestLogger();
         $this->debugBar['time']->stopMeasure('setup');
+    }
+    
+    protected $stack;
+    
+    public function configureStack()
+    {
+        $generator = new UuidRequestIdGenerator();
+
+        $this->stack = new StackBuilder();
+        
+        if (isset($this['parameters']['piwik'])) {
+            $config = $this['parameters']['piwik'];
+            $url = trim($config['url'], '/') . '/';
+            $siteId = $config['siteId'];
+            $this->stack->push(Middleware\PiwikMiddleware::class, $url, $siteId);
+        }
+        
+        if (isset($this['parameters']['googleanalytics'])) {
+            $config = $this['parameters']['googleanalytics'];
+            $siteId = $config['siteId'];
+            $this->stack->push(Middleware\GoogleAnalyticsMiddleware::class, $siteId);
+        }
+        
+        if (isset($this['parameters']['maintenance'])) {
+            $config = $this['parameters']['maintenance'];
+            if (isset($config['enabled']) && $config['enabled']) {
+                $this->stack->push(Middleware\MaintenanceMiddleware::class, true, $config['whitelist']);
+            }
+        }
+        
+        if (isset($this['parameters']['spotclarify'])) {
+            $config = $this['parameters']['spotclarify'];
+            $key = $config['key'];
+            $this->stack->push(Middleware\SpotClarifyMiddleware::class, $key);
+        }
+        
+        if (isset($this['parameters']['hotjar'])) {
+            $config = $this['parameters']['hotjar'];
+            $siteId = $config['siteId'];
+            $this->stack->push(Middleware\HotjarMiddleware::class, $key);
+        }
+        
+        if (isset($this['parameters']['inspectlet'])) {
+            $config = $this['parameters']['inspectlet'];
+            $siteId = $config['siteId'];
+            $this->stack->push(Middleware\InspectletMiddleware::class, $key);
+        }
+        
+        $this->stack->push(RequestId::class, $generator, 'X-Request-Id', 'X-Request-Id');
+    }
+    
+    public function getStack()
+    {
+        return $this->stack;
     }
 
     protected function processMetaRequests()

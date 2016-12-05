@@ -39,7 +39,10 @@
         "materia/materia": "~1.0",
         "knplabs/knp-menu": "~2.0",
         "symfony/process": "~2.7",
-        "graylog2/gelf-php": "~1.0"
+        "graylog2/gelf-php": "~1.0",
+        "qandidate/stack-request-id": "~0.4",
+        "stack/builder": "~1.0",
+        "stack/run": "~1.0"
     },
     "require-dev": {
         "behat/behat": "^3.0",
