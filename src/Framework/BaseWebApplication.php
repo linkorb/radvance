@@ -44,7 +44,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     {
         parent::__construct($values);
         $this->processMetaRequests();
-        
+
         $this->configureStack();
 
         /*
@@ -63,63 +63,62 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureControllerResolver();
         $this->debugBar['time']->stopMeasure('setup');
     }
-    
+
     protected $stack;
-    
+
     public function configureStack()
     {
         $generator = new UuidRequestIdGenerator();
 
         $this->stack = new StackBuilder();
-        
+
         $this->stack->push(RequestId::class, $generator, 'X-Request-Id', 'X-Request-Id');
 
-        
+
         if (isset($this['parameters']['piwik'])) {
             $config = $this['parameters']['piwik'];
             $url = trim($config['url'], '/') . '/';
             $siteId = $config['siteId'];
             $this->stack->push(Middleware\PiwikMiddleware::class, $url, $siteId);
         }
-        
+
         if (isset($this['parameters']['googleanalytics'])) {
             $config = $this['parameters']['googleanalytics'];
             $siteId = $config['siteId'];
             $this->stack->push(Middleware\GoogleAnalyticsMiddleware::class, $siteId);
         }
-        
+
         if (isset($this['parameters']['maintenance'])) {
             $config = $this['parameters']['maintenance'];
             if (isset($config['enabled']) && $config['enabled']) {
                 $this->stack->push(Middleware\MaintenanceMiddleware::class, true, $config['whitelist']);
             }
         }
-        
+
         if (isset($this['parameters']['spotclarify'])) {
             $config = $this['parameters']['spotclarify'];
             $key = $config['key'];
             $this->stack->push(Middleware\SpotClarifyMiddleware::class, $key);
         }
-        
+
         if (isset($this['parameters']['hotjar'])) {
             $config = $this['parameters']['hotjar'];
             $siteId = $config['siteId'];
             $this->stack->push(Middleware\HotjarMiddleware::class, $key);
         }
-        
+
         if (isset($this['parameters']['inspectlet'])) {
             $config = $this['parameters']['inspectlet'];
             $siteId = $config['siteId'];
             $this->stack->push(Middleware\InspectletMiddleware::class, $key);
         }
-        
+
         if (isset($this['parameters']['request_log'])) {
             $urls = $this['parameters']['request_log']['urls'];
             $this->stack->push(Middleware\RequestLogMiddleware::class, $urls);
         }
-
     }
-    
+
     public function getStack()
     {
         return $this->stack;
@@ -182,7 +181,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             });
         }
     }
-    
+
     public function getDebugBar()
     {
         return $this->debugBar;
@@ -205,8 +204,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             isset($this['parameters']['theme']) ? $this['parameters']['theme'] : 'default'
         );
     }
-    
-    
+
+
 
     protected function getSessionsPath()
     {
@@ -229,7 +228,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->register(new SessionServiceProvider(), array(
             'session.storage.save_path' => $this->getSessionsPath(),
         ));
-        
+
         // Forms
         $this->register(new FormServiceProvider());
     }
@@ -274,13 +273,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $newCollection = $loader->load('routes-fqdn.yml');
             }
         }
-        
-        
+
+
         if (!$this['fqdn_space']) {
             // regular routing
             $newCollection = $loader->load('routes.yml');
         }
-        
+
         $orgCollection = $this['routes'];
         foreach ($newCollection->all() as $name => $route) {
             //echo $name .'/' . $route->getPath();
@@ -329,7 +328,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'Theme'
             );
         }
-        
+
         $path = $this->getRootPath() . '/themes/fqdn';
         if (file_exists($path)) {
             $this['twig.loader.filesystem']->addPath(
@@ -362,9 +361,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (isset($this['parameters']['userbase_url'])) {
             $this['twig']->addGlobal('userbase_url', $this['parameters']['userbase_url']);
         }
-        
+
         $this['twig']->getExtension('core')->setDateFormat('Y-m-d', '%d days');
-        if(!is_null($this->getFormat('date'))) {
+        if (!is_null($this->getFormat('date'))) {
             $this['twig']->getExtension('core')->setDateFormat($this->getFormat('date'), '%d days');
         }
 
@@ -433,7 +432,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $app->before(function (Request $request, SilexApplication $app) {
             $urlGenerator = $app['url_generator'];
             $urlGeneratorContext = $urlGenerator->getContext();
-            
+
             $accountName = null;
             $spaceName = null;
             $spaceNameName = null;
@@ -590,6 +589,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function getUserSecurityProvider()
     {
+        $this['security.default_encoder'] = $this['security.encoder.digest'];
         foreach ($this['security']['providers'] as $provider => $providerConfig) {
             switch ($provider) {
                 case 'JsonFile':

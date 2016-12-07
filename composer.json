@@ -11,7 +11,7 @@
         "role": "Development"
     }],
     "require": {
-        "silex/silex": "2.1.x-dev#a3881a5a2fc7e0233307c8240d4adc909a559b49",
+        "silex/silex": "~2.0",
         "minerva/orm": "~1.0",
         "interophp/injector": "~1.0",
         "interophp/module": "~1.0",
