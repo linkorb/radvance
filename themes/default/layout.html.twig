@@ -14,13 +14,13 @@
 
     {% block stylesheets %}
         {% block stylesheets_default %}
-            <link rel="stylesheet" href="{{ path('assets', { 'postfix': 'bower/bootstrap/dist/css/bootstrap.min.css' }) }}" />
-            <link rel="stylesheet" href="{{ path('assets', { 'postfix': 'bower/font-awesome/css/font-awesome.min.css' }) }}" />
-            <link rel="stylesheet" href="{{ path('assets', { 'postfix': 'bower/bootswatch-dist/css/bootstrap.min.css' }) }}" />
+            <link rel="stylesheet" href="{{ asset('bower/bootstrap/dist/css/bootstrap.min.css') }}" />
+            <link rel="stylesheet" href="{{ asset('bower/font-awesome/css/font-awesome.min.css') }}" />
+            <link rel="stylesheet" href="{{ asset('bower/bootswatch-dist/css/bootstrap.min.css') }}" />
         {% endblock %}
 
         {% block stylesheets_custom %}
-            <link rel="stylesheet" href="{{ path('assets', { 'postfix': 'style.css' }) }}" />
+            <link rel="stylesheet" href="{{ asset('style.css') }}" />
         {% endblock %}
     {% endblock %}
 </head>
@@ -103,12 +103,12 @@
 
     {% block scripts %}
         {% block scripts_default %}
-            <script src="{{ path('assets', { 'postfix': 'bower/jquery/dist/jquery.min.js' }) }}"></script>
-            <script src="{{ path('assets', { 'postfix': 'bower/bootstrap/dist/js/bootstrap.min.js' }) }}"></script>
+            <script src="{{ asset('bower/jquery/dist/jquery.min.js') }}"></script>
+            <script src="{{ asset('bower/bootstrap/dist/js/bootstrap.min.js') }}"></script>
         {% endblock %}
 
         {% block scripts_custom %}
-            <script src="{{ path('assets', { 'postfix': 'js/app.js' }) }}"></script>
+            <script src="{{ asset('js/app.js') }}"></script>
         {% endblock %}
     {% endblock %}
 </body>
