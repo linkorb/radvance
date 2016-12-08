@@ -22,7 +22,6 @@ use Symfony\Component\Routing\Route;
 use Silex\Application as SilexApplication;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Knp\Menu\MenuFactory;
-use Knp\Menu\Renderer\ListRenderer;
 use RuntimeException;
 use PDO;
 use DateTime;
@@ -74,10 +73,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         $this->stack->push(RequestId::class, $generator, 'X-Request-Id', 'X-Request-Id');
 
-
         if (isset($this['parameters']['piwik'])) {
             $config = $this['parameters']['piwik'];
-            $url = trim($config['url'], '/') . '/';
+            $url = trim($config['url'], '/').'/';
             $siteId = $config['siteId'];
             $this->stack->push(Middleware\PiwikMiddleware::class, $url, $siteId);
         }
@@ -205,8 +203,6 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         );
     }
 
-
-
     protected function getSessionsPath()
     {
         return sprintf('/tmp/%s/sessions', $this['app']['name']);
@@ -268,12 +264,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $space = $spaceRepo->findOneOrNullByFqdn($fqdn);
                 $this['fqdn_space'] = $space;
                 if (!$space) {
-                    throw new RuntimeException("No space found with this FQDN: " . $fqdn);
+                    throw new RuntimeException('No space found with this FQDN: '.$fqdn);
                 }
                 $newCollection = $loader->load('routes-fqdn.yml');
             }
         }
-
 
         if (!$this['fqdn_space']) {
             // regular routing
@@ -329,14 +324,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             );
         }
 
-        $path = $this->getRootPath() . '/themes/fqdn';
+        $path = $this->getRootPath().'/themes/fqdn';
         if (file_exists($path)) {
             $this['twig.loader.filesystem']->addPath(
                 $path,
                 'FqdnTheme'
             );
         }
-
 
         $this['twig.loader.filesystem']->addPath(
             sprintf('%s/../../templates', __DIR__),
@@ -372,7 +366,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             new \Twig_SimpleFilter('rdate', function ($date, $forceFormat = null) use ($app) {
                 return \Radvance\Framework\BaseWebApplication::rDateTime(
                     $date,
-                    (($forceFormat?:$app->getFormat('date')) ?: 'Y-m-d')
+                    (($forceFormat ?: $app->getFormat('date')) ?: 'Y-m-d')
                 );
             })
         );
@@ -380,7 +374,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             new \Twig_SimpleFilter('rtime', function ($date, $forceFormat = null) use ($app) {
                 return \Radvance\Framework\BaseWebApplication::rDateTime(
                     $date,
-                    (($forceFormat?:$app->getFormat('time')) ?: 'H:i')
+                    (($forceFormat ?: $app->getFormat('time')) ?: 'H:i')
                 );
             })
         );
@@ -389,15 +383,17 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             new \Twig_SimpleFilter('rdatetime', function ($date, $forceFormat = null) use ($app) {
                 return \Radvance\Framework\BaseWebApplication::rDateTime(
                     $date,
-                    (($forceFormat?:$app->getFormat('datetime')) ?: 'Y-m-d H:i')
+                    (($forceFormat ?: $app->getFormat('datetime')) ?: 'Y-m-d H:i')
                 );
             })
         );
 
-
         $app = $this;
         $app->before(function (Request $request, SilexApplication $app) {
             $this['twig']->addExtension(new \Radvance\Twig\TranslateExtension($request, $app));
+            $this['twig']->addFunction(new \Twig_SimpleFunction('asset', function ($asset) use ($request) {
+                return $request->getBaseUrl().'/'.ltrim($asset, '/');
+            }));
         });
     }
 
@@ -418,11 +414,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         }
 
         if (gettype($date) == 'string') {
-            $date = DateTime::createFromFormat((strpos($date, ' ')?'Y-m-d H:i:s':'Y-m-d'), $date);
+            $date = DateTime::createFromFormat((strpos($date, ' ') ? 'Y-m-d H:i:s' : 'Y-m-d'), $date);
         }
         if ($date instanceof DateTime) {
             return $date->format($format);
         }
+
         return '---';
     }
 
@@ -440,7 +437,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             if ($spaceRepo) {
                 // Figure out the Name of the SpaceName (hence: SpaceNameName)
                 // for example `libraryName`, `projectName`, etc
-                $spaceNameName = lcfirst($spaceRepo->getNameOfSpace()) . 'Name';
+                $spaceNameName = lcfirst($spaceRepo->getNameOfSpace()).'Name';
             }
             if ($this['fqdn_space']) {
                 // resolve accountName and spaceName from fqdn
@@ -494,10 +491,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     //     if (!$app->getRepositories()) {
     //         return array();
     //     }
-    //
+
     //     return array_map(function ($repository) use ($app) {
     //         $name = $repository->getTable();
-    //
+
     //         return array(
     //             'href' => $app['url_generator']->generate(sprintf('%s_index', $name)),
     //             'name' => ucfirst(preg_replace('/\_/', ' ', $name))
@@ -598,7 +595,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     );
                 // case 'Pdo':
                 //     $dbmanager = new DatabaseManager();
-                //
+
                 // return new \Radvance\Security\PdoUserProvider(
                 //     $dbmanager->getPdo($providerConfig['database'])
                 // );
