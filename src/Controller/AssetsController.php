@@ -6,7 +6,6 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Less_Parser;
-use RuntimeException;
 
 class AssetsController
 {
@@ -34,7 +33,10 @@ class AssetsController
 
         $filename = sprintf('%s/%s', $app->getAssetsPath(), $postfix);
         if (!file_exists($filename)) {
-            throw new RuntimeException('File not found: '.$filename);
+            $app->abort(
+                404,
+                sprintf('The asset "%s" cannot be found.', $postfix)
+            );
         }
         $options = array();
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
