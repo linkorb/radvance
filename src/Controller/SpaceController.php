@@ -29,6 +29,12 @@ class SpaceController
         // $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
         $repo = $app->getSpaceRepository();
         $space = $repo->findByNameAndAccountName($spaceName, $accountName);
+        if (! $space) {
+            $app->abort(
+                404,
+                sprintf('The %s "%s" cannot be found.', $repo->getNameOfSpace(), $spaceName)
+            );
+        }
 
         return new Response($app['twig']->render(
             '@BaseTemplates/space/view.html.twig',
