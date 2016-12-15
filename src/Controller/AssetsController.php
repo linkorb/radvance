@@ -14,7 +14,11 @@ class AssetsController
         $parser = new Less_Parser();
 
         $filename = sprintf('%s/style.less', $app->getThemePath(true));
-        $parser->parseFile($filename, $app['parameters']['baseurl']);
+        $baseUrl = '';
+        if (isset($app['parameters']['baseurl'])) {
+            $baseUrl = $app['parameters']['baseurl'];
+        }
+        $parser->parseFile($filename, $baseUrl);
 
         return new Response($parser->getCss(), 200, array(
             'Content-Type' => 'text/css',
