@@ -24,7 +24,7 @@ Simply replace all the __library__ with your own space name.
 <table name="permission">
     <column name="id" type="integer" autoincrement="true"  unsigned="true" />
     <column name="username" type="string" length="64"/>
-    <column name="library_id" type="integer" />
+    <column name="library_id" type="integer" unsigned="true" />
 
     <index name="primary" primary="true" columns="id" />
     <index name="username" primary="false" columns="username" />

@@ -6,7 +6,6 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Less_Parser;
-use RuntimeException;
 
 class AssetsController
 {
@@ -15,7 +14,11 @@ class AssetsController
         $parser = new Less_Parser();
 
         $filename = sprintf('%s/style.less', $app->getThemePath(true));
-        $parser->parseFile($filename, $app['parameters']['baseurl']);
+        $baseUrl = '';
+        if (isset($app['parameters']['baseurl'])) {
+            $baseUrl = $app['parameters']['baseurl'];
+        }
+        $parser->parseFile($filename, $baseUrl);
 
         return new Response($parser->getCss(), 200, array(
             'Content-Type' => 'text/css',
@@ -34,7 +37,10 @@ class AssetsController
 
         $filename = sprintf('%s/%s', $app->getAssetsPath(), $postfix);
         if (!file_exists($filename)) {
-            throw new RuntimeException('File not found: '.$filename);
+            $app->abort(
+                404,
+                sprintf('The asset "%s" cannot be found.', $postfix)
+            );
         }
         $options = array();
         $extension = pathinfo($filename, PATHINFO_EXTENSION);

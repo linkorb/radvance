@@ -465,8 +465,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $urlGeneratorContext->setParameter('accountName', $accountName);
             }
 
+            $space = null;
             if ($spaceName) {
                 $space = $spaceRepo->findByNameAndAccountName($spaceName, $accountName);
+            }
+            if ($space) {
                 $app['twig']->addGlobal('spaceName', $spaceName);
                 $app['twig']->addGlobal($spaceNameName, $spaceName);
                 $app['spaceName'] = $spaceName;
