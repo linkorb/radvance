@@ -22,9 +22,13 @@ use Symfony\Component\Routing\Route;
 use Silex\Application as SilexApplication;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Knp\Menu\MenuFactory;
-use Knp\Menu\Renderer\ListRenderer;
 use RuntimeException;
 use PDO;
+use DateTime;
+use Stack\Builder as StackBuilder;
+use Qandidate\Stack\UuidRequestIdGenerator;
+use Qandidate\Stack\RequestId;
+use Radvance\Middleware;
 
 /**
  * Crud application using
@@ -40,6 +44,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         parent::__construct($values);
         $this->processMetaRequests();
 
+        $this->configureStack();
+
         /*
          * A note about ordering:
          * security should be configured before the routes
@@ -54,8 +60,66 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureExceptionHandling();
         $this->configureSpaceMenu();
         $this->configureControllerResolver();
-        $this->configureRequestLogger();
         $this->debugBar['time']->stopMeasure('setup');
+    }
+
+    protected $stack;
+
+    public function configureStack()
+    {
+        $generator = new UuidRequestIdGenerator();
+
+        $this->stack = new StackBuilder();
+
+        $this->stack->push(RequestId::class, $generator, 'X-Request-Id', 'X-Request-Id');
+
+        if (isset($this['parameters']['piwik'])) {
+            $config = $this['parameters']['piwik'];
+            $url = trim($config['url'], '/').'/';
+            $siteId = $config['siteId'];
+            $this->stack->push(Middleware\PiwikMiddleware::class, $url, $siteId);
+        }
+
+        if (isset($this['parameters']['googleanalytics'])) {
+            $config = $this['parameters']['googleanalytics'];
+            $siteId = $config['siteId'];
+            $this->stack->push(Middleware\GoogleAnalyticsMiddleware::class, $siteId);
+        }
+
+        if (isset($this['parameters']['maintenance'])) {
+            $config = $this['parameters']['maintenance'];
+            if (isset($config['enabled']) && $config['enabled']) {
+                $this->stack->push(Middleware\MaintenanceMiddleware::class, true, $config['whitelist']);
+            }
+        }
+
+        if (isset($this['parameters']['spotclarify'])) {
+            $config = $this['parameters']['spotclarify'];
+            $key = $config['key'];
+            $this->stack->push(Middleware\SpotClarifyMiddleware::class, $key);
+        }
+
+        if (isset($this['parameters']['hotjar'])) {
+            $config = $this['parameters']['hotjar'];
+            $siteId = $config['siteId'];
+            $this->stack->push(Middleware\HotjarMiddleware::class, $key);
+        }
+
+        if (isset($this['parameters']['inspectlet'])) {
+            $config = $this['parameters']['inspectlet'];
+            $siteId = $config['siteId'];
+            $this->stack->push(Middleware\InspectletMiddleware::class, $key);
+        }
+
+        if (isset($this['parameters']['request_log'])) {
+            $urls = $this['parameters']['request_log']['urls'];
+            $this->stack->push(Middleware\RequestLogMiddleware::class, $urls);
+        }
+    }
+
+    public function getStack()
+    {
+        return $this->stack;
     }
 
     protected function processMetaRequests()
@@ -114,89 +178,6 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $response->setContent($body);
             });
         }
-    }
-
-    public function configureRequestLogger()
-    {
-        if (!isset($this['parameters']['request_log'])) {
-            return;
-        }
-
-        $this->after(function (Request $request, Response $response) {
-            $data = [
-                'datetime' => date('Y-m-d H:i:s'),
-                'method' => $request->getMethod(),
-                'scheme' => $request->getScheme(),
-                'host' => $request->getHttpHost(),
-                'uri' => $request->getRequestUri(),
-                'route' => $request->get('_route'),
-            ];
-            if (isset($this['current_user'])) {
-                $data['username'] = $this['current_user']->getName();
-            }
-            $data['address'] = $request->getClientIp();
-            $data['session-id'] = $request->getSession()->getId();
-            $data['agent'] = $request->getSession()->getId();
-            if ($request->headers->has('User-Agent')) {
-                $data['agent'] = $request->headers->get('User-Agent');
-            }
-            if ($request->headers->has('referer')) {
-                $data['referer'] = $request->headers->get('referer');
-            }
-
-            // response details
-            $data['status'] = $response->getStatusCode();
-            if ($response->headers->has('Content-Type')) {
-                $data['content-type'] = $response->headers->get('content-type');
-            }
-
-            $urls = $this['parameters']['request_log'];
-            foreach (explode(',', $urls) as $url) {
-                $url = trim($url);
-                $url = parse_url($url);
-                //print_r($url);
-                switch ($url['scheme']) {
-                    case 'json-path':
-                        $path = '/' . $url['scheme'] . $url['path'];
-
-                        $json = json_encode($data, JSON_PARTIAL_OUTPUT_ON_ERROR|JSON_UNESCAPED_SLASHES);
-                        $path = $this->getRootPath() . '/app/logs/requests/' . date('Ymd') . '/';
-                        if (!file_exists($path)) {
-                            mkdir($path, 0777, true);
-                        }
-                        $filename = $path . '/' . date('Ymd-His') . '-' . sha1(rand()) . '.json';
-                        file_put_contents($filename, $json . "\n");
-                        break;
-
-                    case 'gelf-udp':
-                        $transport = new \Gelf\Transport\UdpTransport(
-                            $url['host'],
-                            $url['port'],
-                            \Gelf\Transport\UdpTransport::CHUNK_SIZE_WAN
-                        );
-                        $gelfData = $data;
-                        $publisher = new \Gelf\Publisher();
-                        $publisher->addTransport($transport);
-                        $message = new \Gelf\Message();
-                        $message->setShortMessage("Request")
-                            ->setLevel(\Psr\Log\LogLevel::DEBUG)
-                            ->setFullMessage("")
-                            ->setFacility("")
-                            ->setHost($data['host'])
-                        ;
-                        $gelfData['host'] = null;
-                        $gelfData['datetime'] = null;
-                        array_filter($gelfData);
-                        foreach ($gelfData as $key => $value) {
-                            $message->setAdditional($key, $value);
-                        }
-                        $res = $publisher->publish($message);
-                        break;
-                    default:
-                        throw new RuntimeException('Unsupported request_log url scheme: ' . $url['scheme']);
-                }
-            }
-        });
     }
 
     public function getDebugBar()
@@ -267,14 +248,33 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function configureRoutes()
     {
-        // put meta b4 other routes otherwise it's a new space or catched by app's routes
+        // initialize meta routes before other routes
+        // otherwise it's a new space or caught by apps routes
         $this->configureMetaRoutes();
-
         $locator = new FileLocator(array(
             $this->getRoutesPath(),
         ));
         $loader = new YamlFileLoader($locator);
-        $newCollection = $loader->load('routes.yml');
+        $this['fqdn_space'] = false;
+        if (isset($this['fqdn']) && isset($this['fqdn']['default'])) {
+            $fqdn = explode(':', $_SERVER['HTTP_HOST'])[0];
+            $fqdnDefault = $this['fqdn']['default'];
+            if ($fqdn != $fqdnDefault) {
+                $spaceRepo = $this->getSpaceRepository();
+                $space = $spaceRepo->findOneOrNullByFqdn($fqdn);
+                $this['fqdn_space'] = $space;
+                if (!$space) {
+                    throw new RuntimeException('No space found with this FQDN: '.$fqdn);
+                }
+                $newCollection = $loader->load('routes-fqdn.yml');
+            }
+        }
+
+        if (!$this['fqdn_space']) {
+            // regular routing
+            $newCollection = $loader->load('routes.yml');
+        }
+
         $orgCollection = $this['routes'];
         foreach ($newCollection->all() as $name => $route) {
             //echo $name .'/' . $route->getPath();
@@ -324,6 +324,14 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             );
         }
 
+        $path = $this->getRootPath().'/themes/fqdn';
+        if (file_exists($path)) {
+            $this['twig.loader.filesystem']->addPath(
+                $path,
+                'FqdnTheme'
+            );
+        }
+
         $this['twig.loader.filesystem']->addPath(
             sprintf('%s/../../templates', __DIR__),
             'BaseTemplates'
@@ -348,12 +356,17 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this['twig']->addGlobal('userbase_url', $this['parameters']['userbase_url']);
         }
 
+        $this['twig']->getExtension('core')->setDateFormat('Y-m-d', '%d days');
+        if (!is_null($this->getFormat('date'))) {
+            $this['twig']->getExtension('core')->setDateFormat($this->getFormat('date'), '%d days');
+        }
+
         $app = $this;
         $this['twig']->addFilter(
             new \Twig_SimpleFilter('rdate', function ($date, $forceFormat = null) use ($app) {
                 return \Radvance\Framework\BaseWebApplication::rDateTime(
                     $date,
-                    (($forceFormat?:$app->getFormat('date')) ?: 'Y-m-d')
+                    (($forceFormat ?: $app->getFormat('date')) ?: 'Y-m-d')
                 );
             })
         );
@@ -361,7 +374,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             new \Twig_SimpleFilter('rtime', function ($date, $forceFormat = null) use ($app) {
                 return \Radvance\Framework\BaseWebApplication::rDateTime(
                     $date,
-                    (($forceFormat?:$app->getFormat('time')) ?: 'H:i')
+                    (($forceFormat ?: $app->getFormat('time')) ?: 'H:i')
                 );
             })
         );
@@ -370,15 +383,17 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             new \Twig_SimpleFilter('rdatetime', function ($date, $forceFormat = null) use ($app) {
                 return \Radvance\Framework\BaseWebApplication::rDateTime(
                     $date,
-                    (($forceFormat?:$app->getFormat('datetime')) ?: 'Y-m-d H:i')
+                    (($forceFormat ?: $app->getFormat('datetime')) ?: 'Y-m-d H:i')
                 );
             })
         );
 
-
         $app = $this;
         $app->before(function (Request $request, SilexApplication $app) {
             $this['twig']->addExtension(new \Radvance\Twig\TranslateExtension($request, $app));
+            $this['twig']->addFunction(new \Twig_SimpleFunction('asset', function ($asset) use ($request) {
+                return $request->getBaseUrl().'/'.ltrim($asset, '/');
+            }));
         });
     }
 
@@ -392,11 +407,20 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (!$date) {
             return '-';
         }
-        if (gettype($date) == 'string') {
-            $date = \DateTime::createFromFormat((strpos($date, ' ')?'Y-m-d H:i:s':'Y-m-d'), $date);
+        if (is_numeric($date)) {
+            $dt = new DateTime();
+            $dt->setTimestamp($date);
+            $date = $dt;
         }
 
-        return $date->format($format);
+        if (gettype($date) == 'string') {
+            $date = DateTime::createFromFormat((strpos($date, ' ') ? 'Y-m-d H:i:s' : 'Y-m-d'), $date);
+        }
+        if ($date instanceof DateTime) {
+            return $date->format($format);
+        }
+
+        return '---';
     }
 
     protected function configureUrlPreprocessor()
@@ -406,42 +430,56 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $urlGenerator = $app['url_generator'];
             $urlGeneratorContext = $urlGenerator->getContext();
 
-            if ($request->attributes->has('accountName')) {
-                $accountName = $request->attributes->get('accountName');
+            $accountName = null;
+            $spaceName = null;
+            $spaceNameName = null;
+            $spaceRepo = $this->getSpaceRepository();
+            if ($spaceRepo) {
+                // Figure out the Name of the SpaceName (hence: SpaceNameName)
+                // for example `libraryName`, `projectName`, etc
+                $spaceNameName = lcfirst($spaceRepo->getNameOfSpace()).'Name';
+            }
+            if ($this['fqdn_space']) {
+                // resolve accountName and spaceName from fqdn
+                $space = $this['fqdn_space'];
+                $accountName = $space->getAccountName();
+                $spaceName = $space->getName();
+            } else {
+                // try to resolve accountName and spaceName from url
+                if ($request->attributes->has('accountName')) {
+                    $accountName = $request->attributes->get('accountName');
+                }
+                if ($request->attributes->has('spaceName')) {
+                    $spaceName = $request->attributes->get('spaceName');
+                }
+                if ($spaceNameName) {
+                    if ($request->attributes->has($spaceNameName)) {
+                        $spaceName = $request->attributes->get($spaceNameName);
+                    }
+                }
+            }
 
+            if ($accountName) {
                 $app['twig']->addGlobal('accountName', $accountName);
                 $app['accountName'] = $accountName;
                 $urlGeneratorContext->setParameter('accountName', $accountName);
             }
 
-            $spaceName = null;
-            if ($request->attributes->has('spaceName')) {
-                $spaceName = $request->attributes->get('spaceName');
-            }
-            $spaceRepo = $this->getSpaceRepository();
-            if ($spaceRepo) {
-                // Figure out the Name of the SpaceName (hence: SpaceNameName)
-                $spaceNameName = lcfirst($spaceRepo->getNameOfSpace()) . 'Name';
-                if ($request->attributes->has($spaceNameName)) {
-                    $spaceName = $request->attributes->get($spaceNameName);
-                }
+            if ($spaceName) {
+                $space = $spaceRepo->findByNameAndAccountName($spaceName, $accountName);
+                $app['twig']->addGlobal('spaceName', $spaceName);
+                $app['twig']->addGlobal($spaceNameName, $spaceName);
+                $app['spaceName'] = $spaceName;
+                $app[$spaceNameName] = $spaceName;
+                $urlGeneratorContext->setParameter('spaceName', $spaceName);
+                $urlGeneratorContext->setParameter($spaceNameName, $spaceName);
+                $app['space'] = $space;
+                $app[ucfirst($space->getName())] = $space;
 
-                if ($spaceName) {
-                    $space = $spaceRepo->findByNameAndAccountName($spaceName, $accountName);
-                    $app['twig']->addGlobal('spaceName', $spaceName);
-                    $app['twig']->addGlobal($spaceNameName, $spaceName);
-                    $app['spaceName'] = $spaceName;
-                    $app[$spaceNameName] = $spaceName;
-                    $urlGeneratorContext->setParameter('spaceName', $spaceName);
-                    $urlGeneratorContext->setParameter($spaceNameName, $spaceName);
-                    $app['space'] = $space;
-                    $app[ucfirst($space->getName())] = $space;
-
-                    foreach ($this->getRepositories() as $repository) {
-                        if ($repository instanceof \Radvance\Repository\GlobalRepositoryInterface) {
-                        } else {
-                            $repository->setFilter([$spaceRepo->getPermissionTableForeignKeyName() => $space->getId()]);
-                        }
+                foreach ($this->getRepositories() as $repository) {
+                    if ($repository instanceof \Radvance\Repository\GlobalRepositoryInterface) {
+                    } else {
+                        $repository->setFilter([$spaceRepo->getPermissionTableForeignKeyName() => $space->getId()]);
                     }
                 }
             }
@@ -453,10 +491,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     //     if (!$app->getRepositories()) {
     //         return array();
     //     }
-    //
+
     //     return array_map(function ($repository) use ($app) {
     //         $name = $repository->getTable();
-    //
+
     //         return array(
     //             'href' => $app['url_generator']->generate(sprintf('%s_index', $name)),
     //             'name' => ucfirst(preg_replace('/\_/', ' ', $name))
@@ -548,6 +586,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function getUserSecurityProvider()
     {
+        $this['security.default_encoder'] = $this['security.encoder.digest'];
         foreach ($this['security']['providers'] as $provider => $providerConfig) {
             switch ($provider) {
                 case 'JsonFile':
@@ -556,7 +595,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     );
                 // case 'Pdo':
                 //     $dbmanager = new DatabaseManager();
-                //
+
                 // return new \Radvance\Security\PdoUserProvider(
                 //     $dbmanager->getPdo($providerConfig['database'])
                 // );

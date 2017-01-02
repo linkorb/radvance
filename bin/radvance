@@ -38,4 +38,6 @@ $application->add(new \Radvance\Command\GenerateRepositoryCommand());
 $application->add(new \Radvance\Command\GenerateCrudCommand());
 $application->add(new \Radvance\Command\GenerateTemplatesCommand());
 $application->add(new \Radvance\Command\SchemaLoadCommand());
+$application->add(new \Radvance\Command\CodeUpdateCommand());
+$application->add(new \Radvance\Command\MySQLConnectCommand());
 $application->run();

@@ -11,7 +11,7 @@
         "role": "Development"
     }],
     "require": {
-        "silex/silex": "2.0.x-dev#a3881a5a2fc7e0233307c8240d4adc909a559b49",
+        "silex/silex": "~2.0",
         "minerva/orm": "~1.0",
         "interophp/injector": "~1.0",
         "interophp/module": "~1.0",
@@ -26,6 +26,7 @@
         "symfony/form": "2.7.*",
         "symfony/translation": "2.7.*",
         "symfony/expression-language" : "2.7.*",
+        "zendframework/zend-diactoros": "~1.0",
         "twig/twig": ">=1.8,<2.0-dev",
         "symfony/twig-bridge": "2.7.*",
         "userbase/client": "~0.0",
@@ -38,7 +39,10 @@
         "materia/materia": "~1.0",
         "knplabs/knp-menu": "~2.0",
         "symfony/process": "~2.7",
-        "graylog2/gelf-php": "~1.0"
+        "graylog2/gelf-php": "~1.0",
+        "qandidate/stack-request-id": "~0.4",
+        "stack/builder": "~1.0",
+        "stack/run": "~1.0"
     },
     "require-dev": {
         "behat/behat": "^3.0",
@@ -50,7 +54,7 @@
         "linkorb/conventions-checker": "~1.1",
         "friendsofphp/php-cs-fixer": "~1"
     },
-    "bin": ["bin/radvance"],
+    "bin": ["bin/radvance", "bin/radvance-mysql"],
     "extra": {
         "grumphp": {
             "config-default-path": "vendor/linkorb/conventions-checker/config/lib/grumphp.yml"

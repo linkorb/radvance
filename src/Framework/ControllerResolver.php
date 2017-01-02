@@ -2,10 +2,12 @@
 
 namespace Radvance\Framework;
 
+use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver as BaseControllerResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
+use Psr\Http\Message\ServerRequestInterface;
 use Silex\Application;
 use RuntimeException;
 use Twig_Environment;
@@ -44,7 +46,7 @@ class ControllerResolver extends BaseControllerResolver
         $args = [];
         if ($constructor) {
             $parameters = $constructor->getParameters();
-            $args = $this->injectArguments($parameters);
+            $args = $this->injectArguments($parameters, $request);
         }
 
         $class = $reflectionClass->newInstanceArgs($args);
@@ -57,8 +59,8 @@ class ControllerResolver extends BaseControllerResolver
         }
         return array($class, $methodName);
     }
-
-    protected function injectArguments(array $parameters)
+    
+    protected function injectArguments(array $parameters, $request)
     {
         $args = [];
         $repositoryManager = $this->app['repository-manager'];
@@ -75,11 +77,18 @@ class ControllerResolver extends BaseControllerResolver
                 if ($className == UrlGenerator::class) {
                     $args[$parameter->getName()] = $this->app['url_generator'];
                 }
+
                 if ($className == \Symfony\Component\Form\FormFactory::class) {
                     $args[$parameter->getName()] = $this->app['form.factory'];
                 }
                 if ($className == \Radvance\Model\SpaceInterface::class) {
                     $args[$parameter->getName()] = $this->app['space'];
+                }
+
+                if ($class->implementsInterface(ServerRequestInterface::class)) {
+                    $psr7Factory = new DiactorosFactory();
+                    $psrRequest = $psr7Factory->createRequest($request);
+                    $args[$parameter->getName()] = $psrRequest;
                 }
                 if (substr($className, -10) == 'Repository') {
                     foreach ($repositoryManager->getRepositories() as $repository) {
@@ -95,7 +104,7 @@ class ControllerResolver extends BaseControllerResolver
 
     protected function doGetArguments(Request $request, $controller, array $parameters)
     {
-        $args = $this->injectArguments($parameters);
+        $args = $this->injectArguments($parameters, $request);
         foreach ($args as $key => $value) {
             $request->attributes->set($key, $value);
         }

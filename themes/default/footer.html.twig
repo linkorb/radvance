@@ -3,10 +3,10 @@
         <div class="row">
             <div class="col-md-6">
                 <img class="linkorbengineering-logo"
-                     src="{{ path('assets', { 'postfix': '/img/linkorbengineering-logo.png' }) }}"/>
+                     src="{{ asset('/img/linkorbengineering-logo.png') }}"/>
             </div>
             <div class="col-md-6">
-                &copy; 2015 LinkORB Engineering
+                &copy; {{ "now"|date("Y") }} LinkORB Engineering
             </div>
         </div>
     </div>
