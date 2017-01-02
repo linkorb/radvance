@@ -6,6 +6,7 @@ use Radvance\Framework\BaseWebApplication as Application;
 use Radvance\Model\Space;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Radvance\Constraint\CodeConstraint;
 
 class SpaceController
 {
@@ -82,7 +83,14 @@ class SpaceController
 
         $form = $app['form.factory']->createBuilder('form', $defaults)
             ->add('account_name', 'text', array('read_only' => true))
-            ->add('name', 'text')
+            ->add('name', 'text', array(
+                'required' => true,
+                'trim' => true,
+                'constraints' => array(new CodeConstraint(array(
+                        //'message' => 'Name can contain lower case, number and - only',
+                    )),
+                ),
+            ))
             ->add('description', 'textarea', array('required' => false))
             ->getForm();
 

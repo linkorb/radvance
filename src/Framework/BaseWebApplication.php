@@ -256,7 +256,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         ));
         $loader = new YamlFileLoader($locator);
         $this['fqdn_space'] = false;
-        if (isset($this['fqdn']) && isset($this['fqdn']['default'])) {
+        if (isset($this['fqdn']) && isset($this['fqdn']['default']) && isset($_SERVER['HTTP_HOST'])) {
             $fqdn = explode(':', $_SERVER['HTTP_HOST'])[0];
             $fqdnDefault = $this['fqdn']['default'];
             if ($fqdn != $fqdnDefault) {
