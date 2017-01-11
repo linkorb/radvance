@@ -11,6 +11,10 @@ use Whoops\Handler\PrettyPageHandler;
 use Radvance\WhoopsHandler\UserWhoopsHandler;
 use Radvance\WhoopsHandler\LogWhoopsHandler;
 use Radvance\WhoopsHandler\WebhookWhoopsHandler;
+use Registry\Client\ClientBuilder;
+use Registry\Client\Store;
+use Registry\Whoops\Formatter\RequestExceptionFormatter;
+use Registry\Whoops\Handler\RegistryHandler;
 use UserBase\Client\UserProvider as UserBaseUserProvider;
 use UserBase\Client\Client as UserBaseClient;
 use Symfony\Component\HttpFoundation\Request;
@@ -243,6 +247,33 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (isset($this['parameters']['exception_webhook'])) {
             $url = $this['parameters']['exception_webhook'];
             $whoops->pushHandler(new WebhookWhoopsHandler($this, $url));
+        }
+        if (isset($this['parameters']['exception_registry'])
+            && isset($this['parameters']['exception_registry']['host'])
+            && isset($this['parameters']['exception_registry']['username'])
+            && isset($this['parameters']['exception_registry']['password'])
+            && isset($this['parameters']['exception_registry']['account'])
+            && isset($this['parameters']['exception_registry']['store'])
+        ) {
+            $config = [
+                'api_host' => $this['parameters']['exception_registry']['host'],
+                'auth' => [
+                    $this['parameters']['exception_registry']['username'],
+                    $this['parameters']['exception_registry']['password'],
+                ]
+            ];
+            if (isset($this['parameters']['exception_registry']['secure'])) {
+                $config['secure'] = $this['parameters']['exception_registry']['secure'];
+            } else {
+                $config['secure'] = true;
+            }
+            $store = new Store(
+                new ClientBuilder($config),
+                $this['parameters']['exception_registry']['account'],
+                $this['parameters']['exception_registry']['store']
+            );
+            $handler = new RegistryHandler(new RequestExceptionFormatter, $store);
+            $whoops->pushHandler($handler);
         }
     }
 

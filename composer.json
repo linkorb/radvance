@@ -19,6 +19,8 @@
         "interophp/module-manager": "~1.0",
         "linkorb/autotune": "~1.0",
         "linkorb/objectstorage": "~2.0",
+        "linkorb/registry-client-php": "~1.0",
+        "linkorb/registry-whoops": "~1.0",
         "symfony/yaml": "2.7.*",
         "symfony/config": "2.7.*",
         "symfony/security": "2.7.*",
