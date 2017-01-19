@@ -33,6 +33,7 @@ use Stack\Builder as StackBuilder;
 use Qandidate\Stack\UuidRequestIdGenerator;
 use Qandidate\Stack\RequestId;
 use Radvance\Middleware;
+use Radvance\Event\PdoEventStoreDispatcher;
 
 /**
  * Crud application using
@@ -65,6 +66,14 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureSpaceMenu();
         $this->configureControllerResolver();
         $this->debugBar['time']->stopMeasure('setup');
+        
+        $app = $this;
+        $app->before(function (Request $request, SilexApplication $app) {
+            $dispatcher = $this['dispatcher'];
+            if ($dispatcher instanceof PdoEventStoreDispatcher) {
+                $dispatcher->setRequest($request);
+            }
+        });
     }
 
     protected $stack;
