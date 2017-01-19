@@ -426,7 +426,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     {
         $app = $this;
         
-        if (!isset($this['event_store']['table_name'])) {
+        if (!isset($this['event_store']) || !isset($this['event_store']['table_name'])) {
             return;
         }
         
