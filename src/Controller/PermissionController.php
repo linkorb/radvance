@@ -80,11 +80,10 @@ class PermissionController
             throw new RuntimeException('Space not found');
         }
         $permission = $permissionRepo->find($permissionId);
-        /*
-        if ($permission->getSpaceId()!=$space->getId()) {
-            throw new RuntimeException("Permission not in this space");
+
+        if ($permission->getSpaceId() != $space->getId()) {
+            throw new RuntimeException('Permission not in this space');
         }
-        */
 
         $admin = $app['current_user']->getName();
         $event = new PermissionDomain\PermissionRevokedEvent(
