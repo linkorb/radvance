@@ -34,18 +34,33 @@ class PermissionController
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         $error = null;
-        if ($space) {
-            $repo = $app->getPermissionRepository();
-            $error = $repo->add($username, $space->getId(), $roles);
-            $admin = $app['current_user']->getName();
-            $event = new PermissionDomain\PermissionGrantedEvent(
+
+        $client = $app['userbase.client'];
+        try {
+            $user = $client->getUserByUsername($username);
+            $account = $user->getUserAccount();
+
+            if ($account->getStatus() != 'ACTIVE') {
+                $error = 'Invalid User';
+            }
+        } catch (\Exception $e) {
+            $error = 'User not exists';
+        }
+
+        if (!$error) {
+            if ($space) {
+                $repo = $app->getPermissionRepository();
+                $error = $repo->add($username, $space->getId(), $roles);
+                $admin = $app['current_user']->getName();
+                $event = new PermissionDomain\PermissionGrantedEvent(
                 $admin,
                 $username,
                 $roles
             );
-            $dispatcher->dispatch(PermissionDomain\PermissionGrantedEvent::class, $event);
-        } else {
-            $error = 'Invalid space';
+                $dispatcher->dispatch(PermissionDomain\PermissionGrantedEvent::class, $event);
+            } else {
+                $error = 'Invalid space';
+            }
         }
 
         return $app->redirect(
@@ -62,7 +77,7 @@ class PermissionController
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         if (!$space) {
-            throw new RuntimeException("Space not found");
+            throw new RuntimeException('Space not found');
         }
         $permission = $permissionRepo->find($permissionId);
         /*
@@ -70,7 +85,7 @@ class PermissionController
             throw new RuntimeException("Permission not in this space");
         }
         */
-    
+
         $admin = $app['current_user']->getName();
         $event = new PermissionDomain\PermissionRevokedEvent(
             $admin,
@@ -80,7 +95,7 @@ class PermissionController
         $dispatcher->dispatch(PermissionDomain\PermissionRevokedEvent::class, $event);
 
         $permissionRepo->remove($permission);
-        
+
         return $app->redirect(
             $app['url_generator']->generate(
                 'permission_index',
