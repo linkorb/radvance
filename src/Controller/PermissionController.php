@@ -13,6 +13,10 @@ class PermissionController
 {
     public function indexAction(Application $app, Request $request, $accountName, $spaceName)
     {
+        // check user login //
+        if (empty($app['current_user']) || $app['current_user']->getUser() == 'anon.') {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         return new Response($app['twig']->render(
@@ -28,6 +32,11 @@ class PermissionController
 
     public function addAction(Application $app, Request $request, EventDispatcherInterface $dispatcher, $accountName, $spaceName)
     {
+        // check user login //
+        if (empty($app['current_user']) || $app['current_user']->getUser() == 'anon.') {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+
         $username = trim($request->request->get('P_username'));
         $roles = trim($request->request->get('P_roles'));
 
@@ -73,6 +82,11 @@ class PermissionController
 
     public function deleteAction(Application $app, Request $request, EventDispatcherInterface $dispatcher, $accountName, $spaceName, $permissionId)
     {
+        // check user login //
+        if (empty($app['current_user']) || $app['current_user']->getUser() == 'anon.') {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+
         $permissionRepo = $app->getPermissionRepository();
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
