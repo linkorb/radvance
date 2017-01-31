@@ -14,7 +14,7 @@ class PermissionController
     public function indexAction(Application $app, Request $request, $accountName, $spaceName)
     {
         // check user login //
-        if (empty($app['current_user']) || $app['current_user']->getUser() == 'anon.') {
+        if (empty($app['current_user'])) {
             return $app->redirect($app['url_generator']->generate('login'));
         }
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
@@ -33,7 +33,7 @@ class PermissionController
     public function addAction(Application $app, Request $request, EventDispatcherInterface $dispatcher, $accountName, $spaceName)
     {
         // check user login //
-        if (empty($app['current_user']) || $app['current_user']->getUser() == 'anon.') {
+        if (empty($app['current_user'])) {
             return $app->redirect($app['url_generator']->generate('login'));
         }
 
@@ -44,9 +44,8 @@ class PermissionController
 
         $error = null;
 
-        $client = $app['userbase.client'];
         try {
-            $user = $client->getUserByUsername($username);
+            $user = $app['security.provider']->loadUserByUsername($username);
             $account = $user->getUserAccount();
 
             if ($account->getStatus() != 'ACTIVE') {
@@ -62,10 +61,10 @@ class PermissionController
                 $error = $repo->add($username, $space->getId(), $roles);
                 $admin = $app['current_user']->getName();
                 $event = new PermissionDomain\PermissionGrantedEvent(
-                $admin,
-                $username,
-                $roles
-            );
+                    $admin,
+                    $username,
+                    $roles
+                );
                 $dispatcher->dispatch(PermissionDomain\PermissionGrantedEvent::class, $event);
             } else {
                 $error = 'Invalid space';
@@ -83,7 +82,7 @@ class PermissionController
     public function deleteAction(Application $app, Request $request, EventDispatcherInterface $dispatcher, $accountName, $spaceName, $permissionId)
     {
         // check user login //
-        if (empty($app['current_user']) || $app['current_user']->getUser() == 'anon.') {
+        if (empty($app['current_user'])) {
             return $app->redirect($app['url_generator']->generate('login'));
         }
 
