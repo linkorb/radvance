@@ -578,6 +578,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $collection->add('logout', $route);
 
         $this['routes']->addCollection($collection);
+        $this['security.provider'] = $this->getUserSecurityProvider();
 
         $this['security.firewalls'] = array(
             'api' => array(
@@ -585,7 +586,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'anonymous' => false,
                 'pattern' => '^/api',
                 'http' => true,
-                'users' => $this->getUserSecurityProvider(),
+                'users' => $this['security.provider'],
             ),
             'default' => array(
                 'anonymous' => true,
@@ -597,7 +598,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'logout' => array(
                     'logout_path' => $logoutPath,
                 ),
-                'users' => $this->getUserSecurityProvider(),
+                'users' => $this['security.provider'],
             ),
         );
 
