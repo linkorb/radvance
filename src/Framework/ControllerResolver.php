@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver as BaseControllerResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Silex\Application;
 use RuntimeException;
@@ -73,6 +74,9 @@ class ControllerResolver extends BaseControllerResolver
                 }
                 if ($className == Twig_Environment::class) {
                     $args[$parameter->getName()] = $this->app['twig'];
+                }
+                if ($className == EventDispatcherInterface::class) {
+                    $args[$parameter->getName()] = $this->app['dispatcher'];
                 }
                 if ($className == UrlGenerator::class) {
                     $args[$parameter->getName()] = $this->app['url_generator'];

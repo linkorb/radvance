@@ -40,6 +40,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureObjectStorage();
         $this->configureModuleManager();
         $this->configureModules();
+        $this->configureDispatcher();
         $this->initModules();
     }
 
@@ -419,5 +420,30 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 );
             }
         }
+    }
+    
+    protected function configureDispatcher()
+    {
+        $app = $this;
+        
+        if (!isset($this['event_store']) || !isset($this['event_store']['table_name'])) {
+            return;
+        }
+        
+        // Wrap the standard Symfony Event Dispatcher
+        $app->extend(
+            'dispatcher',
+            function (
+                $dispatcher,
+                \Silex\Application $app
+            ) {
+                $service = new \Radvance\Event\PdoEventStoreDispatcher(
+                    $dispatcher,
+                    $app['pdo']
+                );
+                $service->setApp($app);
+                return $service;
+            }
+        );
     }
 }
