@@ -13,6 +13,10 @@ class PermissionController
 {
     public function indexAction(Application $app, Request $request, $accountName, $spaceName)
     {
+        // check user login //
+        if (empty($app['current_user'])) {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         return new Response($app['twig']->render(
@@ -28,24 +32,43 @@ class PermissionController
 
     public function addAction(Application $app, Request $request, EventDispatcherInterface $dispatcher, $accountName, $spaceName)
     {
+        // check user login //
+        if (empty($app['current_user'])) {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+
         $username = trim($request->request->get('P_username'));
         $roles = trim($request->request->get('P_roles'));
 
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         $error = null;
-        if ($space) {
-            $repo = $app->getPermissionRepository();
-            $error = $repo->add($username, $space->getId(), $roles);
-            $admin = $app['current_user']->getName();
-            $event = new PermissionDomain\PermissionGrantedEvent(
-                $admin,
-                $username,
-                $roles
-            );
-            $dispatcher->dispatch(PermissionDomain\PermissionGrantedEvent::class, $event);
-        } else {
-            $error = 'Invalid space';
+
+        try {
+            $user = $app['security.provider']->loadUserByUsername($username);
+            $account = $user->getUserAccount();
+
+            if ($account->getStatus() != 'ACTIVE') {
+                $error = 'Invalid User';
+            }
+        } catch (\Exception $e) {
+            $error = 'User not exists';
+        }
+
+        if (!$error) {
+            if ($space) {
+                $repo = $app->getPermissionRepository();
+                $error = $repo->add($username, $space->getId(), $roles);
+                $admin = $app['current_user']->getName();
+                $event = new PermissionDomain\PermissionGrantedEvent(
+                    $admin,
+                    $username,
+                    $roles
+                );
+                $dispatcher->dispatch(PermissionDomain\PermissionGrantedEvent::class, $event);
+            } else {
+                $error = 'Invalid space';
+            }
         }
 
         return $app->redirect(
@@ -58,19 +81,23 @@ class PermissionController
 
     public function deleteAction(Application $app, Request $request, EventDispatcherInterface $dispatcher, $accountName, $spaceName, $permissionId)
     {
+        // check user login //
+        if (empty($app['current_user'])) {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+
         $permissionRepo = $app->getPermissionRepository();
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         if (!$space) {
-            throw new RuntimeException("Space not found");
+            throw new RuntimeException('Space not found');
         }
         $permission = $permissionRepo->find($permissionId);
-        /*
-        if ($permission->getSpaceId()!=$space->getId()) {
-            throw new RuntimeException("Permission not in this space");
+
+        if ($permission->getSpaceId() != $space->getId()) {
+            throw new RuntimeException('Permission not in this space');
         }
-        */
-    
+
         $admin = $app['current_user']->getName();
         $event = new PermissionDomain\PermissionRevokedEvent(
             $admin,
@@ -80,7 +107,7 @@ class PermissionController
         $dispatcher->dispatch(PermissionDomain\PermissionRevokedEvent::class, $event);
 
         $permissionRepo->remove($permission);
-        
+
         return $app->redirect(
             $app['url_generator']->generate(
                 'permission_index',
