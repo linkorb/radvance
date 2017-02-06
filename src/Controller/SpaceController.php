@@ -7,11 +7,37 @@ use Radvance\Model\Space;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Radvance\Constraint\CodeConstraint;
+use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 
 class SpaceController
 {
+    protected function isAccountOwner(AdvancedUserInterface $user, $accountName)
+    {
+        $authorized = $user->getUsername() == $accountName;
+        if (!$authorized && method_exists($user, 'getAccounts')) {
+            // userbase user provider
+            foreach ($user->getAccounts() as $a) {
+                foreach ($a->getAccountUsers() as $au) {
+                    if ($au->isOwner() && $au->getAccountName() == $accountName && $au->getUsername() == $user->getUsername()) {
+                        $authorized = true;
+                        break 2;
+                    }
+                }
+            }
+        }
+        if (!$authorized) {
+            throw new \Exception('Not authorized to manage the account');
+        }
+    }
+
     public function indexAction(Application $app, Request $request, $accountName)
     {
+        // check against current user's accounts
+        if (!isset($app['current_user'])) {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+        $this->isAccountOwner($app['current_user'], $accountName);
+
         $repo = $app->getSpaceRepository();
 
         return new Response($app['twig']->render(

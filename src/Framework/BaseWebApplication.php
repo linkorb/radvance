@@ -66,7 +66,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureSpaceMenu();
         $this->configureControllerResolver();
         $this->debugBar['time']->stopMeasure('setup');
-        
+
         $app = $this;
         $app->before(function (Request $request, SilexApplication $app) {
             $dispatcher = $this['dispatcher'];
