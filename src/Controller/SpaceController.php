@@ -32,12 +32,6 @@ class SpaceController
 
     public function indexAction(Application $app, Request $request, $accountName)
     {
-        // check against current user's accounts
-        if (!isset($app['current_user'])) {
-            return $app->redirect($app['url_generator']->generate('login'));
-        }
-        $this->isAccountOwner($app['current_user'], $accountName);
-
         $repo = $app->getSpaceRepository();
 
         return new Response($app['twig']->render(
@@ -53,6 +47,11 @@ class SpaceController
 
     public function viewAction(Application $app, Request $request, $accountName, $spaceName)
     {
+        if (!isset($app['current_user'])) {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+        $this->isAccountOwner($app['current_user'], $accountName);
+
         // $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
         $repo = $app->getSpaceRepository();
         $space = $repo->findByNameAndAccountName($spaceName, $accountName);
@@ -84,6 +83,11 @@ class SpaceController
 
     private function getSpaceEditForm(Application $app, Request $request, $accountName, $spaceName = null)
     {
+        if (!isset($app['current_user'])) {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+        $this->isAccountOwner($app['current_user'], $accountName);
+
         $error = $request->query->get('error');
         $repo = $app->getSpaceRepository();
         $add = false;
@@ -170,6 +174,11 @@ class SpaceController
 
     public function deleteAction(Application $app, Request $request, $accountName, $spaceName)
     {
+        if (!isset($app['current_user'])) {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+        $this->isAccountOwner($app['current_user'], $accountName);
+
         $spaceRepository = $app->getSpaceRepository();
         $space = $spaceRepository->findByNameAndAccountName($spaceName, $accountName);
         if ($space) {
