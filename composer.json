@@ -46,6 +46,7 @@
         "stack/builder": "~1.0",
         "stack/run": "~1.0",
         "linkorb/boost": "~1.0",
+        "dbtk/schema-loader": "~2.1",
         "sinergi/browser-detector": "~6.0"
     },
     "require-dev": {
@@ -53,7 +54,6 @@
         "behat/mink": "^1.6",
         "behat/mink-extension": "^2.0",
         "behat/mink-goutte-driver": "^1.1",
-        "dbtk/schema-loader": "~2.1",
         "linkorb/haigha": "~2.1",
         "linkorb/conventions-checker": "~1.1",
         "friendsofphp/php-cs-fixer": "~1"
