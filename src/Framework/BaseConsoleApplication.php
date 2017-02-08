@@ -19,6 +19,7 @@ use Aws\S3\S3Client;
 use Exception;
 use RuntimeException;
 use PDO;
+use Connector\Connector;
 
 abstract class BaseConsoleApplication extends SilexApplication implements FrameworkApplicationInterface
 {
@@ -114,7 +115,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             $this['locale'] = $this['parameters']['locale'];
         }
         setlocale(LC_ALL, $this['locale']);
-        
+
         $this['timezone'] = 'UTC';
         if (isset($this['parameters']['timezone'])) {
             $this['timezone'] = $this['parameters']['timezone'];
@@ -131,28 +132,11 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             return;
         }
 
-        $url = $this['parameters']['pdo'];
-
-        $scheme = parse_url($url, PHP_URL_SCHEME);
-        $user = parse_url($url, PHP_URL_USER);
-        $pass = parse_url($url, PHP_URL_PASS);
-        $host = parse_url($url, PHP_URL_HOST);
-        $port = parse_url($url, PHP_URL_PORT);
-        $dbname = parse_url($url, PHP_URL_PATH);
-        if (!$port) {
-            $port = 3306;
-        }
-
-        $dsn = sprintf(
-            '%s:dbname=%s;host=%s;port=%d',
-            $scheme,
-            substr($dbname, 1),
-            $host,
-            $port
+        $connector = new Connector();
+        $this->pdo = $connector->getPdo(
+            $connector->getConfig($this['parameters']['pdo'])
         );
-        //echo $dsn;exit();
 
-        $this->pdo = new PDO($dsn, $user, $pass);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this['pdo'] = $this->pdo;
     }
@@ -165,16 +149,15 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         // Translations
         $this['locale_fallbacks'] = array('en_US');
         $this->register(new TranslationServiceProvider());
-        
+
         $translator = $this['translator'];
         $translator->addLoader('yaml', new RecursiveYamlFileMessageLoader());
-        
+
         $files = glob($this->getRootPath() .'/app/l10n/*.yml');
         foreach ($files as $filename) {
             $locale = str_replace('.yml', '', basename($filename));
             $translator->addResource('yaml', $filename, $locale);
         }
-
     }
 
     /**
@@ -209,17 +192,17 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     {
         $repositoryManager = new RepositoryManager();
         $this['repository-manager'] = $repositoryManager;
-        
+
         $path = sprintf('%s/src/Repository', $this->getRootPath());
 
         $ns = (new \ReflectionObject($this))->getNamespaceName() . '\\Repository';
         $repositoryManager->autoloadPdoRepositories($path, $ns, $this->pdo);
-        
+
         foreach ($repositoryManager->getRepositories() as $repository) {
             if (is_a($repository, 'Radvance\\Repository\\PermissionRepositoryInterface')) {
                 $this->configurePermissionRepository($repository);
             }
-            
+
             if (is_a($repository, 'Radvance\\Repository\\SpaceRepositoryInterface')) {
                 $this->configureSpaceRepository($repository);
             }
@@ -244,7 +227,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this['spaceRepository'] = $repo;
         $this['spaceModelClassName'] = $repo->getModelClassName();
     }
-    
+
     protected function configurePermissionRepository($repo)
     {
         // checks the needed properties
@@ -317,7 +300,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $name = Inflector::tableize($matchesArray[2]);
         return $this['repository-manager']->getRepositoryByTableName($name);
     }
-    
+
     public function configureObjectStorage()
     {
         $adapterName = null;
@@ -353,20 +336,20 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                     throw new RuntimeException('Unsupported objectstorage adapter: ' . $adapterName);
             }
         }
-        
+
         if (isset($this['parameters']['objectstorage_encryption_key'])) {
             // Wrap the adapter in an encryption adapter
             $key = $this['parameters']['objectstorage_encryption_key'];
             $iv = $this['parameters']['objectstorage_encryption_iv'];
             $adapter = new \ObjectStorage\Adapter\EncryptionAdapter($adapter, $key, $iv);
         }
-        
+
         if (isset($this['parameters']['objectstorage_bzip2_level'])) {
             // Wrap the adapter in a compression adapter
             $level = $this['parameters']['objectstorage_bzip2_level'];
             $adapter = new \ObjectStorage\Adapter\Bzip2Adapter($adapter, $level);
         }
-    
+
         $this['objectstorage'] = $adapter;
     }
 
@@ -394,13 +377,13 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $m = new ModuleManager();
         $this['module-manager'] = $m;
     }
-    
+
     protected function configureModules()
     {
         // implement this method in your main application
         // in order to register 'modules'
     }
-    
+
     protected function initModules()
     {
         $m = $this['module-manager'];
@@ -411,7 +394,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             $shortName = $module->getName();
             $modulePath = $module->getPath();
             $repositoryManager->autoloadPdoRepositories($modulePath . '/Repository', $ns, $this->pdo);
-            
+
             $templatePath = $modulePath . '/res/views';
             if (file_exists($templatePath)) {
                 $this['twig.loader.filesystem']->addPath(
@@ -421,15 +404,15 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             }
         }
     }
-    
+
     protected function configureDispatcher()
     {
         $app = $this;
-        
+
         if (!isset($this['event_store']) || !isset($this['event_store']['table_name'])) {
             return;
         }
-        
+
         // Wrap the standard Symfony Event Dispatcher
         $app->extend(
             'dispatcher',
