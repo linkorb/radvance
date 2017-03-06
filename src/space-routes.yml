@@ -6,6 +6,10 @@ dashboard:
 
 # space routes
 
+space_new:
+    pattern: /new
+    defaults: { _controller: Radvance\Controller\SpaceController::newAction }
+
 space_index:
     pattern: /{accountName}
     defaults: { _controller: Radvance\Controller\SpaceController::indexAction }

@@ -7,7 +7,9 @@ use Radvance\Model\Space;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Radvance\Constraint\CodeConstraint;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Form\FormError;
 
 class SpaceController
 {
@@ -55,7 +57,7 @@ class SpaceController
         // $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
         $repo = $app->getSpaceRepository();
         $space = $repo->findByNameAndAccountName($spaceName, $accountName);
-        if (! $space) {
+        if (!$space) {
             $app->abort(
                 404,
                 sprintf('The %s "%s" cannot be found.', $repo->getNameOfSpace(), $spaceName)
@@ -191,5 +193,100 @@ class SpaceController
                 array('accountName' => $accountName)
             )
         );
+    }
+
+    public function newAction(Application $app, Request $request, $id = null)
+    {
+        if (!isset($app['current_user'])) {
+            return $app->redirect($app['url_generator']->generate('login'));
+        }
+        $error = $request->query->get('error');
+        $repo = $app->getSpaceRepository();
+        $space = $repo->findOrCreate($id);
+        $add = !$id;
+
+        if ($add) {
+            $space->setAccountName($app['current_user']->getName());
+        }
+        // GENERATE FORM //
+        $defaults = array();
+        $accounts = $app['current_user']->getAccounts();
+
+        $accountArray = array();
+        foreach ($accounts as $account) {
+            foreach ($account->getAccountUsers() as $accountUser) {
+                if ($accountUser->getUserName() == $app['current_user']->getName() && $accountUser->isOwner()) {
+                    $accountArray[$accountUser->getAccountName()] = $accountUser->getAccountName();
+                }
+            }
+        }
+
+        $form = $app['form.factory']->createBuilder('form', $space)
+        ->add('account_name', 'choice', array(
+            'required' => true,
+            'trim' => true,
+            'choices' => $accountArray,
+            'constraints' => array(new Assert\NotBlank(array('message' => 'Account Name Required'))),
+            'attr' => array(
+                'autofocus' => true,
+            ),
+        ))
+        ->add('name', 'text', array(
+            'required' => true,
+            'trim' => true,
+            'constraints' => array(new CodeConstraint(array(
+                    //'message' => 'Name can contain lower case, number and - only',
+                )),
+            ),
+        ))
+        ->add('description', 'textarea', array(
+            'required' => false,
+            'trim' => true,
+        ))
+        ->getForm();
+
+        // handle form submission
+        if ($request->isMethod('POST')) {
+            $form->handleRequest($request);
+            $data = $form->getData();
+
+            // check user is owner of account //
+            if (!in_array($data->account_name, $accountArray)) {
+                $form->get('account_name')->addError(new FormError('You do not have permission for this account.'));
+            }
+            // Check accoutname and spacename exists//
+            if ($findSpace = $repo->findByNameAndAccountName($data->name, $data->account_name)) {
+                $form->get('name')->addError(new FormError('Name already exists in current account.'));
+            }
+
+            if ($form->isValid()) {
+                if (method_exists($space, 'setCreatedAt')) {
+                    $space->setCreatedAt();
+                }
+                $space->loadFromArray($data);
+                if (!$repo->persist($space)) {
+                    return $app->redirect($app['url_generator']->generate('space_index', array(
+                            'error' => 'Space exists',
+                            'accountName' => $space->getAccountName(),
+                        )));
+                } else {
+                    // auto-add permission
+                    if ($add) {
+                        $app->getPermissionRepository()->add($app['current_user']->getName(), $space->getId(), 'ADMIN');
+                    }
+                }
+
+                return $app->redirect($app['url_generator']->generate('space_index',
+                    array('accountName' => $space->getAccountName())
+                ));
+            }
+        }
+
+        return new Response($app['twig']->render('@BaseTemplates/space/new.html.twig',
+            array(
+                'form' => $form->createView(),
+                'error' => $error,
+            )
+        ));
     }
 }
