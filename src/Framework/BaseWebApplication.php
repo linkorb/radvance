@@ -86,6 +86,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         $this->stack->push(RequestId::class, $generator, 'X-Request-Id', 'X-Request-Id');
 
+        if (isset($this['parameters']['replace'])) {
+            $config = $this['parameters']['replace'];
+            $replacements = $config['replacements'];
+            $this->stack->push(Middleware\ReplaceMiddleware::class, $replacements);
+        }
+
         if (isset($this['parameters']['piwik'])) {
             $config = $this['parameters']['piwik'];
             $url = trim($config['url'], '/').'/';
