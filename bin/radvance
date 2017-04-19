@@ -40,4 +40,5 @@ $application->add(new \Radvance\Command\GenerateTemplatesCommand());
 $application->add(new \Radvance\Command\SchemaLoadCommand());
 $application->add(new \Radvance\Command\CodeUpdateCommand());
 $application->add(new \Radvance\Command\MySQLConnectCommand());
+$application->add(new \Radvance\Command\AssetsInstallCommand());
 $application->run();
