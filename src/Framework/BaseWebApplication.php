@@ -335,6 +335,19 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         $orgCollection->addCollection($newCollection);
         $this->configureSpaceAndPermissionRoutes();
+        $this->configureModuleRoutes();
+    }
+
+    protected function configureModuleRoutes()
+    {
+        $m = $this['module-manager'];
+        foreach ($m->getModules() as $module) {
+            $path = $module->getPath().'/../res/routes';
+            if (file_exists($path)) {
+                $loader = new YamlFileLoader(new FileLocator([$path]));
+                $this['routes']->addCollection($loader->load('routing.yml'));
+            }
+        }
     }
 
     protected function configureSpaceAndPermissionRoutes()
@@ -528,7 +541,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 foreach ($this->getRepositories() as $repository) {
                     if ($repository instanceof \Radvance\Repository\GlobalRepositoryInterface) {
                     } else {
-                        $repository->setFilter([$spaceRepo->getPermissionTableForeignKeyName() => $space->getId()]);
+                        $repository->setFilter(
+                            [($repository->getSpaceForeignKey() ?: $spaceRepo->getPermissionTableForeignKeyName()) => $space->getId()]
+                        );
                     }
                 }
             }

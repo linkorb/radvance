@@ -44,7 +44,7 @@ class SchemaLoadCommand extends Command
         }
         $data = file_get_contents($filename);
         $config = Yaml::parse($data);
-        
+
         if (isset($config['pdo'])) {
             $pdo = $config['pdo'];
         } else {
@@ -53,19 +53,49 @@ class SchemaLoadCommand extends Command
             }
             $pdo = $config['parameters']['pdo'];
         }
-        
-        $cmd = 'vendor/bin/dbtk-schema-loader schema:load app/schema.xml ' . $pdo;
+
+        $cmdPrefix = 'vendor/bin/dbtk-schema-loader schema:load ';
+
+        // module schema
+        $application = require('app/bootstrap.php'); // bit tricky way to get the app
+        $modules = $application['module-manager']->getModules();
+        foreach ($modules as $module) {
+            $schemaPath = $module->getPath().'/../res/schema.xml';
+            if (file_exists($schemaPath)) {
+                $this->executeLoadCmd(
+                    $this->getLoadCommand($schemaPath, $pdo),
+                    $apply,
+                    $output
+                );
+            }
+        }
+
+        // main schema
+        $cmd = $cmdPrefix.'app/schema.xml '.$pdo;
+        $this->executeLoadCmd(
+            $this->getLoadCommand('app/schema.xml', $pdo),
+            $apply,
+            $output
+        );
+    }
+
+    private function getLoadCommand($schemaPath, $pdo)
+    {
+        return 'vendor/bin/dbtk-schema-loader schema:load '.$schemaPath.' '.$pdo;
+    }
+
+    private function executeLoadCmd($cmd, $apply, $output)
+    {
         if ($apply) {
             $cmd .= ' --apply';
         }
-        
         $process = new Process($cmd);
-        $output->writeLn($process->getCommandLine());
+        $output->writeln($process->getCommandLine());
         $process->run();
-        
+
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
-        $output->write($process->getOutput());
+        $output->writeln('<comment>'.$process->getOutput().'</>');
     }
 }
