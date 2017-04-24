@@ -420,6 +420,16 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             $repositoryManager->autoloadPdoRepositories($modulePath.'/Repository', $ns, $this->pdo);
 
             // templates
+            // legacy: res directory in src, with views directory
+            $templatePath = $modulePath.'/res/views';
+            if (file_exists($templatePath)) {
+                $this['twig.loader.filesystem']->addPath(
+                    $templatePath,
+                    $shortName.'Module'
+                );
+            }
+
+            // new convention: res directory next to src
             $templatePath = $modulePath.'/../res/templates';
             if (file_exists($templatePath)) {
                 $this['twig.loader.filesystem']->addPath(
@@ -427,6 +437,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                     $shortName.'Module'
                 );
             }
+
 
             // routes
             // refer to BaseWebApplication::configureModuleRoutes()
