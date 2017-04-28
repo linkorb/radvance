@@ -74,6 +74,16 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $dispatcher->setRequest($request);
             }
         });
+
+        $app->before(function (Request $request, SilexApplication $app) {
+            if (isset($this['parameters']['debug']) && is_array($this['parameters']['debug'])) {
+                $this['debug'] = in_array($request->getClientIp(), $this['parameters']['debug']);
+                if($this['debug']) {
+                    error_reporting(E_ALL);
+                    ini_set('display_errors', 'on');
+                }
+            }
+        }, SilexApplication::EARLY_EVENT);
     }
 
     protected $stack;

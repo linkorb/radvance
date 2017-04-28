@@ -106,18 +106,9 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this['debug'] = false;
 
         if (isset($this['parameters']['debug'])) {
-            $remoteIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
-            
-            if(is_array($this['parameters']['debug'])) {
-                $this['debug'] = in_array($remoteIp, $this['parameters']['debug']);
-            } else {
-                $this['debug'] = (bool) $this['parameters']['debug'];
-            }
-            
-            if($this['debug']) {
-                error_reporting(E_ALL);
-                ini_set('display_errors', 'on');
-            }
+            error_reporting(E_ALL);
+            ini_set('display_errors', 'on');
+            $this['debug'] = (bool) $this['parameters']['debug'];
         }
 
         $this['locale'] = 'en_US';
