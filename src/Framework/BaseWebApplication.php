@@ -47,6 +47,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     public function __construct(array $values = array())
     {
         parent::__construct($values);
+        $this->configureDebug();
         $this->processMetaRequests();
 
         $this->configureStack();
@@ -56,6 +57,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
          * security should be configured before the routes
          * as the routes are evaluated in order (login could be pre-empted by /{something})
          */
+
         $this->configureDebugBar();
         $this->debugBar['time']->startMeasure('setup', 'BaseWebApplication::setup');
         $this->configureTemplateEngine();
@@ -74,6 +76,17 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $dispatcher->setRequest($request);
             }
         });
+    }
+
+    protected function configureDebug() {
+        if (isset($this['parameters']['debug']) && is_array($this['parameters']['debug'])) {
+            $request = Request::createFromGlobals();
+            $this['debug'] = in_array($request->getClientIp(), $this['parameters']['debug']);
+            if($this['debug']) {
+                error_reporting(E_ALL);
+                ini_set('display_errors', 'on');
+            }
+        }
     }
 
     protected $stack;
