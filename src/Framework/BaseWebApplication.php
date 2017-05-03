@@ -11,6 +11,7 @@ use Whoops\Handler\PrettyPageHandler;
 use Radvance\WhoopsHandler\UserWhoopsHandler;
 use Radvance\WhoopsHandler\LogWhoopsHandler;
 use Radvance\WhoopsHandler\WebhookWhoopsHandler;
+use Radvance\WhoopsHandler\SentryWhoopsHandler;
 use Registry\Client\ClientBuilder;
 use Registry\Client\Store;
 use Registry\Whoops\Formatter\RequestExceptionFormatter;
@@ -74,6 +75,18 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $dispatcher = $this['dispatcher'];
             if ($dispatcher instanceof PdoEventStoreDispatcher) {
                 $dispatcher->setRequest($request);
+            }
+            if (isset($app['sentry'])) {
+                // adding sentry context from request
+                $token = $app['security.token_storage']->getToken();
+                if ($token) {
+                    $app['sentry']->user_context(
+                        [
+                            'id' => $token->getUser()->getUsername(),
+                            'email' => $token->getUser()->getEmail()
+                        ]
+                    );
+                }
             }
         });
     }
@@ -263,6 +276,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function configureExceptionHandling()
     {
+        // Setup sentry client, expose for other use-cases
+        if (isset($this['parameters']['sentry_url'])) {
+            $sentryClient = new \Raven_Client($this['parameters']['sentry_url']);
+            $this['sentry'] = $sentryClient;
+        }
+
         $this->register(new WhoopsServiceProvider());
         $whoops = $this['whoops'];
         $whoops->clearHandlers();
@@ -270,6 +289,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $whoops->pushHandler(new PrettyPageHandler());
         } else {
             $whoops->pushHandler(new UserWhoopsHandler($this));
+        }
+        if (isset($this['sentry'])) {
+            $whoops->pushHandler(new SentryWhoopsHandler($this));
         }
         $whoops->pushHandler(new LogWhoopsHandler($this));
         if (isset($this['parameters']['exception_webhook'])) {
@@ -303,6 +325,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $handler = new RegistryHandler(new RequestExceptionFormatter, $store);
             $whoops->pushHandler($handler);
         }
+
     }
 
     protected function configureRoutes()
