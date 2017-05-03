@@ -80,12 +80,17 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 // adding sentry context from request
                 $token = $app['security.token_storage']->getToken();
                 if ($token) {
-                    $app['sentry']->user_context(
-                        [
-                            'id' => $token->getUser()->getUsername(),
-                            'email' => $token->getUser()->getEmail()
-                        ]
-                    );
+                    $user = $token->getUser();
+                    if ($user=='anon.') {
+                        // anonymous user
+                    } else {
+                        $app['sentry']->user_context(
+                            [
+                                'id' => $user->getUsername(),
+                                'email' => $user->getEmail()
+                            ]
+                        );
+                    }
                 }
             }
         });
