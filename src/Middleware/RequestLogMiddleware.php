@@ -5,6 +5,7 @@ namespace Radvance\Middleware;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use RuntimeException;
 
 class RequestLogMiddleware implements HttpKernelInterface
 {
@@ -18,25 +19,23 @@ class RequestLogMiddleware implements HttpKernelInterface
         $this->app = $app;
         $this->urls = $urls;
     }
-    
+
     protected function log($data)
     {
-        foreach ($this->urls as $url) {
-            $url = trim($url);
-            $url = parse_url($url);
-            
+        foreach ($this->urls as $urlString) {
+            $urlString = trim($urlString);
+            $url = parse_url($urlString);
             switch ($url['scheme']) {
                 case 'json-path':
-                    $path = __DIR__ . '/../../' . $url['host'] . $url['path'];
-                    
-                    $path = str_replace('{date}', date('Ymd'), $path);
+                    $path = '/' . $url['host'] . $url['path'];
+                    $path = rtrim($path, '/');
 
-                    $json = json_encode($data, JSON_PARTIAL_OUTPUT_ON_ERROR|JSON_UNESCAPED_SLASHES);
-                    //$path = $this->getRootPath() . '/app/logs/requests/' . date('Ymd') . '/';
+                    $path = str_replace('{date}', date('Ymd'), $path);
+                    $json = json_encode($data, JSON_UNESCAPED_SLASHES);
                     if (!file_exists($path)) {
                         mkdir($path, 0777, true);
                     }
-                    $filename = $path . '/' . date('Ymd-His') . '-' . $data['request-id'] . '.json';
+                    $filename = $path . '/' . date('Ymd-His') . '-' . $data['request']['id'] . '.json';
                     file_put_contents($filename, $json . "\n");
                     break;
 
@@ -65,50 +64,39 @@ class RequestLogMiddleware implements HttpKernelInterface
                     $res = $publisher->publish($message);
                     break;
                 default:
-                    throw new RuntimeException('Unsupported request_log url scheme: ' . $url['scheme']);
+                    throw new RuntimeException('Unsupported request_log url scheme: ' . $urlString);
             }
         }
     }
 
     public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
-        $data = [
-            'request-id' => $request->headers->get('X-Request-Id'),
-            'datetime' => date('Y-m-d H:i:s'),
-            'method' => $request->getMethod(),
-            'scheme' => $request->getScheme(),
-            'host' => $request->getHttpHost(),
-            'uri' => $request->getRequestUri(),
-            'route' => $request->get('_route'),
-        ];
-        /*
-        if (isset($this['current_user'])) {
-            $data['username'] = $this['current_user']->getName();
-        }
-        */
-        $data['address'] = $request->getClientIp();
-        if ($request->getSession()) {
-            $data['session-id'] = $request->getSession()->getId();
-        }
-        if ($request->headers->has('User-Agent')) {
-            $data['agent'] = $request->headers->get('User-Agent');
-        }
-        if ($request->headers->has('referer')) {
-            $data['referer'] = $request->headers->get('referer');
-        }
-        $this->log($data);
-        
-        
+        $start = microtime(true); // ms as float
         $response = $this->app->handle($request, $type, $catch);
+        $end = microtime(true); // ms as float
 
-        /*
-        // response details
-        $data['status'] = $response->getStatusCode();
-        if ($response->headers->has('Content-Type')) {
-            $data['content-type'] = $response->headers->get('content-type');
-        }
-        */
-        
+        $data = [];
+
+        $data['request'] = [];
+        $data['request']['id'] = $request->headers->get('X-Request-Id');
+        $data['request']['ip'] = $request->getClientIp();
+        $data['request']['query'] = $request->query->all();
+        $data['request']['post'] = $request->request->all();
+        $data['request']['attributes'] = $request->attributes->all();
+        $data['request']['server'] = $request->server->all();
+        $data['request']['cookies'] = $request->cookies->all();
+        $data['request']['headers'] = $request->headers->all();
+
+        $data['response'] = [];
+        $data['response']['code'] =  $response->getStatusCode();
+        $data['response']['headers'] = $response->headers->all();
+        $data['timing'] = [];
+        $data['timing']['start'] = $start;
+        $data['timing']['end'] = $start;
+        $data['timing']['duration'] = $end-$start;
+
+        $this->log($data);
+
         return $response;
     }
 }

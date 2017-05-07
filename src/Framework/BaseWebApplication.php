@@ -684,6 +684,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                         // visitor is authenticated
                         $app['current_user'] = $token->getUser();
                         $app['twig']->addGlobal('current_user', $token->getUser());
+                        $request->attributes->set('username', $token->getUser()->getUsername());
                     }
                 }
             }

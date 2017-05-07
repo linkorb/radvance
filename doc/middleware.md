@@ -26,6 +26,20 @@ exposed to clients using the `x-request-id` HTTP response header.
 
 It doesn't require any configuration, and is enabled by default
 
+### RequestLog
+
+Logs both request + response details to one or more URLs. Example config in `parameters.yml`:
+
+```
+parameters:
+    request_log:
+        urls:
+            - json-path://home/joe/var/request_log/{date}
+```
+
+Note: the json-path output url is an absolute path.
+Use the `{date}` variable to partition logs per day.
+
 ### Maintenance
 
 This middleware will show a maintenance page, while allowing developers/admins to use

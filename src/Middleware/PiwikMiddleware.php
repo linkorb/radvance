@@ -34,19 +34,19 @@ class PiwikMiddleware implements HttpKernelInterface
         $this->options[] = ['enableHeartBeatTimer'];
         $this->options[] = ['enableLinkTracking'];
 
-        if (isset($this->app['current_user'])) {
-            $username = $this->app['current_user']->getName();
+        if ($request->attributes->has('username')) {
+            $username = $request->attributes->get('username');
             $this->options[] = ['setUserId', $username];
         }
-        
+
         $this->options[] = ['trackPageView'];
-        
+
         if (substr($response->headers->get('content-type', null), 0, 9) == 'text/html') {
             $response = $this->inject($response, $this->getCode(), 'body');
         }
         return $response;
     }
-    
+
     /**
      * Returns the piwik code.
      *
@@ -61,7 +61,7 @@ class PiwikMiddleware implements HttpKernelInterface
             }
             $_paq .= sprintf("_paq.push([%s]);\n", implode($values, ','));
         }
-        
+
         return <<<PWK
 <script>
 var _paq = _paq || [];
