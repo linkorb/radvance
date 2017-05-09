@@ -28,6 +28,8 @@
         "symfony/form": "~2.7",
         "symfony/translation": "2.7.*",
         "symfony/expression-language" : "2.7.*",
+        "symfony/cache": "~3.0",
+        "psr/cache": "~1.0",
         "zendframework/zend-diactoros": "~1.0",
         "twig/twig": ">=1.8,<2.0-dev",
         "symfony/twig-bridge": "2.7.*",

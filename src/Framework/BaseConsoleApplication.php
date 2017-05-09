@@ -34,6 +34,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureParameters();
         // $this->configureSpaces();
         $this->configurePdo();
+        $this->configureCache();
         $this->configureService();
         $this->configureTemplateService();
         $this->configureRepositories();
@@ -139,6 +140,40 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this['pdo'] = $this->pdo;
+    }
+
+    /**
+     * Configure cache.
+     */
+    protected function configureCache()
+    {
+        if (!isset($this['cache'])) {
+            $this['cache'] = [
+                'type' => 'array'
+            ];
+        }
+        if (!isset($this['cache']['type'])) {
+            throw new RuntimeException("cache type not configured correctly");
+        }
+        switch ($this['cache']['type']) {
+            case 'array':
+                $cache = new \Symfony\Component\Cache\Adapter\ArrayAdapter();
+                break;
+            case 'filesystem':
+                $directory = $this['cache']['directory'];
+                if (!$directory) {
+                    throw new RuntimeException("cache directory not configured (please check doc/cache.md)");
+                }
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0777, true);
+                }
+                $cache = new \Symfony\Component\Cache\Adapter\FilesystemAdapter('', 0, $directory);
+                break;
+            default:
+                throw new RuntimeException("Unsupported cache.type:" . $this['cache']['type']);
+
+        }
+        $this['cache'] = $cache;
     }
 
     /**
