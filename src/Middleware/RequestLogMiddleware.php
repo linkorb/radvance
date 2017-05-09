@@ -92,7 +92,7 @@ class RequestLogMiddleware implements HttpKernelInterface
         $data['response']['headers'] = $response->headers->all();
         $data['timing'] = [];
         $data['timing']['start'] = $start;
-        $data['timing']['end'] = $start;
+        $data['timing']['end'] = $end;
         $data['timing']['duration'] = $end-$start;
 
         $this->log($data);
