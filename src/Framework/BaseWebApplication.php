@@ -723,6 +723,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                         $providerConfig['username'],
                         $providerConfig['password']
                     );
+                    $client->setTimeDataCollector($this->debugBar['time']);
+                    $client->setCache($this['cache']);
                     $this['userbase.client'] = $client;
 
                     return new UserBaseUserProvider($client);
