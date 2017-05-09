@@ -34,8 +34,8 @@ class PiwikMiddleware implements HttpKernelInterface
         $this->options[] = ['enableHeartBeatTimer'];
         $this->options[] = ['enableLinkTracking'];
 
-        if ($request->attributes->has('username')) {
-            $username = $request->attributes->get('username');
+        if ($request->attributes->has('current_username')) {
+            $username = $request->attributes->get('current_username');
             $this->options[] = ['setUserId', $username];
         }
 
