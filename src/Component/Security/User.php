@@ -102,4 +102,9 @@ final class User implements AdvancedUserInterface
 
         return $this;
     }
+
+    public function getAccounts()
+    {
+        return [$this->getUsername()];
+    }
 }

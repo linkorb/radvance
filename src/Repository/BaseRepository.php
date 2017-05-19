@@ -11,6 +11,20 @@ class BaseRepository extends BasePdoRepository
         return $this->getTableName();
     }
 
+    protected $spaceForeignKey;
+
+    public function getSpaceForeignKey()
+    {
+        return $this->spaceForeignKey;
+    }
+
+    public function setSpaceForeignKey($spaceForeignKey)
+    {
+        $this->spaceForeignKey = $spaceForeignKey;
+
+        return $this;
+    }
+
     public function findBy($where)
     {
         $rows = $this->fetchRows($where);

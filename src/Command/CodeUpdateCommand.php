@@ -66,6 +66,14 @@ class CodeUpdateCommand extends Command
         ]);
         $command->run($schemaLoadInput, $output);
 
+        // install assets
+        $command = $this->getApplication()->find('assets:install');
+        $schemaLoadInput = new ArrayInput([
+            'command' => 'assets:install',
+            '--copy' => false,
+        ]);
+        $command->run($schemaLoadInput, $output);
+
         $output->writeLn('<info>Done!</info>');
     }
 

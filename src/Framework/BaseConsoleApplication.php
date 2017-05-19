@@ -34,6 +34,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureParameters();
         // $this->configureSpaces();
         $this->configurePdo();
+        $this->configureCache();
         $this->configureService();
         $this->configureTemplateService();
         $this->configureRepositories();
@@ -139,6 +140,40 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this['pdo'] = $this->pdo;
+    }
+
+    /**
+     * Configure cache.
+     */
+    protected function configureCache()
+    {
+        if (!isset($this['cache'])) {
+            $this['cache'] = [
+                'type' => 'array'
+            ];
+        }
+        if (!isset($this['cache']['type'])) {
+            throw new RuntimeException("cache type not configured correctly");
+        }
+        switch ($this['cache']['type']) {
+            case 'array':
+                $cache = new \Symfony\Component\Cache\Adapter\ArrayAdapter();
+                break;
+            case 'filesystem':
+                $directory = $this['cache']['directory'];
+                if (!$directory) {
+                    throw new RuntimeException("cache directory not configured (please check doc/cache.md)");
+                }
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0777, true);
+                }
+                $cache = new \Symfony\Component\Cache\Adapter\FilesystemAdapter('', 0, $directory);
+                break;
+            default:
+                throw new RuntimeException("Unsupported cache.type:" . $this['cache']['type']);
+
+        }
+        $this['cache'] = $cache;
     }
 
     /**
@@ -374,14 +409,37 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
     protected function configureModuleManager()
     {
-        $m = new ModuleManager();
-        $this['module-manager'] = $m;
+        $this['module-manager'] = new ModuleManager();
     }
 
     protected function configureModules()
     {
         // implement this method in your main application
         // in order to register 'modules'
+
+        // identify/install linkorb modules based on packages installed via composer
+        $installed = $this->getRootPath().'/vendor/composer/installed.json';
+        if (file_exists($installed)) {
+            $moduleManager = $this['module-manager'];
+            $installed = json_decode(file_get_contents($installed));
+            foreach ($installed as $package) {
+                if (0 === strrpos($package->name, 'linkorb/')) {
+                    if (0 === substr_compare($package->name, '-module', -strlen('-module'))) {
+                        $name = ucfirst(
+                            \Doctrine\Common\Inflector\Inflector::camelize(
+                                str_ireplace(['linkorb/', '-module'], '', $package->name)
+                            )
+                        );
+                        // var_dump($package->autoload);
+                        // die;
+                        $className = '\LinkORB\Module\\'.$name.'\\'.$name.'Module';
+                        if (class_exists($className)) {
+                            $moduleManager->addModule(new $className());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     protected function initModules()
@@ -389,19 +447,38 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $m = $this['module-manager'];
         $repositoryManager = $this['repository-manager'];
         foreach ($m->getModules() as $module) {
-            //print_r($provider);
-            $ns = $module->getNamespace() . '\\Repository';
-            $shortName = $module->getName();
             $modulePath = $module->getPath();
-            $repositoryManager->autoloadPdoRepositories($modulePath . '/Repository', $ns, $this->pdo);
+            $shortName = $module->getName();
 
-            $templatePath = $modulePath . '/res/views';
+            // repositories
+            $ns = $module->getNamespace().'\\Repository';
+            $repositoryManager->autoloadPdoRepositories($modulePath.'/Repository', $ns, $this->pdo);
+
+            // templates
+            // legacy: res directory in src, with views directory
+            $templatePath = $modulePath.'/res/views';
             if (file_exists($templatePath)) {
                 $this['twig.loader.filesystem']->addPath(
                     $templatePath,
-                    $shortName . 'Module'
+                    $shortName.'Module'
                 );
             }
+
+            // new convention: res directory next to src
+            $templatePath = $modulePath.'/../res/templates';
+            if (file_exists($templatePath)) {
+                $this['twig.loader.filesystem']->addPath(
+                    $templatePath,
+                    $shortName.'Module'
+                );
+            }
+
+
+            // routes
+            // refer to BaseWebApplication::configureModuleRoutes()
+
+            // schema
+            // refer to SchemaLoadCommand::execute()
         }
     }
 

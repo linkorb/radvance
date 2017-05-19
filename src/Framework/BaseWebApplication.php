@@ -11,6 +11,7 @@ use Whoops\Handler\PrettyPageHandler;
 use Radvance\WhoopsHandler\UserWhoopsHandler;
 use Radvance\WhoopsHandler\LogWhoopsHandler;
 use Radvance\WhoopsHandler\WebhookWhoopsHandler;
+use Radvance\WhoopsHandler\SentryWhoopsHandler;
 use Registry\Client\ClientBuilder;
 use Registry\Client\Store;
 use Registry\Whoops\Formatter\RequestExceptionFormatter;
@@ -47,6 +48,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     public function __construct(array $values = array())
     {
         parent::__construct($values);
+        $this->configureDebug();
         $this->processMetaRequests();
 
         $this->configureStack();
@@ -56,6 +58,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
          * security should be configured before the routes
          * as the routes are evaluated in order (login could be pre-empted by /{something})
          */
+
         $this->configureDebugBar();
         $this->debugBar['time']->startMeasure('setup', 'BaseWebApplication::setup');
         $this->configureTemplateEngine();
@@ -73,7 +76,35 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             if ($dispatcher instanceof PdoEventStoreDispatcher) {
                 $dispatcher->setRequest($request);
             }
+            if (isset($app['sentry'])) {
+                // adding sentry context from request
+                $token = $app['security.token_storage']->getToken();
+                if ($token) {
+                    $user = $token->getUser();
+                    if ($user=='anon.') {
+                        // anonymous user
+                    } else {
+                        $app['sentry']->user_context(
+                            [
+                                'id' => $user->getUsername(),
+                                'email' => $user->getEmail()
+                            ]
+                        );
+                    }
+                }
+            }
         });
+    }
+
+    protected function configureDebug() {
+        if (isset($this['parameters']['debug']) && is_array($this['parameters']['debug'])) {
+            $request = Request::createFromGlobals();
+            $this['debug'] = in_array($request->getClientIp(), $this['parameters']['debug']);
+            if($this['debug']) {
+                error_reporting(E_ALL);
+                ini_set('display_errors', 'on');
+            }
+        }
     }
 
     protected $stack;
@@ -85,6 +116,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->stack = new StackBuilder();
 
         $this->stack->push(RequestId::class, $generator, 'X-Request-Id', 'X-Request-Id');
+
+        if (isset($this['parameters']['replace'])) {
+            $config = $this['parameters']['replace'];
+            $replacements = $config['replacements'];
+            $this->stack->push(Middleware\ReplaceMiddleware::class, $replacements);
+        }
 
         if (isset($this['parameters']['piwik'])) {
             $config = $this['parameters']['piwik'];
@@ -244,6 +281,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function configureExceptionHandling()
     {
+        // Setup sentry client, expose for other use-cases
+        if (isset($this['parameters']['sentry_url'])) {
+            $sentryClient = new \Raven_Client($this['parameters']['sentry_url']);
+            $this['sentry'] = $sentryClient;
+        }
+
         $this->register(new WhoopsServiceProvider());
         $whoops = $this['whoops'];
         $whoops->clearHandlers();
@@ -251,6 +294,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $whoops->pushHandler(new PrettyPageHandler());
         } else {
             $whoops->pushHandler(new UserWhoopsHandler($this));
+        }
+        if (isset($this['sentry'])) {
+            $whoops->pushHandler(new SentryWhoopsHandler($this));
         }
         $whoops->pushHandler(new LogWhoopsHandler($this));
         if (isset($this['parameters']['exception_webhook'])) {
@@ -284,6 +330,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $handler = new RegistryHandler(new RequestExceptionFormatter, $store);
             $whoops->pushHandler($handler);
         }
+
     }
 
     protected function configureRoutes()
@@ -329,6 +376,19 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         $orgCollection->addCollection($newCollection);
         $this->configureSpaceAndPermissionRoutes();
+        $this->configureModuleRoutes();
+    }
+
+    protected function configureModuleRoutes()
+    {
+        $m = $this['module-manager'];
+        foreach ($m->getModules() as $module) {
+            $path = $module->getPath().'/../res/routes';
+            if (file_exists($path)) {
+                $loader = new YamlFileLoader(new FileLocator([$path]));
+                $this['routes']->addCollection($loader->load('routing.yml'));
+            }
+        }
     }
 
     protected function configureSpaceAndPermissionRoutes()
@@ -522,7 +582,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 foreach ($this->getRepositories() as $repository) {
                     if ($repository instanceof \Radvance\Repository\GlobalRepositoryInterface) {
                     } else {
-                        $repository->setFilter([$spaceRepo->getPermissionTableForeignKeyName() => $space->getId()]);
+                        $repository->setFilter(
+                            [($repository->getSpaceForeignKey() ?: $spaceRepo->getPermissionTableForeignKeyName()) => $space->getId()]
+                        );
                     }
                 }
             }
@@ -622,6 +684,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                         // visitor is authenticated
                         $app['current_user'] = $token->getUser();
                         $app['twig']->addGlobal('current_user', $token->getUser());
+                        $request->attributes->set('current_username', $token->getUser()->getUsername());
                     }
                 }
             }
@@ -660,6 +723,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                         $providerConfig['username'],
                         $providerConfig['password']
                     );
+                    $client->setTimeDataCollector($this->debugBar['time']);
+                    $client->setCache($this['cache']);
                     $this['userbase.client'] = $client;
 
                     return new UserBaseUserProvider($client);
