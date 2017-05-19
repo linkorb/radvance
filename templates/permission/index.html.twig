@@ -4,29 +4,6 @@
     <div class="row">
         <h1>Permissions</h1>
         <h3>{{ accountName }} / <a href="{{ path('space_view', {'accountName': accountName, 'spaceName': spaceName}) }}">{{ spaceName }}</a></h3>
-        <table class="table table-bordered table-responsive">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Roles</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in permissions %}
-                <tr>
-                    <td>{{ p.username }}</td>
-                    <td>{{ p.roles }}</td>
-                    <td>
-                        <a class="btn btn-danger" href="{{ path('permission_delete', {'accountName': accountName, 'spaceName': spaceName, 'permissionId': p.id}) }}">
-                            <i class="fa fa-remove"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <br />
         <fieldset>
             <legend>Add user</legend>
             {% if error %}
@@ -53,15 +30,54 @@
                                 {% endfor %}
                             </select>
                         {% else %}
-                            <input  name="P_roles"  class="form-control" />
+                            <input type="text"  name="P_roles"  class="form-control"  />
                         {% endif %}
 
                     {% endif %}
+
+                    {% if app['roles']['expire'] is defined %}
+                        <label>Expire Date</label>
+                        <input type="date"  name="P_expiredate"  class="form-control" required="required" placeholder="dd/mm/yyyy" value="{{ "now"|date('d/m/Y') }}" />
+                    {% endif %}
+
                 </div>
                 <div class="buttonbox">
                     <button type="submit" class="btn btn-primary">Add</button>
                 </div>
             </form>
         </fieldset>
+        <br />
+        <table class="table table-bordered table-responsive">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    {% if app['space_roles'] is defined %}
+                        <th>Roles</th>
+                    {% endif %}
+                    {% if app['roles']['expire'] is defined %}
+                        <th>Expire Date</th>
+                    {% endif %}
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in permissions %}
+                <tr>
+                    <td>{{ p.username }}</td>
+                    {% if app['space_roles'] is defined %}
+                        <td>{{ p.roles }}</td>
+                    {% endif %}
+                    {% if app['roles']['expire'] is defined %}
+                        <td>{% if p.expiredate is not null %} {{ p.expiredate|date('d/m/Y') }} {% endif %}</td>
+                    {% endif %}
+                    <td>
+                        <a class="btn btn-danger" href="{{ path('permission_delete', {'accountName': accountName, 'spaceName': spaceName, 'permissionId': p.id}) }}">
+                            <i class="fa fa-remove"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}

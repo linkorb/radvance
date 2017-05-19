@@ -39,6 +39,7 @@ class PermissionController
 
         $username = trim($request->request->get('P_username'));
         $roles = trim($request->request->get('P_roles'));
+        $expiredate = trim($request->request->get('P_expiredate'));
 
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
@@ -57,8 +58,12 @@ class PermissionController
 
         if (!$error) {
             if ($space) {
+                if ($expiredate) {
+                    $expiredate = date('Y-m-d', strtotime(str_replace('/', '-', $expiredate)));
+                }
+
                 $repo = $app->getPermissionRepository();
-                $error = $repo->add($username, $space->getId(), $roles);
+                $error = $repo->add($username, $space->getId(), $roles, $expiredate);
                 $admin = $app['current_user']->getName();
                 $event = new PermissionDomain\PermissionGrantedEvent(
                     $admin,
