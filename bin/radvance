@@ -10,21 +10,21 @@ function includeIfExists($file)
     }
 }
 
-$loader = __DIR__ . '/../vendor/autoload.php';
+$loader = __DIR__.'/../vendor/autoload.php';
 
 if (!file_exists($loader)) {
-    $loader = __DIR__ . '/../../../autoload.php';
+    $loader = __DIR__.'/../../../autoload.php';
 }
 
 if (!file_exists($loader)) {
     die(
-        'You must set up the project dependencies, run the following commands:' . PHP_EOL .
-        'curl -s http://getcomposer.org/installer | php' . PHP_EOL .
-        'php composer.phar install' . PHP_EOL
+        'You must set up the project dependencies, run the following commands:'.PHP_EOL.
+        'curl -s http://getcomposer.org/installer | php'.PHP_EOL.
+        'php composer.phar install'.PHP_EOL
     );
 }
 
-$autoLoader = require($loader);
+$autoLoader = require $loader;
 if (class_exists('AutoTune\Tuner')) {
     \AutoTune\Tuner::init($autoLoader);
 }
@@ -41,4 +41,5 @@ $application->add(new \Radvance\Command\SchemaLoadCommand());
 $application->add(new \Radvance\Command\CodeUpdateCommand());
 $application->add(new \Radvance\Command\MySQLConnectCommand());
 $application->add(new \Radvance\Command\AssetsInstallCommand());
+$application->add(new \Radvance\Command\FixturesCommand());
 $application->run();
