@@ -4009,12 +4009,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "860f80178bda47f981d979505c5d0aa511baa033"
+                "reference": "460712d35eb4730515d64b59f73a8f87edaa79bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/860f80178bda47f981d979505c5d0aa511baa033",
-                "reference": "860f80178bda47f981d979505c5d0aa511baa033",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/460712d35eb4730515d64b59f73a8f87edaa79bf",
+                "reference": "460712d35eb4730515d64b59f73a8f87edaa79bf",
                 "shasum": ""
             },
             "require": {
@@ -4034,6 +4034,9 @@
             "autoload": {
                 "psr-0": {
                     "Twig_": "lib/"
+                },
+                "psr-4": {
+                    "Twig\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -4063,27 +4066,27 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2017-05-12 13:54:14"
+            "time": "2017-05-25 22:35:04"
         },
         {
             "name": "userbase/client",
-            "version": "v0.13.1",
+            "version": "v0.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/userbase-project/userbase-client-php.git",
-                "reference": "339300161c8fba9e49e47f5b3d83459a192ada8c"
+                "reference": "1ce03f80994e1c4e757ac6576260433ebe419dc6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/userbase-project/userbase-client-php/zipball/339300161c8fba9e49e47f5b3d83459a192ada8c",
-                "reference": "339300161c8fba9e49e47f5b3d83459a192ada8c",
+                "url": "https://api.github.com/repos/userbase-project/userbase-client-php/zipball/1ce03f80994e1c4e757ac6576260433ebe419dc6",
+                "reference": "1ce03f80994e1c4e757ac6576260433ebe419dc6",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0",
                 "psr/cache": "~1.0",
                 "symfony/cache": "~3.0",
-                "symfony/security": "~2.6"
+                "symfony/security": "~2.6|~3.0"
             },
             "type": "library",
             "autoload": {
@@ -4107,7 +4110,7 @@
                 "signup",
                 "user"
             ],
-            "time": "2017-05-09 14:19:31"
+            "time": "2017-05-25 16:40:15"
         },
         {
             "name": "zendframework/zend-diactoros",
@@ -6323,16 +6326,16 @@
         },
         {
             "name": "sebastian/diff",
-            "version": "1.4.2",
+            "version": "1.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/diff.git",
-                "reference": "3c7d21999e815cdfac70c6c7d79d3a9cb1bc7bc2"
+                "reference": "7f066a26a962dbe58ddea9f72a4e82874a3975a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/3c7d21999e815cdfac70c6c7d79d3a9cb1bc7bc2",
-                "reference": "3c7d21999e815cdfac70c6c7d79d3a9cb1bc7bc2",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/7f066a26a962dbe58ddea9f72a4e82874a3975a4",
+                "reference": "7f066a26a962dbe58ddea9f72a4e82874a3975a4",
                 "shasum": ""
             },
             "require": {
@@ -6371,7 +6374,7 @@
             "keywords": [
                 "diff"
             ],
-            "time": "2017-05-18 13:44:30"
+            "time": "2017-05-22 07:24:03"
         },
         {
             "name": "sebastian/environment",
