@@ -42,4 +42,7 @@ $application->add(new \Radvance\Command\CodeUpdateCommand());
 $application->add(new \Radvance\Command\MySQLConnectCommand());
 $application->add(new \Radvance\Command\AssetsInstallCommand());
 $application->add(new \Radvance\Command\FixturesCommand());
+$application->add(new \Radvance\Command\SnapshotCreateCommand());
+$application->add(new \Radvance\Command\SnapshotListCommand());
+$application->add(new \Radvance\Command\SnapshotLoadCommand());
 $application->run();
