@@ -6,32 +6,36 @@ use Connector\Connector;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
-class FixturesCommand extends AbstractGeneratorCommand
+class SnapshotLoadCommand extends AbstractGeneratorCommand
 {
     protected function configure()
     {
         $this
-            ->setName('fixture:run')
-            ->setDescription('Drop exists Database and re-generate with Fixtures data.')
+            ->setName('snapshot:load')
+            ->addArgument(
+                'snapshotFilename',
+                InputArgument::REQUIRED,
+                'file full path for import'
+            )
+            ->setDescription('Snapshot load file into datbase.')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // ASK USER INPUT //
-        $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion('Are you sure you want to delete all data?[y/n]', false);
+        $snapshotFilename = $input->getArgument('snapshotFilename');
 
-        if (!$helper->ask($input, $output, $question)) {
-            return;
+        if (!file_exists($snapshotFilename)) {
+            throw new \RuntimeException('file not found.');
         }
 
         $filename = 'app/config/parameters.yml';
         if (!file_exists($filename)) {
-            throw new RuntimeException('No such file: '.$filename);
+            throw new \RuntimeException('No such file: '.$filename);
         }
         $data = file_get_contents($filename);
         $parameters = Yaml::parse($data);
@@ -50,6 +54,9 @@ class FixturesCommand extends AbstractGeneratorCommand
             $config = $connector->getConfig($pdoUrl);
             $dbname = $config->getName();
 
+            $username = $config->getUsername();
+            $password = $config->getPassword();
+
             if ($connector->exists($config)) {
                 $connector->drop($config);
                 $output->writeLn('<info>Drop Database: '.$dbname.'</info>');
@@ -57,19 +64,18 @@ class FixturesCommand extends AbstractGeneratorCommand
             $connector->create($config);
             $output->writeLn('<info>Create Database: '.$dbname.'</info>');
 
-            // load schema //
-            $output->writeLn('<info>Loading Schema...</info>');
-            $process = new Process('vendor/bin/dbtk-schema-loader  schema:load app/schema.xml  '.$pdoUrl.' --apply');
+            // Database import //
+            $process = new Process('gunzip <  '.$snapshotFilename.'  | mysql --user='.$username.' --password='.$password.'  '.$dbname);
             $process->run();
-            echo $process->getOutput();
 
-            // load fixture data //
-            $output->writeLn('<info>Loading Fixture data...</info>');
-            $process = new Process('vendor/bin/haigha fixtures:load fixtures/main.yml  '.$pdoUrl.' ');
-            $process->run();
+            // executes after the command finishes //
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            }
             echo $process->getOutput();
+            $output->writeLn('<info>Snapshot load  successfully: '.$snapshotFilename.'</info>');
         } catch (Exception $e) {
-            $output->writeLn('<error>Database not Exist '.$dbname.' </error>');
+            $output->writeLn('<error>Fail to load Snapshot: '.$snapshotFilename.' </error>');
         }
     }
 }
