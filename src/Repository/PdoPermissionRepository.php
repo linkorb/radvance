@@ -60,4 +60,9 @@ abstract class PdoPermissionRepository extends BaseRepository implements Permiss
 
         return $error;
     }
+
+    public function findOneOrNullBySpaceIdAndId($spaceId, $id)
+    {
+        return $this->findOneOrNullBy(array($this->spaceTableForeignKeyName => $spaceId, 'id' => $id));
+    }
 }
