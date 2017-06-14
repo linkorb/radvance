@@ -8,6 +8,7 @@ use Radvance\Domain\Permission as PermissionDomain;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use RuntimeException;
 
 class PermissionController
 {
@@ -97,9 +98,8 @@ class PermissionController
         if (!$space) {
             throw new RuntimeException('Space not found');
         }
-        $permission = $permissionRepo->find($permissionId);
 
-        if ($permission->getSpaceId() != $space->getId()) {
+        if (!$permission = $permissionRepo->findOneOrNullBySpaceIdAndId($space->getId(), $permissionId)) {
             throw new RuntimeException('Permission not in this space');
         }
 
