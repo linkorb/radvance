@@ -28,8 +28,9 @@ class SnapshotLoadCommand extends AbstractGeneratorCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $snapshotFilename = $input->getArgument('snapshotFilename');
+        $snapshotPath = 'var/snapshots';
 
-        if (!file_exists($snapshotFilename)) {
+        if (!file_exists($snapshotPath. '/' .$snapshotFilename)) {
             throw new \RuntimeException('file not found.');
         }
 
@@ -59,13 +60,13 @@ class SnapshotLoadCommand extends AbstractGeneratorCommand
 
             if ($connector->exists($config)) {
                 $connector->drop($config);
-                $output->writeLn('<info>Drop Database: '.$dbname.'</info>');
+                $output->writeLn('<info>Drop database: '.$dbname.'</info>');
             }
             $connector->create($config);
-            $output->writeLn('<info>Create Database: '.$dbname.'</info>');
+            $output->writeLn('<info>Importing database: '.$dbname.'</info>');
 
             // Database import //
-            $process = new Process('gunzip <  '.$snapshotFilename.'  | mysql --user='.$username.' --password='.$password.'  '.$dbname);
+            $process = new Process('gunzip <  ' . $snapshotPath. '/' . $snapshotFilename.'  | mysql --user='.$username.' --password='.$password.'  '.$dbname);
             $process->run();
 
             // executes after the command finishes //
@@ -73,9 +74,9 @@ class SnapshotLoadCommand extends AbstractGeneratorCommand
                 throw new ProcessFailedException($process);
             }
             echo $process->getOutput();
-            $output->writeLn('<info>Snapshot load  successfully: '.$snapshotFilename.'</info>');
+            $output->writeLn('<info>Snapshot loaded successfully: '.$snapshotFilename.'</info>');
         } catch (Exception $e) {
-            $output->writeLn('<error>Fail to load Snapshot: '.$snapshotFilename.' </error>');
+            $output->writeLn('<error>Failed to load snapshot: '.$snapshotFilename.'</error>');
         }
     }
 }

@@ -7,6 +7,7 @@ use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class SnapshotCreateCommand extends AbstractGeneratorCommand
 {
@@ -45,25 +46,28 @@ class SnapshotCreateCommand extends AbstractGeneratorCommand
             $password = $config->getPassword();
 
             // CRATE Directory //
-            $directoryPath = '/var/snapshots/';
+            $directoryPath = 'var/snapshots/';
             $process = new Process('mkdir -p  0777 '.$directoryPath);
             $process->run();
 
             // Database Dump //
-            $dumpFileName = $dbname.'-'.date('y-m-d-H-m-i').'.sql.gz';
+            $dumpFileName = $dbname.'-'.date('Y-m-d-H-m-i').'.sql.gz';
 
-            $process = new Process('/usr/bin/mysqldump --user='.$username.' --password='.$password.'  '.$dbname.' | gzip > '.$directoryPath.$dumpFileName);
+            $cmd = 'mysqldump --user='.$username.' --password='.$password.' '.$dbname.' | gzip > '.$directoryPath.$dumpFileName;
+            echo $cmd . "\n";
+            $process = new Process($cmd);
             $process->run();
+
 
             // executes after the command finishes //
             if (!$process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
-            chmod($directoryPath.$dumpFileName, 0775);
+            chmod($directoryPath . $dumpFileName, 0775);
             echo $process->getOutput();
-            $output->writeLn('<info>Snapshot Create: '.$directoryPath.$dumpFileName.'</info>');
+            $output->writeLn('<info>Snapshot created:</info> <comment>' . $dumpFileName . '</comment>');
         } catch (Exception $e) {
-            $output->writeLn('<error>Fail to create Snapshot: '.$dbname.' </error>');
+            $output->writeLn('<error>Failed to create snapshot</error>');
         }
     }
 }

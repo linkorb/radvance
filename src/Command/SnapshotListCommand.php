@@ -13,7 +13,7 @@ class SnapshotListCommand extends AbstractGeneratorCommand
     {
         $this
             ->setName('snapshot:list')
-            ->setDescription('Snapshot file list.')
+            ->setDescription('List existing snapshots')
         ;
     }
 
@@ -35,14 +35,16 @@ class SnapshotListCommand extends AbstractGeneratorCommand
             $pdoUrl = $parameters['parameters']['pdo'];
         }
 
+        $directoryPath = 'var/snapshots/';
+
         try {
             $connector = new Connector();
             $config = $connector->getConfig($pdoUrl);
             $dbname = $config->getName();
 
             // dump list //
-            $directoryPath = '/var/snapshots/';
             $files = array();
+            $c = 0;
             if ($handle = opendir($directoryPath)) {
                 while (false !== ($file = readdir($handle))) {
                     if ($file != '.' && $file != '..' && preg_match('/^'.$dbname.'/i', $file)) {
@@ -52,12 +54,16 @@ class SnapshotListCommand extends AbstractGeneratorCommand
                 }
 
                 foreach ($files as $file) {
-                    echo $directoryPath.$file."\n\r";
+                    $c++;
+                    $output->writeLn('* <comment>' . $file  . '</comment>');
                 }
             }
-            $output->writeLn('<info>Snapshot list :'.$dbname.' </info>');
+            if ($c==0) {
+                $output->writeLn('<error>No snapshots found</error>');
+            }
+
         } catch (Exception $e) {
-            $output->writeLn('<error>Fail to find list : '.$dbname.' </error>');
+            $output->writeLn('<error>Error listing snapshots</error>');
         }
     }
 }
