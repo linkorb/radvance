@@ -50,22 +50,50 @@ class SnapshotCreateCommand extends AbstractGeneratorCommand
             $process = new Process('mkdir -p  0777 '.$directoryPath);
             $process->run();
 
-            // Database Dump //
-            $dumpFileName = $dbname.'-'.date('Y-m-d-H-m-i').'.sql.gz';
-
-            $cmd = 'mysqldump --user='.$username.' --password='.$password.' '.$dbname.' | gzip > '.$directoryPath.$dumpFileName;
-            echo $cmd . "\n";
+            //1. Before running mysqldump, check if that executable exists
+            $cmd = 'command -v /usr/bin/mysqldump >/dev/null || { echo "false";}';
             $process = new Process($cmd);
-            $process->run();
-
-
-            // executes after the command finishes //
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
+            try {
+                $process->mustRun();
+                if (trim($process->getOutput()) == 'false') {
+                    $output->writeLn('<error>`mysqldump` not exists in system </error>');
+                    exit(1);
+                }
+            } catch (ProcessFailedException $e) {
+                echo $e->getMessage();
             }
-            chmod($directoryPath . $dumpFileName, 0775);
-            echo $process->getOutput();
-            $output->writeLn('<info>Snapshot created:</info> <comment>' . $dumpFileName . '</comment>');
+
+            //2. mysqldup in file and check its not empty and exists
+            $dumpSqlFile = $directoryPath.$dbname.'-'.date('Y-m-d-H-i-s').'.sql';
+            $cmd = 'mysqldump --user='.$username.' --password='.$password.' '.$dbname.'  > '.$dumpSqlFile;
+            $process = new Process($cmd);
+            try {
+                $process->mustRun();
+
+                if (!file_exists($dumpSqlFile) || !filesize($dumpSqlFile)) {
+                    $output->writeLn('<error>'.$dumpSqlFile.'  Generate empty file </error>');
+                    exit(1);
+                }
+                chmod($dumpSqlFile, 0777);
+            } catch (ProcessFailedException $e) {
+                echo $e->getMessage();
+            }
+
+            //3. Comprase file
+            $cmd = 'gzip '.$dumpSqlFile;
+            $process = new Process($cmd);
+            try {
+                $process->mustRun();
+                $zipFileName = $dumpSqlFile.'.gz';
+                chmod($zipFileName, 0777);
+                if (filesize($zipFileName)) {
+                    $output->writeLn('<info>Snapshot created:</info> <comment>'.$zipFileName.' ('.filesize($zipFileName).')</comment>');
+                } else {
+                    $output->writeLn('<error>Failed to compressed file</error>');
+                }
+            } catch (ProcessFailedException $e) {
+                echo $e->getMessage();
+            }
         } catch (Exception $e) {
             $output->writeLn('<error>Failed to create snapshot</error>');
         }
