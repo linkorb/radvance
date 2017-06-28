@@ -51,16 +51,18 @@ class SnapshotCreateCommand extends AbstractGeneratorCommand
             $process->run();
 
             //1. Before running mysqldump, check if that executable exists
-            $cmd = 'command -v /usr/bin/mysqldump >/dev/null || { echo "false";}';
+            $cmd = 'which -a  mysqldump';
             $process = new Process($cmd);
+
             try {
-                $process->mustRun();
-                if (trim($process->getOutput()) == 'false') {
+                $process->run();
+                if (!trim($process->getOutput())) {
                     $output->writeLn('<error>`mysqldump` not exists in system </error>');
                     exit(1);
                 }
             } catch (ProcessFailedException $e) {
                 echo $e->getMessage();
+                exit(1);
             }
 
             //2. mysqldup in file and check its not empty and exists
@@ -74,9 +76,9 @@ class SnapshotCreateCommand extends AbstractGeneratorCommand
                     $output->writeLn('<error>'.$dumpSqlFile.'  Generate empty file </error>');
                     exit(1);
                 }
-                chmod($dumpSqlFile, 0777);
             } catch (ProcessFailedException $e) {
                 echo $e->getMessage();
+                exit(1);
             }
 
             //3. Comprase file
@@ -85,9 +87,9 @@ class SnapshotCreateCommand extends AbstractGeneratorCommand
             try {
                 $process->mustRun();
                 $zipFileName = $dumpSqlFile.'.gz';
-                chmod($zipFileName, 0777);
+
                 if (filesize($zipFileName)) {
-                    $output->writeLn('<info>Snapshot created:</info> <comment>'.$zipFileName.' ('.filesize($zipFileName).')</comment>');
+                    $output->writeLn('<info>Snapshot created:</info> <comment>'.$zipFileName.' ('.$this->convertToReadableSize(filesize($zipFileName)).')</comment>');
                 } else {
                     $output->writeLn('<error>Failed to compressed file</error>');
                 }
@@ -97,5 +99,14 @@ class SnapshotCreateCommand extends AbstractGeneratorCommand
         } catch (Exception $e) {
             $output->writeLn('<error>Failed to create snapshot</error>');
         }
+    }
+
+    protected function convertToReadableSize($size)
+    {
+        $base = log($size) / log(1024);
+        $suffix = array('', 'KB', 'MB', 'GB', 'TB');
+        $f_base = floor($base);
+
+        return round(pow(1024, $base - floor($base)), 1).$suffix[$f_base];
     }
 }
