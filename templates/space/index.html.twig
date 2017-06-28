@@ -13,7 +13,11 @@
         </div>
 
         <div class="btn-group">
+            {#
             <a class="btn btn-primary" href="{{ path('space_add', {'accountName': accountName}) }}">Add {{ nameOfSpace }}</a>
+            #}
+
+            <a class="btn btn-primary" href="{{ path('space_new', {'accountName': accountName}) }}">Add Space</a>
         </div>
     </div>
 {% endblock %}

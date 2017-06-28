@@ -206,7 +206,11 @@ class SpaceController
         $add = !$id;
 
         if ($add) {
-            $space->setAccountName($app['current_user']->getName());
+            if ($accountName = $request->get('accountName')) {
+                $space->setAccountName($accountName);
+            } else {
+                $space->setAccountName($app['current_user']->getName());
+            }
         }
         // GENERATE FORM //
         $defaults = array();
