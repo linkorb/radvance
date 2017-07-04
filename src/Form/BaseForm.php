@@ -117,7 +117,8 @@ class BaseForm
             switch ($value[1]) {
                 case 'date':
                 case 'datetime':
-                    $defaults[$value[0]] = new \DateTime($this->entity->$method());
+                    // $defaults[$value[0]] = new \DateTime($this->entity->$method());
+                    $defaults[$value[0]] = $this->entity->$method() ? new \DateTime($this->entity->$method()) : null;
                     break;
                 default:
                     $defaults[$value[0]] = $this->entity->$method();
