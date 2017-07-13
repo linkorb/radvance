@@ -6,6 +6,7 @@ use Silex\Application as SilexApplication;
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\MonologServiceProvider;
+use Symfony\Component\Dotenv\Dotenv;
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
 use Radvance\Component\Config\ConfigLoader;
@@ -81,6 +82,14 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
     protected function loadConfig()
     {
+        // Load .env file if present
+        $filename = $this->getRootPath() . '/.env';
+        if (file_exists($filename)) {
+            $dotenv = new Dotenv();
+            $dotenv->load($filename);
+        }
+
+        // Load application config.yml (which includes parameters.yml)
         $loader = new ConfigLoader();
         $path = $this->getRootPath().'/app/config';
         if (file_exists($path.'/config.yml')) {

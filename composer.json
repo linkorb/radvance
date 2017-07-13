@@ -50,6 +50,7 @@
         "linkorb/boost": "~1.0",
         "dbtk/schema-loader": "~2.1",
         "sinergi/browser-detector": "~6.0",
+        "symfony/dotenv": "~3.0",
         "sentry/sentry": "~1.0"
     },
     "require-dev": {
