@@ -55,7 +55,7 @@ abstract class PdoPermissionRepository extends BaseRepository implements Permiss
         try {
             $this->persist($permission);
         } catch (\Exception $e) {
-            $error = 'user exists';
+            $error = 'error persisting permission';
         }
 
         return $error;
