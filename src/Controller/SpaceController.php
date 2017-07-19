@@ -112,6 +112,9 @@ class SpaceController
                 'description' => $space->getDescription(),
             );
         }
+        if (property_exists($space, 'fqdn')) {
+            $defaults['fqdn'] = $space->getFqdn();
+        }
 
         $form = $app['form.factory']->createBuilder('form', $defaults)
             ->add('account_name', 'text', array('read_only' => true))
@@ -123,8 +126,11 @@ class SpaceController
                     )),
                 ),
             ))
-            ->add('description', 'textarea', array('required' => false))
-            ->getForm();
+            ->add('description', 'textarea', array('required' => false));
+        if (property_exists($space, 'fqdn')) {
+            $form = $form->add('fqdn', 'text', array('required' => false));
+        }
+        $form = $form->getForm();
 
         // handle form submission
         $form->handleRequest($request);
@@ -134,6 +140,9 @@ class SpaceController
                 ->setDescription($data['description']);
             if (method_exists($space, 'setCreatedAt')) {
                 $space->setCreatedAt();
+            }
+            if (property_exists($space, 'fqdn')) {
+                $space->setFqdn($data['fqdn']);
             }
 
             if (!$repo->persist($space)) {
