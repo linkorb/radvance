@@ -17,6 +17,7 @@ use Registry\Client\Store;
 use Registry\Whoops\Formatter\RequestExceptionFormatter;
 use Registry\Whoops\Handler\RegistryHandler;
 use UserBase\Client\UserProvider as UserBaseUserProvider;
+use Radvance\Security\RadvanceUserProvider;
 use UserBase\Client\Client as UserBaseClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -62,6 +63,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->configureDebugBar();
         $this->debugBar['time']->startMeasure('setup', 'BaseWebApplication::setup');
         $this->configureTemplateEngine();
+        $this->configureRoleProvider();
         $this->configureSecurity();
         $this->configureRoutes();
         $this->configureUrlPreprocessor();
@@ -494,6 +496,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this['twig']->addFunction(new \Twig_SimpleFunction('asset', function ($asset) use ($request) {
                 return $request->getBaseUrl().'/'.ltrim($asset, '/');
             }));
+            $this['twig']->addFunction(new \Twig_SimpleFunction('is_granted', function ($role, $obj = null) use ($app, $request) {
+                return $app['security.authorization_checker']->isGranted($role, $obj);
+            }));
         });
     }
 
@@ -649,7 +654,18 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $collection->add('logout', $route);
 
         $this['routes']->addCollection($collection);
-        $this['security.provider'] = $this->getUserSecurityProvider();
+
+
+        $this['security.default_encoder'] = $this['security.encoder.digest'];
+
+        $userProvider = $this->getUserProvider();
+        if (isset($this['security.role_provider'])) {
+            // Wrap the custom userprovider
+            $userProvider = new RadvanceUserProvider($userProvider, $this['security.role_provider']);
+        }
+
+
+        $this['security.provider'] = $userProvider;
 
         $this['security.firewalls'] = array(
             'api' => array(
@@ -691,9 +707,8 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         });
     }
 
-    protected function getUserSecurityProvider()
+    protected function getUserProvider()
     {
-        $this['security.default_encoder'] = $this['security.encoder.digest'];
         foreach ($this['security']['providers'] as $provider => $providerConfig) {
             switch ($provider) {
                 case 'JsonFile':
@@ -733,7 +748,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     break;
             }
         }
-        throw new RuntimeException('Cannot find any security provider');
+        throw new RuntimeException('Cannot find a user provider');
     }
 
     public function isGranted($attributes, $object = null)
@@ -784,5 +799,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->extend('resolver', function ($resolver, $app) {
             return new ControllerResolver($app);
         });
+    }
+
+    protected function configureRoleProvider()
+    {
+        // By default, don't do anything
     }
 }
