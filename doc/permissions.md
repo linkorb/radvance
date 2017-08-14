@@ -36,6 +36,7 @@ class BlogController
         // no need to check permissions here, it's already checked in the controller :-)
     }
 }
+```
 
 ## Checking for permissions in templates
 
@@ -53,7 +54,7 @@ does not secure the route on it's own.
 
 ## RoleProvider
 
-How does your app know which ROLE a user has?
+How does your app know which ROLE(s) a user has?
 
 You can support this by implementing the `Radvance\Security\RoleProviderInterface`.
 Using such a class, you can tell the security component which roles a user has based on their username.
@@ -63,6 +64,8 @@ You can store the permissions in a database, file, or config parameter for examp
 Here's a simple example:
 
 ```php
+namespace MyApp\Security;
+
 use Radvance\Security\RoleProviderInterface
 
 class MyRoleProvider implements RoleProviderInterface
