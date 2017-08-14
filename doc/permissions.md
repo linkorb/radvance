@@ -20,7 +20,7 @@ if (!$auth->isGranted('ROLE_BLOG_EDITOR')) {
 Often all the methods in a Controller class all require the same permissions. So you can simply check
 the permission in the Controller's `__construct()` method:
 
-```
+```php
 class BlogController
 {
     public function __construct(Application $app)
