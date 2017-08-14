@@ -1,28 +1,103 @@
-# Permissions
+Permissions
+===========
 
-Permissions in Radvance are inspired by Amazon's security policies
+Radvance is using the standard security functionality from silex an symfony:
 
-## XRNs
+* https://silex.symfony.com/doc/2.0/providers/security.html
+* https://symfony.com/doc/current/components/security.html
 
-All 'resources' (objects, records, anything) in Radvance are identified by their 'XRN'.
+## Checking for permissions in code
 
-An XRN (Cross-app Resource Name) is a string that uniquely identifies a 'resource'.
-It is inspired by Amazon's ARNs [read more](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+In the code, for example in a controller, you can simply call:
 
-Valid formats:
+```php
+$auth = $app['security.authorization_checker'];
+if (!$auth->isGranted('ROLE_BLOG_EDITOR')) {
+    throw new Exception("Access denied!");
+}
+```
 
-    xrn:partition:service:region:account-id:resource-id
-    xrn:partition:service:region:account-id:resource-type/resource-id
-    xrn:partition:service:region:account-id:resource-type:resource-id
+Often all the methods in a Controller class all require the same permissions. So you can simply check
+the permission in the Controller's `__construct()` method:
 
-For example:
+```
+class BlogController
+{
+    public function __construct(Application $app)
+    {
+        $auth = $app['security.authorization_checker'];
+        if (!$auth->isGranted('ROLE_BLOG_EDITOR')) {
+            throw new Exception("Access denied!");
+        }
+    }
 
-    xrn:linkorb:userbase:eu::account/linkorb
+    public function indexAction()
+    {
+        // no need to check permissions here, it's already checked in the controller :-)
+    }
+}
 
-Breaking this string down by it's semi-colons:
+## Checking for permissions in templates
 
-* xrn: standard prefix for all XRNs
-* linkorb: the partition of this resource
-* userbase: a resource in the "userbase" service
-* eu: the region of this resource. In case the service is split into region, this contains a region name. Otherwise it remains empty.
-* account/linkorb: This indicates the resource is of type 'account', with identifier 'linkorb'
+You can use the standard `is_granted` function in Twig templates like this:
+
+```html
+<h1>Blog</h1>
+{% if is_granted('ROLE_BLOG_PUBLISHER')}
+    <a href="/blogs/{blogId}/publish">Publish</a>
+{% endif %}
+```
+
+Always remember to check permissions in the controllers or firewall too! Just hiding a link or button
+does not secure the route on it's own.
+
+## RoleProvider
+
+How does your app know which ROLE a user has?
+
+You can support this by implementing the `Radvance\Security\RoleProviderInterface`.
+Using such a class, you can tell the security component which roles a user has based on their username.
+
+You can store the permissions in a database, file, or config parameter for example.
+
+Here's a simple example:
+
+```php
+use Radvance\Security\RoleProviderInterface
+
+class MyRoleProvider implements RoleProviderInterface
+{
+    protected $repo;
+    public function __construct($permissionRepo, $superusers)
+    {
+        $this->repo = $permissionRepo;
+    }
+
+    /*
+     * This function should return an array of role names based on the username
+     */
+    public function getUserRoles($username)
+    {
+        $roles = [];
+        foreach ($this->permissionRepo->findByUsername($username) as $permission) {
+            $roles[] = $permission->getRole();
+        }
+        return $roles;
+    }
+}
+```
+
+Once you have created your `RoleProvider` implementation, you need to register it in the Application
+
+The easiest way is to implement the method 'configureRoleProvider' on your Application:
+
+```php
+class Application extends BaseWebApplication
+{
+    public function configureRoleProvider()
+    {
+        $permissionRepo = $this->getRepository('permission');
+        $this['security.role_provider'] = new MyRoleProvider($permissionRepo);
+    }
+}
+```
