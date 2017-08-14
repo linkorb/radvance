@@ -21,13 +21,15 @@ Often all the methods in a Controller class all require the same permissions. So
 the permission in the Controller's `__construct()` method:
 
 ```php
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+
 class BlogController
 {
-    public function __construct(Application $app)
+    public function __construct(AuthorizationChecker $auth)
     {
-        $auth = $app['security.authorization_checker'];
         if (!$auth->isGranted('ROLE_BLOG_EDITOR')) {
-            throw new Exception("Access denied!");
+            throw new AccessDeniedException();
         }
     }
 

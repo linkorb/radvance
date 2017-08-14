@@ -4,6 +4,7 @@ namespace Radvance\Framework;
 
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver as BaseControllerResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
@@ -60,7 +61,7 @@ class ControllerResolver extends BaseControllerResolver
         }
         return array($class, $methodName);
     }
-    
+
     protected function injectArguments(array $parameters, $request)
     {
         $args = [];
@@ -80,6 +81,9 @@ class ControllerResolver extends BaseControllerResolver
                 }
                 if ($className == UrlGenerator::class) {
                     $args[$parameter->getName()] = $this->app['url_generator'];
+                }
+                if ($className == AuthorizationChecker::class) {
+                    $args[$parameter->getName()] = $this->app['security.authorization_checker'];
                 }
 
                 if ($className == \Symfony\Component\Form\FormFactory::class) {
