@@ -657,15 +657,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
 
         $this['security.default_encoder'] = $this['security.encoder.digest'];
-
-        $userProvider = $this->getUserProvider();
-        if (isset($this['security.role_provider'])) {
-            // Wrap the custom userprovider
-            $userProvider = new RadvanceUserProvider($userProvider, $this['security.role_provider']);
-        }
-
-
-        $this['security.provider'] = $userProvider;
+        $this['security.provider'] = $this->getUserProvider();
 
         $this['security.firewalls'] = array(
             'api' => array(
@@ -709,12 +701,14 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function getUserProvider()
     {
+        $userProvider = null;
         foreach ($this['security']['providers'] as $provider => $providerConfig) {
             switch ($provider) {
                 case 'JsonFile':
-                    return new \Radvance\Component\Security\JsonFileUserProvider(
+                    $userProvider = new \Radvance\Component\Security\JsonFileUserProvider(
                         realpath($providerConfig['path']) ? $providerConfig['path'] : ($this->getRootPath().'/'.$providerConfig['path'])
                     );
+                    break 2;
                 // case 'Pdo':
                 //     $dbmanager = new DatabaseManager();
 
@@ -742,13 +736,30 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     $client->setCache($this['cache']);
                     $this['userbase.client'] = $client;
 
-                    return new UserBaseUserProvider($client);
-
+                    $userProvider = new UserBaseUserProvider($client);
+                    break 2;
                 default:
-                    break;
             }
         }
-        throw new RuntimeException('Cannot find a user provider');
+
+        if (!$userProvider) {
+            throw new RuntimeException('Cannot find a user provider');
+        }
+
+        if (isset($this['security.role_provider'])) {
+            // Wrap the custom userprovider
+            $userProvider = new RadvanceUserProvider($userProvider, $this['security.role_provider']);
+        }
+
+        return $userProvider;
+    }
+
+    /**
+     * @deprecated Use BaseWebApplication::getUserProvider
+     */
+    protected function getUserSecurityProvider()
+    {
+        return $this->getUserProvider();
     }
 
     public function isGranted($attributes, $object = null)
