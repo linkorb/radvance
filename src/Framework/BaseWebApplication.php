@@ -26,6 +26,7 @@ use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
 use Silex\Application as SilexApplication;
+use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Knp\Menu\MenuFactory;
 use RuntimeException;
@@ -685,19 +686,17 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         $app = $this;
         $app->before(function (Request $request, SilexApplication $app) {
-            $token = $app['security.token_storage']->getToken();
-            if ($token) {
-                if ($request->getRequestUri() != '/login') {
-                    if ($token->getUser() == 'anon.') {
-                        // visitor is not authenticated
-                    } else {
-                        // visitor is authenticated
-                        $app['current_user'] = $token->getUser();
-                        $app['twig']->addGlobal('current_user', $token->getUser());
-                        $request->attributes->set('current_username', $token->getUser()->getUsername());
-                    }
+            try {
+                $isLoggedIn = $app['security.authorization_checker']->isGranted('IS_AUTHENTICATED_FULLY');
+                if (!$isLoggedIn) {
+                    return;
                 }
+            } catch (AuthenticationCredentialsNotFoundException $e) {
+                return;
             }
+            $app['current_user'] = $app['user'];
+            $app['twig']->addGlobal('current_user', $app['user']);
+            $request->attributes->set('current_username', $app['user']->getUsername());
         });
     }
 
