@@ -46,7 +46,7 @@ You can use the standard `is_granted` function in Twig templates like this:
 
 ```html
 <h1>Blog</h1>
-{% if is_granted('ROLE_BLOG_PUBLISHER')}
+{% if is_granted('ROLE_BLOG_PUBLISHER') %}
     <a href="/blogs/{blogId}/publish">Publish</a>
 {% endif %}
 ```
