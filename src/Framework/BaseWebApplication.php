@@ -200,13 +200,15 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     {
         $this->debugBar = new \DebugBar\StandardDebugBar();
         if ($this['debug'] && isset($this['parameters']['debugbar']) && $this['parameters']['debugbar']) {
-            // Wrap the pdo object in a TraceablePDO instance
             $this->debugBar['time']->startMeasure('request', 'Request');
-            $this->debugBar['time']->startMeasure('wrappdo', 'Wrapping PDO');
-            $pdo = $this->pdo;
-            $this->pdo = new \DebugBar\DataCollector\PDO\TraceablePDO($pdo);
-            $this->debugBar->addCollector(new \DebugBar\DataCollector\PDO\PDOCollector($this->pdo));
-            $this->debugBar['time']->stopMeasure('wrappdo');
+            // Wrap the pdo object in a TraceablePDO instance
+            if ($this->pdo) {
+                $this->debugBar['time']->startMeasure('wrappdo', 'Wrapping PDO');
+                $pdo = $this->pdo;
+                $this->pdo = new \DebugBar\DataCollector\PDO\TraceablePDO($pdo);
+                $this->debugBar->addCollector(new \DebugBar\DataCollector\PDO\PDOCollector($this->pdo));
+                $this->debugBar['time']->stopMeasure('wrappdo');
+            }
 
             $this->after(function (Request $request, Response $response) {
                 $this->debugBar['messages']->error('yo');
