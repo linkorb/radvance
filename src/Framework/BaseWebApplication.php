@@ -26,6 +26,7 @@ use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
 use Silex\Application as SilexApplication;
+use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Knp\Menu\MenuFactory;
 use RuntimeException;
@@ -43,6 +44,10 @@ use Radvance\Event\PdoEventStoreDispatcher;
  */
 abstract class BaseWebApplication extends BaseConsoleApplication implements FrameworkApplicationInterface
 {
+    const FW_PATH_LOGIN = '/login';
+    const FW_PATH_LOGINCHECK = '/authentication/login_check';
+    const FW_PATH_LOGOUT = '/logout';
+
     protected $pdo;
     protected $spaceMenu;
 
@@ -614,6 +619,55 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     //     }, $app->getRepositories()->getArrayCopy());
     // }
 
+    protected function getFirewalls()
+    {
+        return [
+            'api' => [
+                'stateless' => true,
+                'anonymous' => false,
+                'pattern' => '^/api',
+                'http' => true,
+                'users' => $this['security.provider'],
+            ],
+            'default' => [
+                'anonymous' => true,
+                'pattern' => '^/',
+                'form' => [
+                    'login_path' => $this->getFirewallsLoginPath(),
+                    'check_path' => $this->getFirewallsLoginCheckPath(),
+                ],
+                'logout' => [
+                    'logout_path' => $this->getFirewallsLogoutPath(),
+                ],
+                'users' => $this['security.provider'],
+            ],
+        ];
+    }
+
+    protected function getFirewallsLoginPath()
+    {
+        if (!isset($security['paths']['login'])) {
+            return self::FW_PATH_LOGIN;
+        }
+        return $security['paths']['login'];
+    }
+
+    protected function getFirewallsLoginCheckPath()
+    {
+        if (!isset($security['paths']['check'])) {
+            return self::FW_PATH_LOGINCHECK;
+        }
+        return $security['paths']['check'];
+    }
+
+    protected function getFirewallsLogoutPath()
+    {
+        if (!isset($security['paths']['logout'])) {
+            return self::FW_PATH_LOGOUT;
+        }
+        return $security['paths']['logout'];
+    }
+
     protected function configureSecurity()
     {
         $this->register(new SilexSecurityServiceProvider(), array());
@@ -625,16 +679,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this['security.encoder.digest'] = new $digest(true);
         }
 
-        $loginPath = isset($security['paths']['login']) ? $security['paths']['login'] : '/login';
-        $checkPath = isset($security['paths']['check']) ? $security['paths']['check'] : '/authentication/login_check';
-        $logoutPath = isset($security['paths']['logout']) ? $security['paths']['logout'] : '/logout';
-
         /* Automatically register routes for login, check and logout paths */
 
         $collection = new RouteCollection();
 
         $route = new Route(
-            $loginPath,
+            $this->getFirewallsLoginPath(),
             array(
                 '_controller' => 'Radvance\Controller\AuthenticationController::loginAction',
             )
@@ -642,13 +692,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $collection->add('login', $route);
 
         $route = new Route(
-            $checkPath,
+            $this->getFirewallsLoginCheckPath(),
             array()
         );
         $collection->add('login_check', $route);
 
         $route = new Route(
-            $logoutPath,
+            $this->getFirewallsLogoutPath(),
             array(
                 '_controller' => 'Radvance\Controller\AuthenticationController::logoutAction',
             )
@@ -660,44 +710,21 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         $this['security.default_encoder'] = $this['security.encoder.digest'];
         $this['security.provider'] = $this->getUserProvider();
-
-        $this['security.firewalls'] = array(
-            'api' => array(
-                'stateless' => true,
-                'anonymous' => false,
-                'pattern' => '^/api',
-                'http' => true,
-                'users' => $this['security.provider'],
-            ),
-            'default' => array(
-                'anonymous' => true,
-                'pattern' => '^/',
-                'form' => array(
-                    'login_path' => $loginPath,
-                    'check_path' => $checkPath,
-                ),
-                'logout' => array(
-                    'logout_path' => $logoutPath,
-                ),
-                'users' => $this['security.provider'],
-            ),
-        );
+        $this['security.firewalls'] = $this->getFirewalls();
 
         $app = $this;
         $app->before(function (Request $request, SilexApplication $app) {
-            $token = $app['security.token_storage']->getToken();
-            if ($token) {
-                if ($request->getRequestUri() != '/login') {
-                    if ($token->getUser() == 'anon.') {
-                        // visitor is not authenticated
-                    } else {
-                        // visitor is authenticated
-                        $app['current_user'] = $token->getUser();
-                        $app['twig']->addGlobal('current_user', $token->getUser());
-                        $request->attributes->set('current_username', $token->getUser()->getUsername());
-                    }
+            try {
+                $isLoggedIn = $app['security.authorization_checker']->isGranted('IS_AUTHENTICATED_FULLY');
+                if (!$isLoggedIn) {
+                    return;
                 }
+            } catch (AuthenticationCredentialsNotFoundException $e) {
+                return;
             }
+            $app['current_user'] = $app['user'];
+            $app['twig']->addGlobal('current_user', $app['user']);
+            $request->attributes->set('current_username', $app['user']->getUsername());
         });
     }
 
