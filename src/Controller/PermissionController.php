@@ -49,6 +49,7 @@ class PermissionController
         try {
             $user = $app['security.provider']->loadUserByUsername($username);
             $account = $user->getUserAccount();
+            $displayName = $user->getDisplayName();
 
             if ($account->getStatus() != 'ACTIVE') {
                 $error = 'Invalid User';
@@ -64,7 +65,7 @@ class PermissionController
                 }
 
                 $repo = $app->getPermissionRepository();
-                $error = $repo->add($username, $space->getId(), $roles, $expiredate);
+                $error = $repo->add($username, $space->getId(), $roles, $expiredate, $displayName);
                 $admin = $app['current_user']->getName();
                 $event = new PermissionDomain\PermissionGrantedEvent(
                     $admin,

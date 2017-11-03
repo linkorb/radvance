@@ -31,7 +31,7 @@ abstract class PdoPermissionRepository extends BaseRepository implements Permiss
         );
     }
 
-    public function add($username, $spaceId, $roles = null, $expiredate = null)
+    public function add($username, $spaceId, $roles = null, $expiredate = null, $displayName = null)
     {
         $error = null;
 
@@ -51,6 +51,9 @@ abstract class PdoPermissionRepository extends BaseRepository implements Permiss
         }
         if (property_exists($permission, 'expiredate')) {
             $permission->setExpiredate($expiredate);
+        }
+        if (property_exists($permission, 'display_name')) {
+            $permission->setDisplayName($displayName);
         }
         try {
             $this->persist($permission);
