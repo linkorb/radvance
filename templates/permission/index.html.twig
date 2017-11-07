@@ -51,6 +51,7 @@
             <thead>
                 <tr>
                     <th>Username</th>
+                    <th>Display Name</th>
                     {% if app['space_roles'] is defined %}
                         <th>Roles</th>
                     {% endif %}
@@ -64,6 +65,7 @@
                 {% for p in permissions %}
                 <tr>
                     <td>{{ p.username }}</td>
+                    <td>{{ p.getDisplayName() }}</td>
                     {% if app['space_roles'] is defined %}
                         <td>{{ p.roles }}</td>
                     {% endif %}

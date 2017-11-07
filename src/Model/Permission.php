@@ -28,4 +28,9 @@ abstract class Permission extends BaseModel implements PermissionInterface
     {
         return property_exists($this, 'expiredate') ? $this->expiredate : '';
     }
+
+    public function getDisplayName()
+    {
+        return property_exists($this, 'display_name') ? $this->display_name : '';
+    }
 }
