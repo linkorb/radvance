@@ -41,8 +41,10 @@ class PiwikMiddleware implements HttpKernelInterface
 
         $this->options[] = ['trackPageView'];
 
-        if (substr($response->headers->get('content-type', null), 0, 9) == 'text/html') {
-            $response = $this->inject($response, $this->getCode(), 'body');
+        if (!$request->attributes->has('amp-mode')) {
+            if (substr($response->headers->get('content-type', null), 0, 9) == 'text/html') {
+                $response = $this->inject($response, $this->getCode(), 'body');
+            }
         }
         return $response;
     }
