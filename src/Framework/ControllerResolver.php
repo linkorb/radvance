@@ -92,7 +92,9 @@ class ControllerResolver extends BaseControllerResolver
                 if ($className == \Radvance\Model\SpaceInterface::class) {
                     $args[$parameter->getName()] = $this->app['space'];
                 }
-
+                if (isset($this->app[$className])) {
+                    $args[$parameter->getName()] = $this->app[$className];
+                }
                 if ($class->implementsInterface(ServerRequestInterface::class)) {
                     $psr7Factory = new DiactorosFactory();
                     $psrRequest = $psr7Factory->createRequest($request);
