@@ -1,12 +1,12 @@
 # Permission routes
 
 permission_index:
-    pattern: /{accountName}/{spaceName}/permissions
+    path: /{accountName}/{spaceName}/permissions
     defaults: { _controller: Radvance\Controller\PermissionController::indexAction }
 permission_add:
-    pattern: /{accountName}/{spaceName}/permissions/add
+    path: /{accountName}/{spaceName}/permissions/add
     defaults: { _controller: Radvance\Controller\PermissionController::addAction }
     requirements: { _method: post }
 permission_delete:
-    pattern: /{accountName}/{spaceName}/permissions/{permissionId}/delete
+    path: /{accountName}/{spaceName}/permissions/{permissionId}/delete
     defaults: { _controller: Radvance\Controller\PermissionController::deleteAction }

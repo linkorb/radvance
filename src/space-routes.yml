@@ -1,27 +1,27 @@
 # dashboard
 
 dashboard:
-    pattern: /dashboard
+    path: /dashboard
     defaults: { _controller: Radvance\Controller\DashboardController::indexAction }
 
 # space routes
 
 space_new:
-    pattern: /new
+    path: /new
     defaults: { _controller: Radvance\Controller\SpaceController::newAction }
 
 space_index:
-    pattern: /{accountName}
+    path: /{accountName}
     defaults: { _controller: Radvance\Controller\SpaceController::indexAction }
 space_add:
-    pattern: /{accountName}/addlibrary
+    path: /{accountName}/addlibrary
     defaults: { _controller: Radvance\Controller\SpaceController::addAction }
 space_view:
-    pattern: /{accountName}/{spaceName}
+    path: /{accountName}/{spaceName}
     defaults: { _controller: Radvance\Controller\SpaceController::viewAction }
 space_edit:
-    pattern: /{accountName}/{spaceName}/edit
+    path: /{accountName}/{spaceName}/edit
     defaults: { _controller: Radvance\Controller\SpaceController::editAction }
 space_delete:
-    pattern: /{accountName}/{spaceName}/delete
+    path: /{accountName}/{spaceName}/delete
     defaults: { _controller: Radvance\Controller\SpaceController::deleteAction }
