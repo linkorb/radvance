@@ -4,9 +4,11 @@ namespace Radvance\Form;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Doctrine\Common\Inflector\Inflector;
 use Radvance\Model\BaseModel;
 use Radvance\Exception\BadMethodCallException;
+use RuntimeException;
 
 class BaseForm
 {
@@ -48,7 +50,7 @@ class BaseForm
 
     public function dispatch()
     {
-        $this->builder = $this->formFactory->createBuilder('form', $this->defaults);
+        $this->builder = $this->formFactory->createBuilder(FormType::class, $this->defaults);
         $this->addFields();
 
         // handle submission
@@ -102,7 +104,49 @@ class BaseForm
     {
         $fields = $this->buildForm();
         foreach ($fields as $value) {
-            $this->builder->add($value[0], $value[1], (isset($value[2])?$value[2]:null));
+
+            $options = isset($value[2])?$value[2]:[];
+            foreach ($options as $k => $v) {
+                if ($k=='read_only') {
+                    unset($options['read_only']);
+                    $options['attr']['readonly'] = true;
+                }
+                if ($k=='empty_value') {
+                    $options['placeholder'] = $options['empty_value'];
+                    unset($options['empty_value']);
+                }
+                if ($k=='choices') {
+                    $options['choices'] = array_flip($options['choices']);
+                }
+            }
+            switch ($value[1]) {
+            case 'text':
+                $type = \Symfony\Component\Form\Extension\Core\Type\TextType::class;
+                break;
+            case 'textarea':
+                $type = \Symfony\Component\Form\Extension\Core\Type\TextareaType::class;
+                break;
+            case 'email':
+                $type = \Symfony\Component\Form\Extension\Core\Type\EmailType::class;
+                break;
+            case 'date':
+                $type = \Symfony\Component\Form\Extension\Core\Type\DateType::class;
+                break;
+            case 'password':
+                $type = \Symfony\Component\Form\Extension\Core\Type\PasswordType::class;
+                break;
+            case 'choice':
+                $type = \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class;
+                break;
+            case 'url':
+                $type = \Symfony\Component\Form\Extension\Core\Type\UrlType::class;
+                break;
+            default:
+                throw new RuntimeException("Unsupported field type: " . $value[0] . ', type `' . $value[1] . '`');
+                $type = null;
+
+            }
+            $this->builder->add($value[0], $type, $options);
         }
 
         $this->form = $this->builder->getForm();

@@ -3,6 +3,10 @@
 namespace Radvance\Controller;
 
 use Radvance\Framework\BaseWebApplication as Application;
+
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Radvance\Model\Space;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -116,9 +120,9 @@ class SpaceController
             $defaults['fqdn'] = $space->getFqdn();
         }
 
-        $form = $app['form.factory']->createBuilder('form', $defaults)
-            ->add('account_name', 'text', array('read_only' => true))
-            ->add('name', 'text', array(
+        $form = $app['form.factory']->createBuilder(FormType::class, $defaults)
+            ->add('account_name', TextType::class, array('attr' => ['readonly' => true]))
+            ->add('name', TextType::class, array(
                 'required' => true,
                 'trim' => true,
                 'constraints' => array(new CodeConstraint(array(
@@ -126,9 +130,9 @@ class SpaceController
                     )),
                 ),
             ))
-            ->add('description', 'textarea', array('required' => false));
+            ->add('description', TextareaType::class, array('required' => false));
         if (property_exists($space, 'fqdn')) {
-            $form = $form->add('fqdn', 'text', array('required' => false));
+            $form = $form->add('fqdn', TextType::class, array('required' => false));
         }
         $form = $form->getForm();
 
