@@ -138,6 +138,9 @@ class BaseForm
             case 'choice':
                 $type = \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class;
                 break;
+            case 'number':
+                $type = \Symfony\Component\Form\Extension\Core\Type\NumberType::class;
+                break;
             case 'url':
                 $type = \Symfony\Component\Form\Extension\Core\Type\UrlType::class;
                 break;
