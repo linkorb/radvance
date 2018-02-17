@@ -20,7 +20,7 @@ class PdoEventStoreDispatcher implements EventDispatcherInterface
     protected $tableName;
     protected $request;
     protected $app;
-    
+
     public function __construct(
         EventDispatcherInterface $dispatcher,
         PDO $pdo,
@@ -30,12 +30,12 @@ class PdoEventStoreDispatcher implements EventDispatcherInterface
         $this->pdo = $pdo;
         $this->tableName = $tableName;
     }
-    
+
     public function setRequest($request = [])
     {
         $this->request = $request;
     }
-    
+
     public function setApp($app)
     {
         $this->app = $app;
@@ -100,10 +100,10 @@ class PdoEventStoreDispatcher implements EventDispatcherInterface
 
         if ($event instanceof StoredEventInterface) {
             //echo $eventName . "<br />\n";
-            
+
             $data = [];
             $reflectionObject = new ReflectionObject($event);
-            
+
             foreach ($reflectionObject->getProperties() as $p) {
                 $p->setAccessible(true);
                 $value = (string)$p->getValue($event);
@@ -116,7 +116,7 @@ class PdoEventStoreDispatcher implements EventDispatcherInterface
                     $data[$key] = $value;
                 }
             }
-            
+
             $metaData = [];
             if ($this->app) {
                 if (isset($this->app['current_user']) && $this->app['current_user']) {
@@ -153,7 +153,7 @@ class PdoEventStoreDispatcher implements EventDispatcherInterface
                 $metaData['device_name'] = $device->getName();
             }
             //print_r($data); print_r($metaData);
-            
+
             $stmt = $this->pdo->prepare(
                 'INSERT INTO ' . $this->tableName .
                 ' (stamp, space_id, name, data, meta_data)' .
@@ -228,5 +228,10 @@ class PdoEventStoreDispatcher implements EventDispatcherInterface
     public function __call($method, $arguments)
     {
         return call_user_func_array(array($this->dispatcher, $method), $arguments);
+    }
+
+    public function getListenerPriority($eventName, $listener)
+    {
+        return 0;
     }
 }
