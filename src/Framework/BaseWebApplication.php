@@ -723,6 +723,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 return;
             }
             $app['current_user'] = $app['user'];
+            $request->attributes->set('current_user', $app['user']);
             $app['twig']->addGlobal('current_user', $app['user']);
             $request->attributes->set('current_username', $app['user']->getUsername());
         });
