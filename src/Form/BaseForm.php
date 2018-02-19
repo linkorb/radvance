@@ -141,6 +141,9 @@ class BaseForm
             case 'number':
                 $type = \Symfony\Component\Form\Extension\Core\Type\NumberType::class;
                 break;
+            case 'integer':
+                $type = \Symfony\Component\Form\Extension\Core\Type\IntegerType::class;
+                break;
             case 'url':
                 $type = \Symfony\Component\Form\Extension\Core\Type\UrlType::class;
                 break;
