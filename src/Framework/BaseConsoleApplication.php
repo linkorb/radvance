@@ -9,8 +9,11 @@ use Silex\Provider\MonologServiceProvider;
 use Symfony\Component\Dotenv\Dotenv;
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
-use Radvance\Component\Config\ConfigLoader;
+use Radvance\Component\Config\ConfigProcessor;
 use Doctrine\Common\Inflector\Inflector;
+use Symfony\Component\Config\FileLocator;
+use Radvance\Component\Config\ConfigLoader\YamlConfigLoader;
+
 use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Radvance\Translation\RecursiveYamlFileMessageLoader;
 use InteroPhp\ModuleManager\ModuleManagerInterface;
@@ -57,6 +60,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 $this->rootPath = realpath(__DIR__.'/../../../../..');
             }
         }
+        //$this->rootPath = '../';
 
         return $this->rootPath;
     }
@@ -89,23 +93,60 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             $dotenv->load($filename);
         }
 
-        // Load application config.yml (which includes parameters.yml)
-        $loader = new ConfigLoader();
-        $path = $this->getRootPath().'/app/config';
-        if (file_exists($path.'/config.yml')) {
-            $config = $loader->load($path, 'config.yml');
-        } else {
-            // Legacy config mode
-            $config = array();
-            $config['parameters'] = $loader->load($path, 'parameters.yml');
-            $config['app']['name'] = $config['parameters']['name'];
-            $config['security'] = $config['parameters']['security'];
+        $locator = new FileLocator(
+            [
+                $this->getRootPath().'/app/config',
+                $this->getRootPath().'/config'
+            ]
+        );
+
+        $config = [
+            'parameters' => []
+        ];
+
+        foreach ($_ENV as $key=>$value) {
+            $config['parameters']['env(' . $key . ')'] = $value;
         }
+
+        // Load config.yml (which includes parameters.yml)
+        $loader = new YamlConfigLoader($locator);
+        try {
+            $data = $loader->load('config.yml');
+            $config = array_replace_recursive($data, $config);
+        } catch (FileLocatorFileNotFoundException $e) {
+            // ok, ignore
+        }
+
+        // Load services.yaml
+        $loader = new YamlConfigLoader($locator);
+        try {
+            $data = $loader->load('services.yaml');
+            $config = array_replace_recursive($data, $config);
+        } catch (FileLocatorFileNotFoundException $e) {
+            // ok, ignore
+        }
+
+        $configProcessor = new ConfigProcessor();
+
+        // Process twice, to support configs pointing to parameters with parameters
+        $config = $configProcessor->postProcessConfig($config, $config['parameters']);
+        $config = $configProcessor->postProcessConfig($config, $config['parameters']);
+
+        // Bind
+        if (isset($config['services']['_defaults']['bind'])) {
+            foreach ($config['services']['_defaults']['bind'] as $key=>$value) {
+                $config[$key] = $value;
+            }
+        }
+        //print_r($config); exit();
 
         // Add the config data to the DI container
         foreach ($config as $key => $value) {
             $this[$key] = $value;
         }
+
+
+
     }
 
     /**
@@ -149,6 +190,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this['pdo'] = $this->pdo;
+        if (!$this->pdo) {
+        }
     }
 
     /**

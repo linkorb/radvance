@@ -67,6 +67,12 @@ class ControllerResolver extends BaseControllerResolver
         $args = [];
         $repositoryManager = $this->app['repository-manager'];
         foreach ($parameters as $parameter) {
+
+            // Resolve by variable name
+            if (isset($this->app['$' . $parameter->getName()])) {
+                $args[$parameter->getName()] = $this->app['$' . $parameter->getName()];
+            }
+
             $class = $parameter->getClass();
             if ($class) {
                 $className = (string)$class->getName();
@@ -92,9 +98,11 @@ class ControllerResolver extends BaseControllerResolver
                 if ($className == \Radvance\Model\SpaceInterface::class) {
                     $args[$parameter->getName()] = $this->app['space'];
                 }
+                // Resolve by type
                 if (isset($this->app[$className])) {
                     $args[$parameter->getName()] = $this->app[$className];
                 }
+
                 if ($class->implementsInterface(ServerRequestInterface::class)) {
                     $psr7Factory = new DiactorosFactory();
                     $psrRequest = $psr7Factory->createRequest($request);
@@ -108,6 +116,7 @@ class ControllerResolver extends BaseControllerResolver
                     }
                 }
             }
+
         }
         return $args;
     }
