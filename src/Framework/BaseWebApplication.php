@@ -22,6 +22,7 @@ use UserBase\Client\Client as UserBaseClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Exception\FileLocatorFileNotFoundException;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
@@ -268,11 +269,6 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         return sprintf('/tmp/%s/sessions', $this['app']['name']);
     }
 
-    protected function getRoutesPath()
-    {
-        return sprintf('%s/app/config', $this->getRootPath());
-    }
-
     protected function configureService()
     {
         parent::configureService();
@@ -347,9 +343,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         // initialize meta routes before other routes
         // otherwise it's a new space or caught by apps routes
         $this->configureMetaRoutes();
-        $locator = new FileLocator(array(
-            $this->getRoutesPath(),
-        ));
+        $locator = new FileLocator(
+            [
+                sprintf('%s/app/config', $this->getRootPath()),
+                sprintf('%s/config', $this->getRootPath())
+            ]
+        );
         $loader = new YamlFileLoader($locator);
         $this['fqdn_space'] = false;
         if (isset($this['fqdn']) && isset($this['fqdn']['default']) && isset($_SERVER['HTTP_HOST'])) {
@@ -368,7 +367,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         if (!$this['fqdn_space']) {
             // regular routing
-            $newCollection = $loader->load('routes.yml');
+            try {
+                $newCollection = $loader->load('routes.yaml');
+            } catch (FileLocatorFileNotFoundException $e) {
+                $newCollection = $loader->load('routes.yml');
+            }
         }
 
         $orgCollection = $this['routes'];
@@ -404,18 +407,18 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
     {
         if (isset($this['spaceRepository'])) {
             $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
-            $this['routes']->addCollection($loader->load('space-routes.yml'));
+            $this['routes']->addCollection($loader->load('space-routes.yaml'));
         }
         if (isset($this['permissionRepository'])) {
             $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
-            $this['routes']->addCollection($loader->load('permission-routes.yml'));
+            $this['routes']->addCollection($loader->load('permission-routes.yaml'));
         }
     }
 
     protected function configureMetaRoutes()
     {
         $loader = new YamlFileLoader(new FileLocator([__DIR__.'/..']));
-        $this['routes']->addCollection($loader->load('meta-routes.yml'));
+        $this['routes']->addCollection($loader->load('meta-routes.yaml'));
     }
 
     protected function configureTemplateEngine()
