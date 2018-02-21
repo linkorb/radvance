@@ -7,6 +7,12 @@ use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\MonologServiceProvider;
 use Symfony\Component\Dotenv\Dotenv;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+
+
+
 use Radvance\Repository\RepositoryInterface;
 use Radvance\Exception\BadMethodCallException;
 use Radvance\Component\Config\ConfigProcessor;
@@ -24,6 +30,7 @@ use Exception;
 use RuntimeException;
 use PDO;
 use Connector\Connector;
+use Twig_Environment;
 
 abstract class BaseConsoleApplication extends SilexApplication implements FrameworkApplicationInterface
 {
@@ -48,6 +55,28 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureModules();
         $this->configureDispatcher();
         $this->initModules();
+
+        $this[Twig_Environment::class] = function ($container) {
+            return $container['twig'];
+        };
+        $this[EventDispatcherInterface::class] = function ($container) {
+            $container['dispatcher'];
+        };
+        $this[UrlGenerator::class] = function ($container) {
+            $container['url_generator'];
+        };
+        $this[AuthorizationChecker::class] = function ($container) {
+            $container['security.authorization_checker'];
+        };
+        $this[\Symfony\Component\Form\FormFactory::class] = function ($container) {
+            $container['form.factory'];
+        };
+        $this[\Symfony\Component\Form\FormFactory::class] = function ($container) {
+            $container['form.factory'];
+        };
+        $this[\Radvance\Model\SpaceInterface::class] = function ($container) {
+            $container['space'];
+        };
     }
 
     // abstract public function getRootPath();
@@ -190,8 +219,6 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
 
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this['pdo'] = $this->pdo;
-        if (!$this->pdo) {
-        }
     }
 
     /**
@@ -293,7 +320,9 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             if (is_a($repository, 'Radvance\\Repository\\SpaceRepositoryInterface')) {
                 $this->configureSpaceRepository($repository);
             }
-            // TODO: support other types of repositories
+
+            // Register the class for autowiring
+            $this[get_class($repository)] = $repository;
         }
     }
 

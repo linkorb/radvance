@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 
-class RadvanceArgumentValueResolver implements ArgumentValueResolverInterface
+class ParameterArgumentValueResolver implements ArgumentValueResolverInterface
 {
     private $app;
 

@@ -726,7 +726,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 return;
             }
             $app['current_user'] = $app['user'];
-            $request->attributes->set('current_user', $app['user']);
+            $request->attributes->set('current_user', $app['user']) ;
             $app['twig']->addGlobal('current_user', $app['user']);
             $request->attributes->set('current_username', $app['user']->getUsername());
         });
@@ -844,14 +844,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             return new ControllerResolver($app);
         });
 
-        // $this->extend('argument_resolver', function ($app) {
-        //     return new ArgumentResolver($app);
-        // });
         $app['argument_value_resolvers'] = function ($app) {
             return array_merge(
                 array(
                     new \Silex\AppArgumentValueResolver($app),
-                    new RadvanceArgumentValueResolver($app)
+                    new ParameterArgumentValueResolver($app),
+                    new TypeArgumentValueResolver($app),
                 ),
                 \Symfony\Component\HttpKernel\Controller\ArgumentResolver::getDefaultArgumentValueResolvers()
             );
