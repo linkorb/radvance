@@ -60,22 +60,19 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             return $container['twig'];
         };
         $this[EventDispatcherInterface::class] = function ($container) {
-            $container['dispatcher'];
+            return $container['dispatcher'];
         };
         $this[UrlGenerator::class] = function ($container) {
-            $container['url_generator'];
+            return $container['url_generator'];
         };
         $this[AuthorizationChecker::class] = function ($container) {
-            $container['security.authorization_checker'];
+            return $container['security.authorization_checker'];
         };
         $this[\Symfony\Component\Form\FormFactory::class] = function ($container) {
-            $container['form.factory'];
-        };
-        $this[\Symfony\Component\Form\FormFactory::class] = function ($container) {
-            $container['form.factory'];
+            return $container['form.factory'];
         };
         $this[\Radvance\Model\SpaceInterface::class] = function ($container) {
-            $container['space'];
+            return $container['space'];
         };
     }
 
