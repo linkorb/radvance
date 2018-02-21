@@ -56,6 +56,10 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->configureDispatcher();
         $this->initModules();
 
+        $this[\Silex\Application::class] = function ($container) {
+            return $container;
+        };
+
         $this[Twig_Environment::class] = function ($container) {
             return $container['twig'];
         };
