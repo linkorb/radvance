@@ -843,6 +843,19 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $this->extend('resolver', function ($resolver, $app) {
             return new ControllerResolver($app);
         });
+
+        // $this->extend('argument_resolver', function ($app) {
+        //     return new ArgumentResolver($app);
+        // });
+        $app['argument_value_resolvers'] = function ($app) {
+            return array_merge(
+                array(
+                    new \Silex\AppArgumentValueResolver($app),
+                    new RadvanceArgumentValueResolver($app)
+                ),
+                \Symfony\Component\HttpKernel\Controller\ArgumentResolver::getDefaultArgumentValueResolvers()
+            );
+        };
     }
 
     protected function configureRoleProvider()
