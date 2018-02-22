@@ -151,9 +151,7 @@ class BaseForm
                 $type = \Symfony\Component\Form\Extension\Core\Type\MoneyType::class;
                 break;
             default:
-                throw new RuntimeException("Unsupported field type: " . $value[0] . ', type `' . $value[1] . '`');
-                $type = null;
-
+                $type = $value[1];
             }
             $this->builder->add($value[0], $type, $options);
         }
