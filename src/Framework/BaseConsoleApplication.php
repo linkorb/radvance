@@ -59,7 +59,9 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this[\Silex\Application::class] = function ($container) {
             return $container;
         };
-
+        $this[get_called_class()] = function ($container) {
+            return $container;
+        };
         $this[Twig_Environment::class] = function ($container) {
             return $container['twig'];
         };
@@ -78,6 +80,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this[\Radvance\Model\SpaceInterface::class] = function ($container) {
             return $container['space'];
         };
+
     }
 
     // abstract public function getRootPath();
