@@ -509,6 +509,21 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this['twig']->addFunction(new \Twig_SimpleFunction('is_granted', function ($role, $obj = null) use ($app, $request) {
                 return $app['security.authorization_checker']->isGranted($role, $obj);
             }));
+            $this['twig']->addFunction(new \Twig_SimpleFunction('encore', function ($key) use ($request) {
+                $filename = 'build/manifest.json';
+                if (!file_exists($filename)) {
+                    throw new RuntimeException("encore manifest.json not found");
+                }
+                $manifest = json_decode(file_get_contents($filename), true);
+                foreach ($manifest as $name => $uri) {
+                    if ($name == $key) {
+                        return $uri;
+                    }
+                }
+                throw new RuntimeException("manifest.json does not contain " . $key);
+                //return $request->getBaseUrl().'/'.ltrim($asset, '/');
+            }));
+
         });
     }
 
