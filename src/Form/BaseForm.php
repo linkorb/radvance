@@ -147,6 +147,9 @@ class BaseForm
             case 'url':
                 $type = \Symfony\Component\Form\Extension\Core\Type\UrlType::class;
                 break;
+            case 'money':
+                $type = \Symfony\Component\Form\Extension\Core\Type\MoneyType::class;
+                break;
             default:
                 throw new RuntimeException("Unsupported field type: " . $value[0] . ', type `' . $value[1] . '`');
                 $type = null;
