@@ -2,7 +2,7 @@
 
 namespace Radvance\Controller;
 
-use Radvance\Framework\BaseWebApplication as Application;
+use Silex\Application;
 use Radvance\Model\Permission;
 use Radvance\Domain\Permission as PermissionDomain;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
