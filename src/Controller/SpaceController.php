@@ -2,7 +2,7 @@
 
 namespace Radvance\Controller;
 
-use Radvance\Framework\BaseWebApplication as Application;
+use Silex\Application;
 
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
