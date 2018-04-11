@@ -2,6 +2,7 @@
 <?php
 
 use Symfony\Component\Console\Application;
+use Symfony\Component\Dotenv\Dotenv;
 
 function includeIfExists($file)
 {
@@ -29,6 +30,12 @@ if (class_exists('AutoTune\Tuner')) {
     \AutoTune\Tuner::init($autoLoader);
 }
 
+$envFilename = '.env';
+if (file_exists($envFilename)) {
+    $dotenv = new Dotenv();
+    $dotenv->load($envFilename);
+}
+
 $application = new Application('Radvance', '0.0.1');
 $application->setCatchExceptions(true);
 $application->add(new \Radvance\Command\GenerateProjectCommand());
@@ -46,3 +53,4 @@ $application->add(new \Radvance\Command\SnapshotCreateCommand());
 $application->add(new \Radvance\Command\SnapshotListCommand());
 $application->add(new \Radvance\Command\SnapshotLoadCommand());
 $application->run();
+?>
