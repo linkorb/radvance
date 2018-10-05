@@ -42,7 +42,6 @@ class PermissionController
         $expiredate = trim($request->request->get('P_expiredate'));
 
         $error = null;
-
         //validate username //
         if (!preg_match('/^[a-z0-9\-]+$/', $username, $matches)) {
             $error = 'Username can only contain small letters, numbers or - sign.';
@@ -54,7 +53,6 @@ class PermissionController
                 )
             );
         }
-
         $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         try {
