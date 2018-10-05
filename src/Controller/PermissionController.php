@@ -3,7 +3,6 @@
 namespace Radvance\Controller;
 
 use Silex\Application;
-use Radvance\Model\Permission;
 use Radvance\Domain\Permission as PermissionDomain;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,16 +41,28 @@ class PermissionController
         $roles = trim($request->request->get('P_roles'));
         $expiredate = trim($request->request->get('P_expiredate'));
 
-        $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
-
         $error = null;
+
+        //validate username //
+        if (!preg_match('/^[a-z0-9\-]+$/', $username, $matches)) {
+            $error = 'Username can only contain small letters, numbers or - sign.';
+
+            return $app->redirect(
+                $app['url_generator']->generate(
+                    'permission_index',
+                    array('accountName' => $accountName, 'spaceName' => $spaceName, 'error' => $error)
+                )
+            );
+        }
+
+        $space = $app->getSpaceRepository()->findByNameAndAccountName($spaceName, $accountName);
 
         try {
             $user = $app['security.provider']->loadUserByUsername($username);
             $account = $user->getUserAccount();
             $displayName = $user->getDisplayName();
 
-            if ($account->getStatus() != 'ACTIVE') {
+            if ('ACTIVE' != $account->getStatus()) {
                 $error = 'Invalid User';
             }
         } catch (\Exception $e) {
