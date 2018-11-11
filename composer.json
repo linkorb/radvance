@@ -42,7 +42,6 @@
         "maximebf/debugbar": "~1.0",
         "doctrine/inflector": "~1.0",
         "linkorb/xuid": "~1.0",
-        "materia/materia": "~1.0",
         "knplabs/knp-menu": "~2.0",
         "graylog2/gelf-php": "~1.0",
         "qandidate/stack-request-id": "~0.4",
