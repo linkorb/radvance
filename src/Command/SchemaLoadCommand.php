@@ -2,14 +2,12 @@
 
 namespace Radvance\Command;
 
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessBuilder;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use RuntimeException;
 
@@ -38,26 +36,36 @@ class SchemaLoadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $apply = $input->getOption('apply');
-        $filename = 'app/config/parameters.yml';
-        if (!file_exists($filename)) {
-            throw new RuntimeException("No such file: " . $filename);
-        }
-        $data = file_get_contents($filename);
-        $config = Yaml::parse($data);
 
-        if (isset($config['pdo'])) {
-            $pdo = $config['pdo'];
+        /*
+         *  First Priority .env variable.
+         *  If not found load find and load paramters.yml.
+         */
+
+        if (getenv('PDO')) {
+            $pdo = getenv('PDO');
         } else {
-            if (!isset($config['parameters']['pdo'])) {
-                throw new RuntimeException("Can't find pdo configuration");
+            $filename = 'app/config/parameters.yml';
+            if (!file_exists($filename)) {
+                throw new RuntimeException('No such file: '.$filename);
             }
-            $pdo = $config['parameters']['pdo'];
+            $data = file_get_contents($filename);
+            $config = Yaml::parse($data);
+
+            if (isset($config['pdo'])) {
+                $pdo = $config['pdo'];
+            } else {
+                if (!isset($config['parameters']['pdo'])) {
+                    throw new RuntimeException("Can't find pdo configuration");
+                }
+                $pdo = $config['parameters']['pdo'];
+            }
         }
 
         $cmdPrefix = 'vendor/bin/dbtk-schema-loader schema:load ';
 
         // module schema
-        $application = require('app/bootstrap.php'); // bit tricky way to get the app
+        $application = require 'app/bootstrap.php'; // bit tricky way to get the app
         $modules = $application['module-manager']->getModules();
         foreach ($modules as $module) {
             $schemaPath = $module->getPath().'/../res/schema.xml';
