@@ -12,7 +12,7 @@
             <form action="{{ path('permission_add', {'accountName': accountName, 'spaceName': spaceName}) }}" method="post">
                 <div class="form-group">
                     <label>Username</label>
-                    <input type="text" class="form-control" name="P_username" required="required" />
+                    <input type="text" class="form-control" name="P_username" required="required" pattern="[a-z0-9-]+" title="Please enter small letters, numbers or - sign only." placeholder="username" />
 
                     {% if app['space_roles'] is defined %}
                         <label>Roles</label>
