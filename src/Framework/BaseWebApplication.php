@@ -765,62 +765,31 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 //     $dbmanager->getPdo($providerConfig['database'])
                 // );
                 case 'UserBase':
-                    // Sanity checks
-                    if (!$providerConfig['url']) {
-                        throw new RuntimeException('Userbase URL not configured');
-                    }
-                    if (!$providerConfig['username']) {
-                        throw new RuntimeException('Userbase username not configured');
-                    }
-                    if (!$providerConfig['password']) {
-                        throw new RuntimeException('Userbase password not configured');
-                    }
+                    if (!empty($providerConfig['dsn'])) {
+                        $client = new UserBaseClient($providerConfig['dsn'], null, null);
+                    } else {
+                        // Sanity checks
+                        if (!$providerConfig['url']) {
+                            throw new RuntimeException('Userbase URL not configured');
+                        }
+                        if (!$providerConfig['username']) {
+                            throw new RuntimeException('Userbase username not configured');
+                        }
+                        if (!$providerConfig['password']) {
+                            throw new RuntimeException('Userbase password not configured');
+                        }
 
-                    $client = new UserBaseClient(
-                        $providerConfig['url'],
-                        $providerConfig['username'],
-                        $providerConfig['password']
-                    );
+                        $client = new UserBaseClient(
+                            $providerConfig['url'],
+                            $providerConfig['username'],
+                            $providerConfig['password']
+                        );
+                    }
                     $client->setTimeDataCollector($this->debugBar['time']);
                     $client->setCache($this['cache']);
                     $this['userbase.client'] = $client;
 
                     $userProvider = new UserBaseUserProvider($client);
-                    break 2;
-
-                case 'UserBaseDsn':
-                    if (!$providerConfig['dsn']) {
-                        throw new RuntimeException('Userbase dsn not configured');
-                    }
-                    $dsn = $providerConfig['dsn'];
-                    if (!filter_var($dsn, FILTER_VALIDATE_URL)) {
-                        throw new RuntimeException('DSN is an invalid URL: '.$dsn);
-                    }
-                    $part = parse_url($dsn);
-                    $port = (!empty($part['port'])) ? ':'.$part['port'] : '';
-                    $url = $part['scheme'].'://'.$part['host'].$port;
-
-                    if (isset($part['path'])) {
-                        $url .= '/'.$part['path'];
-                    }
-                    if (isset($part['query'])) {
-                        $url .= '?'.$part['path'];
-                    }
-
-                    $username = $part['user'];
-                    $password = $part['pass'];
-
-                    $client = new UserBaseClient(
-                        $url,
-                        $username,
-                        $password
-                    );
-                    $client->setTimeDataCollector($this->debugBar['time']);
-                    $client->setCache($this['cache']);
-                    $this['userbase.client'] = $client;
-
-                    $userProvider = new UserBaseUserProvider($client);
-
                     break 2;
                 default:
             }
