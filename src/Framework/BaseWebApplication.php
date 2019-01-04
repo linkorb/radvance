@@ -89,13 +89,13 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $token = $app['security.token_storage']->getToken();
                 if ($token) {
                     $user = $token->getUser();
-                    if ($user=='anon.') {
+                    if ('anon.' == $user) {
                         // anonymous user
                     } else {
                         $app['sentry']->user_context(
                             [
                                 'id' => $user->getUsername(),
-                                'email' => $user->getEmail()
+                                'email' => $user->getEmail(),
                             ]
                         );
                     }
@@ -321,7 +321,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'auth' => [
                     $this['parameters']['exception_registry']['username'],
                     $this['parameters']['exception_registry']['password'],
-                ]
+                ],
             ];
             if (isset($this['parameters']['exception_registry']['secure'])) {
                 $config['secure'] = $this['parameters']['exception_registry']['secure'];
@@ -333,7 +333,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 $this['parameters']['exception_registry']['account'],
                 $this['parameters']['exception_registry']['store']
             );
-            $handler = new RegistryHandler(new RequestExceptionFormatter, $store);
+            $handler = new RegistryHandler(new RequestExceptionFormatter(), $store);
             $whoops->pushHandler($handler);
         }
     }
@@ -346,7 +346,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         $locator = new FileLocator(
             [
                 sprintf('%s/app/config', $this->getRootPath()),
-                sprintf('%s/config', $this->getRootPath())
+                sprintf('%s/config', $this->getRootPath()),
             ]
         );
         $loader = new YamlFileLoader($locator);
@@ -512,7 +512,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $this['twig']->addFunction(new \Twig_SimpleFunction('encore', function ($key) use ($request) {
                 $filename = 'build/manifest.json';
                 if (!file_exists($filename)) {
-                    throw new RuntimeException("encore manifest.json not found");
+                    throw new RuntimeException('encore manifest.json not found');
                 }
                 $manifest = json_decode(file_get_contents($filename), true);
                 foreach ($manifest as $name => $uri) {
@@ -520,10 +520,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                         return $uri;
                     }
                 }
-                throw new RuntimeException("manifest.json does not contain " . $key);
+                throw new RuntimeException('manifest.json does not contain '.$key);
                 //return $request->getBaseUrl().'/'.ltrim($asset, '/');
             }));
-
         });
     }
 
@@ -543,7 +542,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $date = $dt;
         }
 
-        if (gettype($date) == 'string') {
+        if ('string' == gettype($date)) {
             $date = DateTime::createFromFormat((strpos($date, ' ') ? 'Y-m-d H:i:s' : 'Y-m-d'), $date);
         }
         if ($date instanceof DateTime) {
@@ -667,6 +666,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (!isset($security['paths']['login'])) {
             return self::FW_PATH_LOGIN;
         }
+
         return $security['paths']['login'];
     }
 
@@ -675,6 +675,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (!isset($security['paths']['check'])) {
             return self::FW_PATH_LOGINCHECK;
         }
+
         return $security['paths']['check'];
     }
 
@@ -683,6 +684,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
         if (!isset($security['paths']['logout'])) {
             return self::FW_PATH_LOGOUT;
         }
+
         return $security['paths']['logout'];
     }
 
@@ -725,7 +727,6 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
         $this['routes']->addCollection($collection);
 
-
         $this['security.default_encoder'] = $this['security.encoder.digest'];
         $this['security.provider'] = $this->getUserProvider();
         $this['security.firewalls'] = $this->getFirewalls();
@@ -741,7 +742,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 return;
             }
             $app['current_user'] = $app['user'];
-            $request->attributes->set('current_user', $app['user']) ;
+            $request->attributes->set('current_user', $app['user']);
             $app['twig']->addGlobal('current_user', $app['user']);
             $request->attributes->set('current_username', $app['user']->getUsername());
         });
@@ -764,22 +765,26 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 //     $dbmanager->getPdo($providerConfig['database'])
                 // );
                 case 'UserBase':
-                    // Sanity checks
-                    if (!$providerConfig['url']) {
-                        throw new RuntimeException('Userbase URL not configured');
-                    }
-                    if (!$providerConfig['username']) {
-                        throw new RuntimeException('Userbase username not configured');
-                    }
-                    if (!$providerConfig['password']) {
-                        throw new RuntimeException('Userbase password not configured');
-                    }
+                    if (!empty($providerConfig['dsn'])) {
+                        $client = new UserBaseClient($providerConfig['dsn'], null, null);
+                    } else {
+                        // Sanity checks
+                        if (!$providerConfig['url']) {
+                            throw new RuntimeException('Userbase URL not configured');
+                        }
+                        if (!$providerConfig['username']) {
+                            throw new RuntimeException('Userbase username not configured');
+                        }
+                        if (!$providerConfig['password']) {
+                            throw new RuntimeException('Userbase password not configured');
+                        }
 
-                    $client = new UserBaseClient(
-                        $providerConfig['url'],
-                        $providerConfig['username'],
-                        $providerConfig['password']
-                    );
+                        $client = new UserBaseClient(
+                            $providerConfig['url'],
+                            $providerConfig['username'],
+                            $providerConfig['password']
+                        );
+                    }
                     $client->setTimeDataCollector($this->debugBar['time']);
                     $client->setCache($this['cache']);
                     $this['userbase.client'] = $client;
