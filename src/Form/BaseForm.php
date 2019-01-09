@@ -8,7 +8,6 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Doctrine\Common\Inflector\Inflector;
 use Radvance\Model\BaseModel;
 use Radvance\Exception\BadMethodCallException;
-use RuntimeException;
 
 class BaseForm
 {
@@ -55,11 +54,11 @@ class BaseForm
 
         // handle submission
         $this->form->handleRequest($this->request);
-        if ($this->form->isValid()) {
+        if ($this->form->isSubmitted() && $this->form->isValid()) {
             $data = $this->form->getData();
 
             foreach ($data as $d => $value) {
-                $method = 'set' . Inflector::camelize($d);
+                $method = 'set'.Inflector::camelize($d);
                 // if (!method_exists($this->entity, $method)) {
                 //     throw new BadMethodCallException('No matching method to handle '.$d);
                 // }
@@ -104,18 +103,17 @@ class BaseForm
     {
         $fields = $this->buildForm();
         foreach ($fields as $value) {
-
-            $options = isset($value[2])?$value[2]:[];
+            $options = isset($value[2]) ? $value[2] : [];
             foreach ($options as $k => $v) {
-                if ($k=='read_only') {
+                if ('read_only' == $k) {
                     unset($options['read_only']);
                     $options['attr']['readonly'] = true;
                 }
-                if ($k=='empty_value') {
+                if ('empty_value' == $k) {
                     $options['placeholder'] = $options['empty_value'];
                     unset($options['empty_value']);
                 }
-                if ($k=='choices') {
+                if ('choices' == $k) {
                     $options['choices'] = array_flip($options['choices']);
                 }
             }
@@ -164,7 +162,7 @@ class BaseForm
         $defaults = [];
         $fields = $this->buildForm();
         foreach ($fields as $value) {
-            $method = 'get' . Inflector::camelize($value[0]);
+            $method = 'get'.Inflector::camelize($value[0]);
             switch ($value[1]) {
                 case 'date':
                 case 'datetime':
