@@ -188,10 +188,20 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     protected function configureParameters()
     {
         $this['debug'] = false;
+
         if (isset($this['parameters']['debug'])) {
+            if (is_bool($this['parameters']['debug'])) {
+                $this['debug'] = (bool) $this['parameters']['debug'];
+            } else {
+                if ('true' === (string) strtolower($this['parameters']['debug'])) {
+                    $this['debug'] = (bool) true;
+                }
+            }
+        }
+
+        if ($this['debug']) {
             error_reporting(E_ALL);
             ini_set('display_errors', 'on');
-            $this['debug'] = (bool) $this['parameters']['debug'];
         }
 
         $this['locale'] = 'en_US';
