@@ -8,6 +8,7 @@ use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\MonologServiceProvider;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 
@@ -188,10 +189,28 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     protected function configureParameters()
     {
         $this['debug'] = false;
+
         if (isset($this['parameters']['debug'])) {
+            if (is_bool($this['parameters']['debug'])) {
+                $this['debug'] = (bool) $this['parameters']['debug'];
+            } else {
+                // check by IP //
+                $request = Request::createFromGlobals();
+                $ipArray = array_map('trim', explode(',', $this['parameters']['debug']));
+
+                if (in_array($request->getClientIp(), $ipArray)) {
+                    $this['debug'] = (bool) true;
+                }
+
+                if ('true' === (string) strtolower($this['parameters']['debug'])) {
+                    $this['debug'] = (bool) true;
+                }
+            }
+        }
+
+        if ($this['debug']) {
             error_reporting(E_ALL);
             ini_set('display_errors', 'on');
-            $this['debug'] = (bool) $this['parameters']['debug'];
         }
 
         $this['locale'] = 'en_US';
