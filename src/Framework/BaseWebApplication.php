@@ -106,9 +106,18 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function configureDebug()
     {
-        if (isset($this['parameters']['debug']) && is_array($this['parameters']['debug'])) {
+        if (isset($this['parameters']['debug'])) {
             $request = Request::createFromGlobals();
-            $this['debug'] = in_array($request->getClientIp(), $this['parameters']['debug']);
+
+            if (is_array($this['parameters']['debug'])) {
+                $this['debug'] = in_array($request->getClientIp(), $this['parameters']['debug']);
+            } else {
+                if (!in_array(strtolower($this['parameters']['debug']), ['true', 'false'])) {
+                    $ipArray = array_map('trim', explode(',', $this['parameters']['debug']));
+                    $this['debug'] = in_array($request->getClientIp(), $ipArray);
+                }
+            }
+
             if ($this['debug']) {
                 error_reporting(E_ALL);
                 ini_set('display_errors', 'on');
