@@ -509,6 +509,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             })
         );
 
+        $request = Request::createFromGlobals();
+        $this['twig']->addFunction(new \Twig_SimpleFunction('asset', function ($asset) use ($request) {
+            return $request->getBaseUrl().'/'.ltrim($asset, '/');
+        }));
+
         $app = $this;
         $app->before(function (Request $request, SilexApplication $app) {
             $this['twig']->addExtension(new \Radvance\Twig\TranslateExtension($request, $app));
