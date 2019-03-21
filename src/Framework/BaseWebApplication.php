@@ -2,6 +2,7 @@
 
 namespace Radvance\Framework;
 
+use FlexAuthProvider\FlexAuthProvider;
 use Silex\Provider\SecurityServiceProvider as SilexSecurityServiceProvider;
 use Silex\Provider\RoutingServiceProvider;
 use Silex\Provider\FormServiceProvider;
@@ -778,6 +779,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 // return new \Radvance\Security\PdoUserProvider(
                 //     $dbmanager->getPdo($providerConfig['database'])
                 // );
+                // deprecated: use flex-auth with userbase auth type
                 case 'UserBase':
                     if (!empty($providerConfig['dsn'])) {
                         $client = new UserBaseClient($providerConfig['dsn'], null, null);
@@ -804,6 +806,12 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     $this['userbase.client'] = $client;
 
                     $userProvider = new UserBaseUserProvider($client);
+                    break 2;
+                case 'FlexAuth':
+                    $this->register(new FlexAuthProvider);
+                    $userProvider = function () {
+                        return $this['flex_auth.security.user_provider'];
+                    };
                     break 2;
                 default:
             }
