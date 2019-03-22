@@ -809,9 +809,7 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     break 2;
                 case 'FlexAuth':
                     $this->register(new FlexAuthProvider);
-                    $userProvider = function () {
-                        return $this['flex_auth.security.user_provider'];
-                    };
+                    $userProvider = $this['flex_auth.security.user_provider'];
                     break 2;
                 default:
             }
