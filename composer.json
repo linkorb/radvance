@@ -50,7 +50,8 @@
         "linkorb/boost": "~1.0",
         "dbtk/schema-loader": "~2.1",
         "sinergi/browser-detector": "~6.0",
-        "sentry/sentry": "~1.0"
+        "sentry/sentry": "~1.0",
+        "linkorb/flex-auth-provider": "^1.0"
     },
     "require-dev": {
         "behat/behat": "^3.0",

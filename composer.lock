@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "71266e181bdf9a090dce62593d703abd",
+    "content-hash": "6b40f61c510364e64a313338271c39b3",
     "packages": [
         {
             "name": "dbtk/schema-loader",
@@ -1040,6 +1040,82 @@
                 "php"
             ],
             "time": "2019-01-08T18:46:45+00:00"
+        },
+        {
+            "name": "linkorb/flex-auth",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/linkorb/flex-auth.git",
+                "reference": "f30688dadae241163ac7a22fa6f75e5c79f31646"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/linkorb/flex-auth/zipball/f30688dadae241163ac7a22fa6f75e5c79f31646",
+                "reference": "f30688dadae241163ac7a22fa6f75e5c79f31646",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0",
+                "symfony/security": "^4.0"
+            },
+            "suggest": {
+                "firebase/php-jwt": "Required for support flex-auth jwt type format. Prefer ^5.0",
+                "symfony/doctrine-bridge": "Required for support flex-auth entity type format. Prefer ^4.0",
+                "symfony/http-foundation": "Required for support flex-auth jwt type format. Prefer ^4.0",
+                "userbase/client": "Required for support userbase type format"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "FlexAuth\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "This libraries provides flex auth for symfony security in runtime",
+            "keywords": [
+                "auth"
+            ],
+            "time": "2019-03-13T08:12:20+00:00"
+        },
+        {
+            "name": "linkorb/flex-auth-provider",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/linkorb/flex-auth-provider.git",
+                "reference": "6c65acbff1eebe602f9dd686cb000898e7b6aa96"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/linkorb/flex-auth-provider/zipball/6c65acbff1eebe602f9dd686cb000898e7b6aa96",
+                "reference": "6c65acbff1eebe602f9dd686cb000898e7b6aa96",
+                "shasum": ""
+            },
+            "require": {
+                "linkorb/flex-auth": "^1.0.1",
+                "php": "^7.0",
+                "silex/silex": "~2.0"
+            },
+            "type": "project",
+            "autoload": {
+                "psr-4": {
+                    "FlexAuthProvider\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Silex service provider for including AuthFlex library.",
+            "keywords": [
+                "auth",
+                "silex"
+            ],
+            "time": "2019-03-11T15:47:41+00:00"
         },
         {
             "name": "linkorb/objectstorage",
@@ -6584,6 +6660,7 @@
                 "mock",
                 "xunit"
             ],
+            "abandoned": true,
             "time": "2015-10-02T06:51:40+00:00"
         },
         {
