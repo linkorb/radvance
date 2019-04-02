@@ -660,6 +660,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                 'pattern' => '^/api',
                 'http' => true,
                 'users' => $this['security.provider'],
+                'guard' => [
+                    'authenticators' => [
+                        'flex_auth.type.jwt.security.authenticator'
+                    ]
+                ],
             ],
             'default' => [
                 'anonymous' => true,
@@ -672,6 +677,11 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     'logout_path' => $this->getFirewallsLogoutPath(),
                 ],
                 'users' => $this['security.provider'],
+                'guard' => [
+                    'authenticators' => [
+                        'flex_auth.type.jwt.security.authenticator'
+                    ]
+                ],
             ],
         ];
     }
