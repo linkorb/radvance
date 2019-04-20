@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6b40f61c510364e64a313338271c39b3",
+    "content-hash": "48b1588aaac6122e14a0f1852c2f713a",
     "packages": [
         {
             "name": "dbtk/schema-loader",
@@ -1043,21 +1043,24 @@
         },
         {
             "name": "linkorb/flex-auth",
-            "version": "v1.1.0",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/linkorb/flex-auth.git",
-                "reference": "f30688dadae241163ac7a22fa6f75e5c79f31646"
+                "reference": "cf96b5f7ca4e5c0d6c2f8961baa4cb85f7b61d77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/linkorb/flex-auth/zipball/f30688dadae241163ac7a22fa6f75e5c79f31646",
-                "reference": "f30688dadae241163ac7a22fa6f75e5c79f31646",
+                "url": "https://api.github.com/repos/linkorb/flex-auth/zipball/cf96b5f7ca4e5c0d6c2f8961baa4cb85f7b61d77",
+                "reference": "cf96b5f7ca4e5c0d6c2f8961baa4cb85f7b61d77",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.0",
                 "symfony/security": "^4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8"
             },
             "suggest": {
                 "firebase/php-jwt": "Required for support flex-auth jwt type format. Prefer ^5.0",
@@ -1079,7 +1082,7 @@
             "keywords": [
                 "auth"
             ],
-            "time": "2019-03-13T08:12:20+00:00"
+            "time": "2019-04-18T08:54:21+00:00"
         },
         {
             "name": "linkorb/flex-auth-provider",
