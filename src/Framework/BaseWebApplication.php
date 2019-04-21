@@ -2,6 +2,7 @@
 
 namespace Radvance\Framework;
 
+use FlexAuth\Type\JWT\UserbaseJWTUserFactory;
 use FlexAuthProvider\FlexAuthProvider;
 use Silex\Provider\SecurityServiceProvider as SilexSecurityServiceProvider;
 use Silex\Provider\RoutingServiceProvider;
@@ -771,6 +772,10 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
             $app['twig']->addGlobal('current_user', $app['user']);
             $request->attributes->set('current_username', $app['user']->getUsername());
         });
+
+        $this['flex_auth.type.jwt.user_factory'] = function () {
+            return new UserbaseJWTUserFactory();
+        };
     }
 
     protected function getUserProvider()
