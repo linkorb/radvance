@@ -823,8 +823,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
                     $userProvider = new UserBaseUserProvider($client);
                     break 2;
                 case 'FlexAuth':
-                    $this->register(new FlexAuthProvider);
+                    $this->register(new FlexAuthProvider());
                     $userProvider = $this['flex_auth.security.user_provider'];
+                    $this['flex_auth.jwt.redirect_login_page'] = "/login";
                     break 2;
                 default:
             }
