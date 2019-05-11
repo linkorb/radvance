@@ -26,6 +26,7 @@ use InteroPhp\ModuleManager\ModuleManagerInterface;
 use InteroPhp\ModuleManager\ModuleManager;
 use Minerva\Orm\RepositoryManager;
 use Aws\S3\S3Client;
+use FlexLog\FlexLog;
 use Exception;
 use RuntimeException;
 use PDO;
@@ -44,12 +45,12 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         $this->loadConfig();
         $this->configureParameters();
         // $this->configureSpaces();
+        $this->configureLogging();
         $this->configurePdo();
         $this->configureCache();
         $this->configureService();
         $this->configureTemplateService();
         $this->configureRepositories();
-        $this->configureLogging();
         $this->configureObjectStorage();
         $this->configureModuleManager();
         $this->configureModules();
@@ -310,6 +311,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 'monolog.logfile' => $this->getLogsPath(),
             ));
         }
+        FlexLog::initFromEnv($this->getRootPath());
+        FlexLog::ensureLoggers(['app', 'request', 'db']);
     }
 
 /**
