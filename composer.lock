@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3f617dd44d4bbbfeee409a88dd144eab",
+    "content-hash": "3fff9cf7c865d30f596de279905b9c47",
     "packages": [
         {
             "name": "dbtk/schema-loader",
@@ -4027,16 +4027,16 @@
         },
         {
             "name": "symfony/serializer",
-            "version": "v4.2.7",
+            "version": "v4.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/serializer.git",
-                "reference": "602bded27aee8c2b0844f6b772947d44f61747a0"
+                "reference": "543bf3d7d4be76e878dc78c82328e978d57dd44d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/serializer/zipball/602bded27aee8c2b0844f6b772947d44f61747a0",
-                "reference": "602bded27aee8c2b0844f6b772947d44f61747a0",
+                "url": "https://api.github.com/repos/symfony/serializer/zipball/543bf3d7d4be76e878dc78c82328e978d57dd44d",
+                "reference": "543bf3d7d4be76e878dc78c82328e978d57dd44d",
                 "shasum": ""
             },
             "require": {
@@ -4059,7 +4059,7 @@
                 "symfony/dependency-injection": "~3.4|~4.0",
                 "symfony/http-foundation": "~3.4|~4.0",
                 "symfony/property-access": "~3.4|~4.0",
-                "symfony/property-info": "~3.4|~4.0",
+                "symfony/property-info": "^3.4.13|~4.0",
                 "symfony/validator": "~3.4|~4.0",
                 "symfony/yaml": "~3.4|~4.0"
             },
@@ -4103,7 +4103,7 @@
             ],
             "description": "Symfony Serializer Component",
             "homepage": "https://symfony.com",
-            "time": "2019-04-11T11:27:41+00:00"
+            "time": "2019-04-28T07:09:27+00:00"
         },
         {
             "name": "symfony/translation",
@@ -4627,12 +4627,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "5d37a3260a8bd873b09cfc8355ae953557466d6e"
+                "reference": "2e1e9528ce6274c1232ee26d0b96dd0e801a0f7f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/5d37a3260a8bd873b09cfc8355ae953557466d6e",
-                "reference": "5d37a3260a8bd873b09cfc8355ae953557466d6e",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/2e1e9528ce6274c1232ee26d0b96dd0e801a0f7f",
+                "reference": "2e1e9528ce6274c1232ee26d0b96dd0e801a0f7f",
                 "shasum": ""
             },
             "require": {
@@ -4685,7 +4685,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2019-05-03T15:08:09+00:00"
+            "time": "2019-05-10T06:46:52+00:00"
         },
         {
             "name": "userbase/client",
@@ -6860,6 +6860,7 @@
                 "mock",
                 "xunit"
             ],
+            "abandoned": true,
             "time": "2015-10-02T06:51:40+00:00"
         },
         {
