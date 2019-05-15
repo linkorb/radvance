@@ -20,17 +20,34 @@ class UserWhoopsHandler extends Handler
     public function handle()
     {
         $app = $this->application;
-        $data = array();
-        
+        $exception = $this->getException();
+     
         $filename = 'exception.html.twig';
         if (!$app['twig.loader']->exists($filename)) {
             $filename = '@BaseTemplates/app/exception.html.twig';
         }
+        $code = 500;
+        $message = 'Internal server error';
+
+        if (is_a($exception, \Radvance\Exception\ExpiredException::class)) {
+            $code = 419;
+            $message = 'Expired';
+        } 
+
+        $data = [
+            'code' => $code,
+            'message' => $message,
+        ];
+
+
         $html = $app['twig']->render(
             $filename,
             $data
         );
-        http_response_code(500);
+
+        // echo get_class($exception);exit();
+
+        http_response_code($code);
         echo $html;
 
         return Handler::QUIT;
