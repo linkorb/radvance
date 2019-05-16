@@ -4627,12 +4627,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "2e1e9528ce6274c1232ee26d0b96dd0e801a0f7f"
+                "reference": "0747f226f7651e07778c54df7230ea0fddca4b0b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/2e1e9528ce6274c1232ee26d0b96dd0e801a0f7f",
-                "reference": "2e1e9528ce6274c1232ee26d0b96dd0e801a0f7f",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/0747f226f7651e07778c54df7230ea0fddca4b0b",
+                "reference": "0747f226f7651e07778c54df7230ea0fddca4b0b",
                 "shasum": ""
             },
             "require": {
@@ -4685,7 +4685,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2019-05-10T06:46:52+00:00"
+            "time": "2019-05-16T09:37:12+00:00"
         },
         {
             "name": "userbase/client",
