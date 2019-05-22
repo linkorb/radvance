@@ -1,7 +1,7 @@
 {
     "name": "radvance/radvance",
     "description": "Radvance PHP Framework",
-    "homepage": "https://github.com/radvance/radvance",
+    "homepage": "https://github.com/linkorb/radvance",
     "keywords": ["linkorb", "framework", "radvance"],
     "type": "application",
     "license": "MIT",
