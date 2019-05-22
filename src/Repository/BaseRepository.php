@@ -3,6 +3,7 @@
 namespace Radvance\Repository;
 
 use Minerva\Orm\BasePdoRepository;
+use PDO;
 
 class BaseRepository extends BasePdoRepository
 {
@@ -28,6 +29,7 @@ class BaseRepository extends BasePdoRepository
     public function findBy($where)
     {
         $rows = $this->fetchRows($where);
+
         return $this->rowsToObjects($rows);
     }
 
@@ -40,6 +42,7 @@ class BaseRepository extends BasePdoRepository
         if (!$rows) {
             return null;
         }
+
         return $this->rowToObject($rows[0]);
     }
 
@@ -61,7 +64,22 @@ class BaseRepository extends BasePdoRepository
     public function getByLibraryId($libraryId)
     {
         throw new \RuntimeException(
-            "getByLibraryId should not be in the BaseRepository. Implement it in subclass if you need it."
+            'getByLibraryId should not be in the BaseRepository. Implement it in subclass if you need it.'
         );
+    }
+
+    public function findByIds($ids)
+    {
+        if (!$ids) {
+            return;
+        }
+        $in = str_repeat('?,', count($ids) - 1).'?';
+
+        $sql = 'SELECT *  FROM  `'.$this->getTable().'` WHERE id IN ( '.$in.' )  ORDER By id ASC ';
+
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute($ids);
+
+        return $this->rowsToObjects($statement->fetchAll(PDO::FETCH_ASSOC));
     }
 }
