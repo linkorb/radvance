@@ -11,6 +11,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use \Psr\Http\Message\ResponseInterface;
 
+/**
+ * Class HttpKernelMiddleware
+ * @author Aleksandr Arofikin <sashaaro@gmail.com>
+ */
 class HttpKernelMiddleware implements MiddlewareInterface, RequestHandlerInterface
 {
     /** @var HttpKernelInterface */
@@ -30,13 +34,13 @@ class HttpKernelMiddleware implements MiddlewareInterface, RequestHandlerInterfa
         $this->psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
     }
 
-    /**\
-     * @param \Psr\Http\Message\ServerRequestInterface $request
-     * @param \Psr\Http\Server\RequestHandlerInterface $handler
-     * @return \Psr\Http\Message\ResponseInterface
-     * @throws Exception
+    /**
+     * @param ServerRequestInterface $request
+     * @param RequestHandlerInterface $handler
+     * @return ResponseInterface
+     * @throws \Exception
      */
-    public function process(ServerRequestInterface $request, $handler): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $symfonyRequest = $this->httpFoundationFactory->createRequest($request);
         $symfonyResponse = $this->httpKernel->handle($symfonyRequest);
@@ -47,8 +51,8 @@ class HttpKernelMiddleware implements MiddlewareInterface, RequestHandlerInterfa
 
     /**
      * @param ServerRequestInterface $request
-     * @return \Psr\Http\Message\ResponseInterface
-     * @throws Exception
+     * @return ResponseInterface
+     * @throws \Exception
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
