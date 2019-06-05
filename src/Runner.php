@@ -3,16 +3,31 @@
 namespace Radvance;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
+use Silex\Application;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\HttpFoundation\Request;
+use FlexMiddleware\FlexMiddlewareFactory;
 
 class Runner
 {
+    /**
+     * @param HttpKernelInterface|Application $app
+     * @param Request|null $request
+     */
     static function run(HttpKernelInterface $app, Request $request = null)
     {
+        $flexMiddlewaresYaml = null;
+
+        if ($app instanceof Application) {
+            $flexMiddlewaresYaml = isset($app['flex_middlewares.config']) ?
+                $app['flex_middlewares.config'] :
+                realpath('../') . DIRECTORY_SEPARATOR . 'middlewares.yaml';
+        }
+
         $stack = $app->getStack();
         $app = $stack->resolve($app);
             
@@ -23,8 +38,9 @@ class Runner
         $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
         $psrRequest = $psrHttpFactory->createRequest($request);
 
-        // TODO $middlewarePipe->pipe(\FlexMiddleware\FlexMiddlewareFactory::fromConfig('../config/middlewares.yaml'));
-
+        if (is_file($flexMiddlewaresYaml)) {
+            $middlewarePipe->pipe(FlexMiddlewareFactory::fromConfig($flexMiddlewaresYaml));
+        }
 
         $middlewarePipe->pipe(new HttpKernelMiddleware($app));
         $psrResponse = $middlewarePipe->handle($psrRequest);

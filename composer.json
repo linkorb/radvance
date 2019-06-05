@@ -57,16 +57,16 @@
         "psr/http-server-handler": "^1.0",
         "nyholm/psr7": "^1.1",
         "zendframework/zend-stratigility": "^3.1",
-        "symfony/psr-http-message-bridge": "^1.2"
+        "symfony/psr-http-message-bridge": "^1.2",
+        "linkorb/flex-middleware": "^1.0"
     },
     "require-dev": {
         "behat/behat": "^3.0",
         "behat/mink": "^1.6",
         "behat/mink-extension": "^2.0",
         "behat/mink-goutte-driver": "^1.1",
-        "linkorb/haigha": "~2.1",
-        "linkorb/conventions-checker": "~1.1",
-        "friendsofphp/php-cs-fixer": "~1"
+        "linkorb/haigha": "^2.7",
+        "friendsofphp/php-cs-fixer": "~2"
     },
     "bin": ["bin/radvance", "bin/radvance-mysql"],
     "extra": {
