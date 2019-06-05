@@ -20,18 +20,25 @@ class RequestLogMiddleware implements HttpKernelInterface
         $this->urls = $urls;
     }
 
-    protected function log($data)
+    protected function log(array $data)
     {
+        $json = json_encode($data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
+        // echo $json; exit();
         foreach ($this->urls as $urlString) {
             $urlString = trim($urlString);
             $url = parse_url($urlString);
             switch ($url['scheme']) {
+                case 'monolog':
+                    $loggerName = $url['host'];
+                    $logger = \Monolog\Registry::$loggerName();
+                    $logger->info('Request', $data);
+                    break;
                 case 'json-path':
                     $path = '/' . $url['host'] . $url['path'];
                     $path = rtrim($path, '/');
 
                     $path = str_replace('{date}', date('Ymd'), $path);
-                    $json = json_encode($data, JSON_UNESCAPED_SLASHES);
+                    
                     if (!file_exists($path)) {
                         mkdir($path, 0777, true);
                     }
