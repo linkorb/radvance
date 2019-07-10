@@ -298,6 +298,9 @@ abstract class BaseWebApplication extends BaseConsoleApplication implements Fram
 
     protected function configureExceptionHandling()
     {
+        if (php_sapi_name() == "cli") {
+            return;
+        }
         // Setup sentry client, expose for other use-cases
         if (isset($this['parameters']['sentry_url'])) {
             $sentryClient = new \Raven_Client($this['parameters']['sentry_url']);
