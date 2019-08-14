@@ -27,6 +27,7 @@ use InteroPhp\ModuleManager\ModuleManager;
 use Minerva\Orm\RepositoryManager;
 use Aws\S3\S3Client;
 use FlexLog\FlexLog;
+use Envoi\Envoi;
 use Exception;
 use RuntimeException;
 use PDO;
@@ -121,10 +122,17 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
     protected function loadConfig()
     {
         // Load .env file if present
-        $filename = $this->getRootPath() . '/.env';
-        if (file_exists($filename)) {
-            $dotenv = new Dotenv();
-            $dotenv->load($filename);
+        $envFilename = $this->getRootPath() . '/.env';
+        $metaFilename = $this->getRootPath() . '/.env.yaml';
+        if (file_exists($envFilename)) {
+            if (file_exists($metaFilename)) {
+                // Use envoi to load variables
+                Envoi::init($envFilename, $metaFilename);
+            } else {
+                // Use standard Dotenv for loading variables
+                $dotenv = new Dotenv();
+                $dotenv->load($envFilename);
+            }
         }
 
         $locator = new FileLocator(

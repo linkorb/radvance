@@ -60,7 +60,8 @@
         "linkorb/flex-middleware": "^1.0",
         "linkorb/flex-auth-provider": "^1.3",
         "linkorb/flex-auth": "^1.3",
-        "linkorb/flex-log": "^1.0"
+        "linkorb/flex-log": "^1.0",
+        "linkorb/envoi": "^1.0"
     },
     "require-dev": {
         "behat/behat": "^3.0",
