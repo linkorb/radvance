@@ -3,6 +3,7 @@
 namespace Radvance;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
+use OpenAPIValidation\Schema\Validator;
 use Silex\Application;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
@@ -14,23 +15,17 @@ use FlexMiddleware\FlexMiddlewareFactory;
 
 class Runner
 {
+    public const MIDDLEWARE_SERVICES_LIST_ID = 'middleware_services';
+
     /**
      * @param HttpKernelInterface|Application $app
      * @param Request|null $request
      */
-    static function run(HttpKernelInterface $app, Request $request = null)
+    static function run(HttpKernelInterface $application, Request $request = null)
     {
-        $flexMiddlewaresYaml = null;
+        $stack = $application->getStack();
+        $app = $stack->resolve($application);
 
-        if ($app instanceof Application) {
-            $flexMiddlewaresYaml = isset($app['flex_middlewares.config']) ?
-                $app['flex_middlewares.config'] :
-                realpath('../') . DIRECTORY_SEPARATOR . 'middlewares.yaml';
-        }
-
-        $stack = $app->getStack();
-        $app = $stack->resolve($app);
-            
         $request = $request ?: Request::createFromGlobals();
         $middlewarePipe = new \Zend\Stratigility\MiddlewarePipe();
 
@@ -38,8 +33,24 @@ class Runner
         $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
         $psrRequest = $psrHttpFactory->createRequest($request);
 
-        if (is_file($flexMiddlewaresYaml)) {
-            $middlewarePipe->pipe(FlexMiddlewareFactory::fromConfig($flexMiddlewaresYaml));
+        if ($application instanceof Application) {
+            $flexMiddlewaresYaml = isset($application['flex_middlewares.config']) ?
+                $application['flex_middlewares.config'] :
+                realpath('../') . DIRECTORY_SEPARATOR . 'middlewares.yaml';
+
+            if (is_file($flexMiddlewaresYaml)) {
+                $middlewarePipe->pipe(FlexMiddlewareFactory::fromConfig($flexMiddlewaresYaml));
+            }
+
+            if (isset($application[self::MIDDLEWARE_SERVICES_LIST_ID])) {
+                foreach ($application[self::MIDDLEWARE_SERVICES_LIST_ID] as $middlewareServiceID) {
+                    if (!isset($application[$middlewareServiceID])) {
+                        throw new \InvalidArgumentException("No $middlewareServiceID middleware service");
+                    }
+
+                    $middlewarePipe->pipe($application[$middlewareServiceID]);
+                }
+            }
         }
 
         $middlewarePipe->pipe(new HttpKernelMiddleware($app));
