@@ -130,7 +130,7 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
                 Envoi::init($envFilename, $metaFilename);
             } else {
                 // Use standard Dotenv for loading variables
-                $dotenv = new Dotenv();
+                $dotenv = new Dotenv(true);
                 $dotenv->load($envFilename);
             }
         }
