@@ -12,12 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Radvance\Constraint\CodeConstraint;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Form\FormError;
 
 class SpaceController
 {
-    protected function isAccountOwner(AdvancedUserInterface $user, $accountName)
+    protected function isAccountOwner(UserInterface $user, $accountName)
     {
         $authorized = $user->getUsername() == $accountName;
         if (!$authorized && method_exists($user, 'getAccounts')) {
