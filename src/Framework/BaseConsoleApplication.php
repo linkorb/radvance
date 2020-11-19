@@ -532,18 +532,20 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
             $moduleManager = $this['module-manager'];
             $installed = json_decode(file_get_contents($installed));
             foreach ($installed as $package) {
-                if (0 === strrpos($package->name, 'linkorb/')) {
-                    if (0 === substr_compare($package->name, '-module', -strlen('-module'))) {
-                        $name = ucfirst(
-                            \Doctrine\Common\Inflector\Inflector::camelize(
-                                str_ireplace(['linkorb/', '-module'], '', $package->name)
-                            )
-                        );
-                        // var_dump($package->autoload);
-                        // die;
-                        $className = '\LinkORB\Module\\'.$name.'\\'.$name.'Module';
-                        if (class_exists($className)) {
-                            $moduleManager->addModule(new $className());
+                if (isset($package->name)) { // sanity check
+                    if (0 === strrpos($package->name, 'linkorb/')) {
+                        if (0 === substr_compare($package->name, '-module', -strlen('-module'))) {
+                            $name = ucfirst(
+                                \Doctrine\Common\Inflector\Inflector::camelize(
+                                    str_ireplace(['linkorb/', '-module'], '', $package->name)
+                                )
+                            );
+                            // var_dump($package->autoload);
+                            // die;
+                            $className = '\LinkORB\Module\\'.$name.'\\'.$name.'Module';
+                            if (class_exists($className)) {
+                                $moduleManager->addModule(new $className());
+                            }
                         }
                     }
                 }
