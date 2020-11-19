@@ -78,10 +78,20 @@ class SchemaLoadCommand extends Command
             }
         }
 
+        $schemaFileDirectoryArray = ['app/', 'schema/', './',  'config/'];
+
+        $schemaFilename = '';
+        foreach ($schemaFileDirectoryArray as $schemaDirectory) {
+            if (file_exists($schemaDirectory.'schema.xml')) {
+                $schemaFilename = $schemaDirectory.'schema.xml';
+                break;
+            }
+        }
+
         // main schema
-        $cmd = $cmdPrefix.'app/schema.xml '.$pdo;
+        $cmd = $cmdPrefix.$schemaFilename.' '.$pdo;
         $this->executeLoadCmd(
-            $this->getLoadCommand('app/schema.xml', $pdo),
+            $this->getLoadCommand($schemaFilename, $pdo),
             $apply,
             $output
         );
