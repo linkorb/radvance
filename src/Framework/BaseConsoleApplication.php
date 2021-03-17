@@ -286,7 +286,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
      */
     protected function configureService()
     {
-        // Translations
+	// Translation disabled due to interface incompatibility of new components
+	/*
         $this['locale_fallbacks'] = array('en_US');
         $this->register(new TranslationServiceProvider());
 
@@ -297,7 +298,8 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
         foreach ($files as $filename) {
             $locale = str_replace('.yml', '', basename($filename));
             $translator->addResource('yaml', $filename, $locale);
-        }
+	}
+	*/
     }
 
     /**
