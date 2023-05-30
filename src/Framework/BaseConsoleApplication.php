@@ -286,20 +286,18 @@ abstract class BaseConsoleApplication extends SilexApplication implements Framew
      */
     protected function configureService()
     {
-	// Translation disabled due to interface incompatibility of new components
-	/*
-        $this['locale_fallbacks'] = array('en_US');
+        // Translation disabled due to interface incompatibility of new components
+        $this['locale_fallbacks'] = $this['parameters']['locale'] ?? ['en_US'];
         $this->register(new TranslationServiceProvider());
 
         $translator = $this['translator'];
         $translator->addLoader('yaml', new RecursiveYamlFileMessageLoader());
 
-        $files = glob($this->getRootPath() .'/app/l10n/*.yml');
+        $files = glob($this->getRootPath().'/app/l10n/*.yml');
         foreach ($files as $filename) {
             $locale = str_replace('.yml', '', basename($filename));
             $translator->addResource('yaml', $filename, $locale);
-	}
-	*/
+        }
     }
 
     /**
